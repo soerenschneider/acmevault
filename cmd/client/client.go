@@ -1,0 +1,69 @@
+package main
+
+import (
+	"acmevault/cmd"
+	"acmevault/internal"
+	"acmevault/internal/client"
+	"acmevault/internal/config"
+	"acmevault/pkg/certstorage/vault"
+	"errors"
+	"github.com/rs/zerolog/log"
+	"os"
+)
+
+var conf config.AcmeVaultClientConfig
+
+func main() {
+	configPath := cmd.ParseCliFlags()
+	var err error
+
+	conf, err = config.AcmeVaultClientConfigFromFile(configPath)
+	if err != nil {
+		log.Fatal().Msgf("Can't parse config: %v", err)
+	}
+	err = conf.Validate()
+	if err != nil {
+		log.Fatal().Msgf("Invalid config: %v", err)
+	}
+	conf.Print()
+
+	storage, err := vault.NewVaultBackend(conf.VaultConfig, vault.NewPopulatedInMemoryTokenStorage(conf.VaultToken))
+	if err != nil {
+		log.Fatal().Msgf("Could not generate desired backend: %v", err)
+	}
+
+	writer, err := client.NewFsWriter(conf.CertPath, conf.PrivateKeyPath, conf.User, conf.Group)
+	if err != nil {
+		log.Fatal().Msgf("Could not create writer: %v", err)
+	}
+
+	client, err := client.NewAcmeVaultClient(conf, storage, writer)
+	if err != nil {
+		log.Fatal().Msgf("Could not build client: %v", err)
+	}
+	
+	err = pickUpCerts(client, conf)
+	exitCode := 0
+	if err != nil {
+		log.Error().Msgf("error while picking up and storing certificates: %v" ,err)
+		exitCode = 1
+	}
+	os.Exit(exitCode)
+}
+
+func pickUpCerts(client *client.VaultAcmeClient, conf config.AcmeVaultClientConfig) error {
+	if client == nil {
+		return errors.New("empty client passed")
+	}
+
+	err := client.RetrieveAndSave(conf.RoleId)
+	if len(conf.MetricsPath) > 0 {
+		// shadow outer error
+		err := internal.WriteMetrics(conf.MetricsPath)
+		if err != nil {
+			log.Error().Msgf("couldn't write metrics to file: %v", err)
+		}
+	}
+
+	return err
+}

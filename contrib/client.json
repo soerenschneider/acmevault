@@ -1,0 +1,9 @@
+{
+  "user": "myusername",
+  "group": "mygroup",
+  "certFile": "/tmp/mydomain.crt",
+  "privateKeyFile": "/tmp/mydomain.key",
+  "vaultAddr": "https://vault:8200",
+  "secretId": "secretId",
+  "roleId": "roleId"
+}
