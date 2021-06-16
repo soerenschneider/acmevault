@@ -3,8 +3,7 @@ module acmevault
 go 1.14
 
 require (
-	github.com/aws/aws-sdk-go v1.37.27
-	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
+	github.com/aws/aws-sdk-go v1.38.63
 	github.com/go-acme/lego/v4 v4.3.1
 	github.com/hashicorp/go-retryablehttp v0.6.8
 	github.com/hashicorp/vault/api v1.1.0
