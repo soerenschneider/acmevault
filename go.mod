@@ -10,4 +10,5 @@ require (
 	github.com/prometheus/client_golang v1.11.0
 	github.com/prometheus/common v0.29.0
 	github.com/rs/zerolog v1.23.0
+    github.com/blushft/go-diagrams v0.0.0-20201006005127-c78c821223d9 // indirect
 )
