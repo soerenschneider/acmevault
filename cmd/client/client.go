@@ -41,11 +41,11 @@ func main() {
 	if err != nil {
 		log.Fatal().Msgf("Could not build client: %v", err)
 	}
-	
+
 	err = pickUpCerts(client, conf)
 	exitCode := 0
 	if err != nil {
-		log.Error().Msgf("error while picking up and storing certificates: %v" ,err)
+		log.Error().Msgf("error while picking up and storing certificates: %v", err)
 		exitCode = 1
 	}
 	os.Exit(exitCode)

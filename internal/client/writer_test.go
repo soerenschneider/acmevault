@@ -13,15 +13,15 @@ func Test_getUidFromUsername(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "existent",
-			args: args{"root"},
-			want: 0,
+			name:    "existent",
+			args:    args{"root"},
+			want:    0,
 			wantErr: false,
 		},
 		{
-			name: "nonexistent",
-			args: args{"ihopeyoudontexist"},
-			want: -1,
+			name:    "nonexistent",
+			args:    args{"ihopeyoudontexist"},
+			want:    -1,
 			wantErr: true,
 		},
 	}
@@ -50,15 +50,15 @@ func Test_getGidFromGroup(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "existent",
-			args: args{"root"},
-			want: 0,
+			name:    "existent",
+			args:    args{"root"},
+			want:    0,
 			wantErr: false,
 		},
 		{
-			name: "nonexistent",
-			args: args{"ihopeyoudontexist"},
-			want: -1,
+			name:    "nonexistent",
+			args:    args{"ihopeyoudontexist"},
+			want:    -1,
 			wantErr: true,
 		},
 	}

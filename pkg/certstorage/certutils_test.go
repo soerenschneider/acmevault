@@ -138,8 +138,8 @@ func TestMapToCert(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name:    "incomplete",
-			args:    args{map[string]interface{}{
+			name: "incomplete",
+			args: args{map[string]interface{}{
 				"bla": "bla",
 			}},
 			want:    nil,

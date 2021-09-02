@@ -212,7 +212,7 @@ func (vault *VaultBackend) authenticate() (*TokenData, error) {
 	if tokenData == nil || err != nil {
 		return nil, errors.New("acquired token doesn't work, giving up")
 	}
-	
+
 	log.Info().Msgf("Successfully authenticated via AppRole %s, token valid until %s", vault.conf.RoleId, tokenData.PrettyExpiryDate())
 	log.Debug().Msg("Storing newly acquired token")
 	err = vault.tokenStorage.StoreToken(token)

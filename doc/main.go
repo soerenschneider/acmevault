@@ -30,14 +30,13 @@ func main() {
 			opt.Label = "Read Cert Bundle"
 		})
 
-	d.Connect(server ,vault, func(options *diagram.EdgeOptions) {
+	d.Connect(server, vault, func(options *diagram.EdgeOptions) {
 		options.Label = "Read IAM role"
 	})
 
 	d.Connect(vault, server, func(options *diagram.EdgeOptions) {
 		options.Label = "Write Certs"
 	})
-
 
 	d.Group(dc)
 

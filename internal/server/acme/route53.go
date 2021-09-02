@@ -25,7 +25,7 @@ func NewDynamicCredentialsProvider(vault *vault2.VaultBackend) (*DynamicCredenti
 	if nil == vault {
 		return nil, errors.New("no vault backend provided")
 	}
-	
+
 	return &DynamicCredentialsProvider{vault: vault}, nil
 }
 
@@ -37,7 +37,7 @@ func (m *DynamicCredentialsProvider) Retrieve() (credentials.Value, error) {
 
 	m.expiry = dynamicCredentials.Expiry
 	cred := ConvertCredentials(*dynamicCredentials)
-	
+
 	log.Info().Msgf("Received AWS credentials with access id %s, waiting for %v for eventual consistency", cred.AccessKeyID, AwsIamPropagationImpediment)
 
 	// The credentials we receive are usually not effective at AWS, yet, so we need to wait for a bit until
