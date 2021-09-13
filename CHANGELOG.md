@@ -1,5 +1,13 @@
 # Changelog
 
+### [1.0.2](https://www.github.com/soerenschneider/acmevault/compare/v1.0.1...v1.0.2) (2021-09-13)
+
+
+### Bug Fixes
+
+* fix insufficient error handling ([de707ab](https://www.github.com/soerenschneider/acmevault/commit/de707ab49f5435a08310c8eff85d249d400df5d5))
+* fix insufficient error handling ([86bcde2](https://www.github.com/soerenschneider/acmevault/commit/86bcde2728fdf38004db070fd2344fd164c61117))
+
 ### [1.0.1](https://www.github.com/soerenschneider/acmevault/compare/v1.0.0...v1.0.1) (2021-09-13)
 
 
