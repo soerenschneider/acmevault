@@ -1,3 +1,5 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/soerenschneider/acmevault)](https://goreportcard.com/report/github.com/soerenschneider/acmevault)
+
 # acmevault
 
 ## Problem Statement
