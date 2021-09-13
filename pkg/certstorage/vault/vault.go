@@ -130,9 +130,12 @@ func (vault *VaultBackend) ReadAccount(hash string) (*certstorage.AcmeAccount, e
 	var account acme.Account
 	accountData := fmt.Sprintf("%v", secret.Data[certstorage.VaultAccountKeyAccount])
 	accountJson, err := base64.StdEncoding.DecodeString(accountData)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't decode string: %v", err)
+	}
 	err = json.Unmarshal(accountJson, &account)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("couldn't unmarshal json: %v", err)
 	}
 
 	registration := &registration.Resource{
