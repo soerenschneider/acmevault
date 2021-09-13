@@ -41,6 +41,10 @@ func NewAcmeVaultServer(conf config.AcmeVaultServerConfig) {
 	}
 
 	acmeVaultServer, err := server.NewAcmeVaultServer(conf.Domains, acmeClient, storage)
+	if err != nil {
+		log.Fatal().Msgf("Couldn't build server: %v", err)
+	}
+
 	err = Run(acmeVaultServer, storage, conf)
 	if err != nil {
 		log.Fatal().Msgf("Couldn't start server: %v", err)
