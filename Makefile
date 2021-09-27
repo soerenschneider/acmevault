@@ -1,6 +1,9 @@
 build: version-info
-	env CGO_ENABLED=0 go build -ldflags="-X 'acmevault/internal.BuildVersion=${VERSION}' -X 'acmevault/internal.CommitHash=${COMMIT_HASH}'" -o acmevault-server cmd/server/server.go
-	env CGO_ENABLED=0 go build -ldflags="-X 'acmevault/internal.BuildVersion=${VERSION}' -X 'acmevault/internal.CommitHash=${COMMIT_HASH}'" -o acmevault-client cmd/client/client.go
+	go build -ldflags="-X 'acmevault/internal.BuildVersion=${VERSION}' -X 'acmevault/internal.CommitHash=${COMMIT_HASH}'" -o acmevault-server cmd/server/server.go
+	go build -ldflags="-X 'acmevault/internal.BuildVersion=${VERSION}' -X 'acmevault/internal.CommitHash=${COMMIT_HASH}'" -o acmevault-client cmd/client/client.go
+
+release: build
+	sha256sum acmevault-* > checksums.sha256
 
 fmt:
 	find . -iname "*.go" -exec go fmt {} \; 
