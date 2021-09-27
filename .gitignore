@@ -1,5 +1,3 @@
-/acmevault-server
-/acmevault-client
+/builds
 /.idea/*
 /go-diagrams/*
-/checksums.sha256
