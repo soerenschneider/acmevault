@@ -3,3 +3,4 @@
 /go-diagrams/*
 /acmevault-server
 /acmevault-client
+/coverage.*
