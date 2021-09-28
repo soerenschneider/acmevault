@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://www.github.com/soerenschneider/acmevault/compare/v1.0.2...v1.1.0) (2021-09-28)
+
+
+### Features
+
+* Print version info ([c716245](https://www.github.com/soerenschneider/acmevault/commit/c716245980ef7710023be79a85c697f07c59eb73))
+
 ### [1.0.2](https://www.github.com/soerenschneider/acmevault/compare/v1.0.1...v1.0.2) (2021-09-13)
 
 
