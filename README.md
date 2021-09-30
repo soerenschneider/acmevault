@@ -31,7 +31,7 @@ Its client mode reads the respective written certificates from Vault and install
 | Keyword     | Description                                                                                      | Example                               | Mandatory |
 |-------------|--------------------------------------------------------------------------------------------------|---------------------------------------|-----------|
 | vaultAddr   | Connection string for vault                                                                      | https://vault:8200                    | Y         |
-| roleId      | AppRole role id to login                                                                         | 988a9dfd-ea69-4a53-6cb6-9d6b86474bba  | Y         |
+| roleId      | [AppRole role id](https://www.vaultproject.io/docs/auth/approle) to login                        | 988a9dfd-ea69-4a53-6cb6-9d6b86474bba  | Y         |
 | secretId    | [AppRole secret id](https://www.vaultproject.io/docs/auth/approle) to authenticate against vault | 37b74931-c4cd-d49a-9246-ccc62d682a25  | Y         |
 | email       | Email to register at ACME server                                                                 | your@email.tld                        | Y         |
 | metricsPath | Path to write metrics to on filesystem                                                           | /var/lib/node_exporter/acmevault.prom | N         |
