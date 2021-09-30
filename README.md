@@ -15,3 +15,20 @@ Its client mode reads the respective written certificates from Vault and install
 
 ## Overview
 ![Overview](overview.png)
+
+# Metrics
+
+| Subsystem | Metric                                | Type    | Description                                                           | Labels            |
+|-----------|---------------------------------------|---------|-----------------------------------------------------------------------|-------------------|
+| server    | vault_aws_credentials_requested_total | counter | Total amount of dynamic AWS credentials requested                     |                   |
+| server    | latest_iteration_time_seconds         | gauge   | Latest invocation of the server                                       |                   |
+| server    | certificates_retrieved_total          | counter | Total amount of certificates retrieved from ACME provider             | domain            |
+| server    | certificate_retrieve_errors_total     | counter | Total errors while trying to retrieve certificates from ACME provider | domain            |
+| server    | certificates_renewals_total           | counter | Total number of renewed certificates                                  | domain            |
+| server    | certificates_renewal_errors_total     | counter | Total errors while trying to renew certificates                       | domain            |
+|           | certificates_written_total            | counter | Total number of certificates written total                            | domain, subsystem |
+|           | certificates_write_errors_total       | counter | Total number of errors while writing the certificate                  | domain, subsystem |
+|           | certificate_errors_total              | counter | Total number of errors while handling certificates                    | domain, desc      |
+|           | certificate_expiry_time               | gauge   | Timestamp of certificate expiry                                       | domain            |
+| client    | hooks_invocation_errors               | counter | Errors while invoking the hooks                                       |                   |
+|           | timestamp                             | gauge   | Date of last measure                                                  |                   |
