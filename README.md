@@ -16,6 +16,58 @@ Its client mode reads the respective written certificates from Vault and install
 ## Overview
 ![Overview](overview.png)
 
+# Server component
+## Configuration example
+```json
+{
+  "vaultAddr": "https://vault:8200",
+  "metricsPath": "/var/lib/node_exporter/acmevault_server.prom",
+  "roleId": "my_role_id",
+  "secretId": "my_secret_id",
+  "email": "my-acme-email@domain.tld"
+}
+```
+## Configuration reference
+| Keyword     | Description                                                                                      | Example                              | Mandatory |
+|-------------|--------------------------------------------------------------------------------------------------|--------------------------------------|-----------|
+| vaultAddr   | Connection string for vault                                                                      | https://vault:8200                   | Y         |
+| roleId      | AppRole role id to login                                                                         | 988a9dfd-ea69-4a53-6cb6-9d6b86474bba | Y         |
+| secretId    | [AppRole secret id](https://www.vaultproject.io/docs/auth/approle) to authenticate against vault | 37b74931-c4cd-d49a-9246-ccc62d682a25 | Y         |
+| email       | Email to register at ACME server                                                                 | your@email.tld                       | Y         |
+| metricsPath | Path to write metrics to on filesystem                                                           | counter                              |           |
+
+# Client component
+## Configuration
+```json
+{
+  "vaultAddr": "https://vault:8200",
+  "metricsPath": "/var/lib/node_exporter/acmevault_client.prom",
+  "user": "root",
+  "group": "root",
+  "certFile": "/etc/nginx/my_cert.crt",
+  "privateKeyFile": "/etc/nginx/my_private_key.key",
+  "roleId": "my_role_id",
+  "secretId": "my_secret_id",
+  "hooks": [
+    "echo",
+    "it works"
+  ]
+}
+```
+
+## Configuration reference
+
+| Keyword        | Description                                                                                      | Example                              | Mandatory |
+|----------------|--------------------------------------------------------------------------------------------------|--------------------------------------|-----------|
+| vaultAddr      | Connection string for vault                                                                      | https://vault:8200                   | Y         |
+| roleId         | [AppRole role id](https://www.vaultproject.io/docs/auth/approle) to authenticate against vault   | 988a9dfd-ea69-4a53-6cb6-9d6b86474bba | Y         |
+| secretId       | [AppRole secret id](https://www.vaultproject.io/docs/auth/approle) to authenticate against vault | 37b74931-c4cd-d49a-9246-ccc62d682a25 | Y         |
+| user           | User that will own the written certificate and key on disk                                       | root                                 | Y         |
+| group          | Group that will own the written certificate and key on disk                                      | root                                 | Y         |
+| certFile       | The file path to write the certificate to                                                        | /etc/ssl/ssl-bundle.crt              | Y         |
+| privateKeyFile | The file path to write the private key to                                                        | /etc/ssl/ssl-bundle.key              | Y         |
+| hooks          | Commands to run after new cert files have been written                                           | ["echo", "it worked"]                | N         |
+
 # Metrics
 
 | Subsystem | Metric                                | Type    | Description                                                           | Labels            |
@@ -32,3 +84,4 @@ Its client mode reads the respective written certificates from Vault and install
 |           | certificate_expiry_time               | gauge   | Timestamp of certificate expiry                                       | domain            |
 | client    | hooks_invocation_errors               | counter | Errors while invoking the hooks                                       |                   |
 |           | timestamp                             | gauge   | Date of last measure                                                  |                   |
+
