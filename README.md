@@ -16,8 +16,26 @@ Its client mode reads the respective written certificates from Vault and install
 ## Overview
 ![Overview](overview.png)
 
-# Server component
-## Configuration example
+## Installation
+### Compile
+Clone the repository by running `git clone https://github.com/soerenschneider/acmevault.git` and just run a `make build` inside the repository in order to build the client and the server locally.
+
+### Pre-compiled Binaries
+
+Pre-compiled binaries can be found at the releases section. They are signed using a cryptographic signature made by [signify](https://man.openbsd.org/signify.1) using the following public key: 
+```
+untrusted comment: signify public key
+RWSFxNuvQMx07H1IC6sUxJvlsdtfDlY39EdoHMG/ZpivtOmp8sJ3DMEg
+```
+
+In order to verify, run
+```bash
+$ signify -V -p /path/to/downloaded/pukey -m checksum.sha256
+$ sha256sum -c checksum.sha256
+```
+
+## Server component
+### Configuration example
 ```json
 {
   "vaultAddr": "https://vault:8200",
@@ -27,7 +45,7 @@ Its client mode reads the respective written certificates from Vault and install
   "email": "my-acme-email@domain.tld"
 }
 ```
-## Configuration reference
+### Configuration reference
 | Keyword     | Description                                                                                      | Example                               | Mandatory |
 |-------------|--------------------------------------------------------------------------------------------------|---------------------------------------|-----------|
 | vaultAddr   | Connection string for vault                                                                      | https://vault:8200                    | Y         |
@@ -36,8 +54,8 @@ Its client mode reads the respective written certificates from Vault and install
 | email       | Email to register at ACME server                                                                 | your@email.tld                        | Y         |
 | metricsPath | Path to write metrics to on filesystem                                                           | /var/lib/node_exporter/acmevault.prom | N         |
 
-# Client component
-## Configuration
+## Client component
+### Configuration
 ```json
 {
   "vaultAddr": "https://vault:8200",
@@ -55,7 +73,7 @@ Its client mode reads the respective written certificates from Vault and install
 }
 ```
 
-## Configuration reference
+### Configuration reference
 
 | Keyword        | Description                                                                                      | Example                               | Mandatory |
 |----------------|--------------------------------------------------------------------------------------------------|---------------------------------------|-----------|
@@ -69,7 +87,12 @@ Its client mode reads the respective written certificates from Vault and install
 | hooks          | Commands to run after new cert files have been written                                           | ["echo", "it worked"]                 | N         |
 | metricsPath    | Path on the disk to write metrics to                                                             | /var/lib/node_exporter/acmevault.prom | N         |
 
-# Metrics
+
+## Vault Resources
+
+A Terraform module that sets up Vault in order to use acmevault can be found [in this repository](https://github.com/soerenschneider/tf-vault).  
+
+## Metrics
 
 | Subsystem | Metric                                | Type    | Description                                                           | Labels            |
 |-----------|---------------------------------------|---------|-----------------------------------------------------------------------|-------------------|
