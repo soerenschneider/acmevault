@@ -9,6 +9,6 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.0
 	github.com/hashicorp/vault/api v1.1.1
 	github.com/prometheus/client_golang v1.11.0
-	github.com/prometheus/common v0.31.0
+	github.com/prometheus/common v0.31.1
 	github.com/rs/zerolog v1.25.0
 )
