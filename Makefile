@@ -1,5 +1,5 @@
 BUILD_DIR = builds
-MODULE = acmevault
+MODULE = github.com/soerenschneider/acmevault
 BINARY_NAME_SERVER = acmevault-server
 BINARY_NAME_CLIENT = acmevault-client
 CHECKSUM_FILE = $(BUILD_DIR)/checksum.sha256
