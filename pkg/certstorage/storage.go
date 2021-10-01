@@ -1,7 +1,7 @@
 package certstorage
 
 import (
-	"acmevault/internal"
+	"github.com/soerenschneider/acmevault/internal"
 	"crypto"
 	"crypto/x509"
 	"encoding/pem"

@@ -1,9 +1,9 @@
 package server
 
 import (
-	"acmevault/internal"
-	"acmevault/internal/server/acme"
-	"acmevault/pkg/certstorage"
+	"github.com/soerenschneider/acmevault/internal"
+	"github.com/soerenschneider/acmevault/internal/server/acme"
+	"github.com/soerenschneider/acmevault/pkg/certstorage"
 	"errors"
 	"fmt"
 	"github.com/rs/zerolog/log"

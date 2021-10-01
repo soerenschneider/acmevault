@@ -1,8 +1,8 @@
 package acme
 
 import (
-	"acmevault/internal/config"
-	"acmevault/pkg/certstorage"
+	"github.com/soerenschneider/acmevault/internal/config"
+	"github.com/soerenschneider/acmevault/pkg/certstorage"
 	"errors"
 	"fmt"
 	"github.com/go-acme/lego/v4/certificate"

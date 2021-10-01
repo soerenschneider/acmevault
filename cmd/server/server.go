@@ -1,13 +1,13 @@
 package main
 
 import (
-	"acmevault/cmd"
-	"acmevault/internal"
-	"acmevault/internal/config"
-	"acmevault/internal/server"
-	"acmevault/internal/server/acme"
-	"acmevault/pkg/certstorage"
-	"acmevault/pkg/certstorage/vault"
+	"github.com/soerenschneider/acmevault/cmd"
+	"github.com/soerenschneider/acmevault/internal"
+	"github.com/soerenschneider/acmevault/internal/config"
+	"github.com/soerenschneider/acmevault/internal/server"
+	"github.com/soerenschneider/acmevault/internal/server/acme"
+	"github.com/soerenschneider/acmevault/pkg/certstorage"
+	"github.com/soerenschneider/acmevault/pkg/certstorage/vault"
 	"errors"
 	"fmt"
 	"github.com/rs/zerolog/log"

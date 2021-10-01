@@ -1,7 +1,7 @@
 package acme
 
 import (
-	vault2 "acmevault/pkg/certstorage/vault"
+	vault2 "github.com/soerenschneider/acmevault/pkg/certstorage/vault"
 	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"

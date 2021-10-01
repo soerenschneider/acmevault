@@ -1,7 +1,7 @@
 package client
 
 import (
-	"acmevault/pkg/certstorage"
+	"github.com/soerenschneider/acmevault/pkg/certstorage"
 	"bytes"
 	"crypto/md5"
 	"errors"
