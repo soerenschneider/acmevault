@@ -1,4 +1,4 @@
-ARG MODE=acmevault-client
+ARG MODE=client
 
 FROM golang:1.17.1 as builder
 ARG MODE
