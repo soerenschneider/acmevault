@@ -1,7 +1,7 @@
 package acme
 
 import (
-	vault2 "acmevault/pkg/certstorage/vault"
+	"acmevault/pkg/certstorage/vault"
 	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
@@ -17,11 +17,11 @@ import (
 const AwsIamPropagationImpediment = 20 * time.Second
 
 type DynamicCredentialsProvider struct {
-	vault  *vault2.VaultBackend
+	vault  *vault.VaultBackend
 	expiry time.Time
 }
 
-func NewDynamicCredentialsProvider(vault *vault2.VaultBackend) (*DynamicCredentialsProvider, error) {
+func NewDynamicCredentialsProvider(vault *vault.VaultBackend) (*DynamicCredentialsProvider, error) {
 	if nil == vault {
 		return nil, errors.New("no vault backend provided")
 	}
@@ -30,6 +30,7 @@ func NewDynamicCredentialsProvider(vault *vault2.VaultBackend) (*DynamicCredenti
 }
 
 func (m *DynamicCredentialsProvider) Retrieve() (credentials.Value, error) {
+	log.Info().Msg("Trying to read AWS credentials from Vault")
 	dynamicCredentials, err := m.vault.ReadAwsCredentials()
 	if err != nil {
 		return credentials.Value{}, fmt.Errorf("could not login at vault: %v", err)
@@ -46,7 +47,7 @@ func (m *DynamicCredentialsProvider) Retrieve() (credentials.Value, error) {
 	return cred, nil
 }
 
-func ConvertCredentials(dynamicCredentials vault2.AwsDynamicCredentials) credentials.Value {
+func ConvertCredentials(dynamicCredentials vault.AwsDynamicCredentials) credentials.Value {
 	return credentials.Value{
 		AccessKeyID:     dynamicCredentials.AccessKeyId,
 		SecretAccessKey: dynamicCredentials.SecretAccessKey,
