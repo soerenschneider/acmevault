@@ -55,7 +55,7 @@ func ConvertCredentials(dynamicCredentials vault2.AwsDynamicCredentials) credent
 }
 
 func (m *DynamicCredentialsProvider) IsExpired() bool {
-	return time.Now().Before(m.expiry)
+	return time.Now().After(m.expiry)
 }
 
 func BuildRoute53DnsProvider(credProvider ...DynamicCredentialsProvider) (challenge.Provider, error) {
