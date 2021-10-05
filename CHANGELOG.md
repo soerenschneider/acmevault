@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.2.0](https://www.github.com/soerenschneider/acmevault/compare/v1.1.0...v1.2.0) (2021-10-05)
+
+
+### Features
+
+* Add metric for errors retrieving aws credentials ([a17db0a](https://www.github.com/soerenschneider/acmevault/commit/a17db0a0dadc2ed2cb6597876f7b45fa65d1ff68))
+* support for KV2 secret engine ([d3d9337](https://www.github.com/soerenschneider/acmevault/commit/d3d93379782a6eabb745504ef8ba60921805475c))
+
+
+### Bug Fixes
+
+* Fix logic of dynamic credential providers ([46e83f0](https://www.github.com/soerenschneider/acmevault/commit/46e83f0123c22fda6ad28d1a281a0be2439146e3))
+* Fix using wrong function ([31cfef6](https://www.github.com/soerenschneider/acmevault/commit/31cfef678760ee51bf2e00f5a10aaa11090650a8))
+
 ## [1.1.0](https://www.github.com/soerenschneider/acmevault/compare/v1.0.2...v1.1.0) (2021-09-28)
 
 
