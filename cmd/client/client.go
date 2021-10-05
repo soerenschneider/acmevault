@@ -1,16 +1,19 @@
 package main
 
 import (
+	"errors"
+	"github.com/rs/zerolog/log"
 	"github.com/soerenschneider/acmevault/cmd"
 	"github.com/soerenschneider/acmevault/internal"
 	"github.com/soerenschneider/acmevault/internal/client"
 	"github.com/soerenschneider/acmevault/internal/config"
 	"github.com/soerenschneider/acmevault/pkg/certstorage/vault"
-	"errors"
-	"github.com/rs/zerolog/log"
 	"os"
+	"strings"
 )
 
+// Prefix of the configured AppRole role_ids for this tool
+const roleIdPrefix = "acme-client-"
 var conf config.AcmeVaultClientConfig
 
 func main() {
@@ -56,7 +59,8 @@ func pickUpCerts(client *client.VaultAcmeClient, conf config.AcmeVaultClientConf
 		return errors.New("empty client passed")
 	}
 
-	err := client.RetrieveAndSave(conf.RoleId)
+	domain := strings.ReplaceAll(conf.RoleId, roleIdPrefix, "")
+	err := client.RetrieveAndSave(domain)
 	if len(conf.MetricsPath) > 0 {
 		// shadow outer error
 		err := internal.WriteMetrics(conf.MetricsPath)
