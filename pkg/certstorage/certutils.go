@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-acme/lego/v4/certcrypto"
+	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -76,9 +77,11 @@ func MapToCert(data map[string]interface{}) (*AcmeCertificate, error) {
 	csrRaw := fmt.Sprintf("%s", data[vaultCertKeyCsr])
 	csr, err := base64.StdEncoding.DecodeString(csrRaw)
 	if err != nil {
-		return nil, fmt.Errorf("can not decode certificate: %v", err)
+		log.Warn().Msg("Could not decode csr")
+		//return nil, fmt.Errorf("can not decode certificate: %v", err)
+	} else {
+		res.CSR = csr
 	}
-	res.CSR = csr
 
 	return res, nil
 }

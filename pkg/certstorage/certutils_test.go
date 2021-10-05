@@ -181,8 +181,16 @@ func TestMapToCert(t *testing.T) {
 					vaultCertKeyStableUrl:  "stable url",
 				},
 			},
-			want:    nil,
-			wantErr: true,
+			want: &AcmeCertificate{
+				Domain:            "domain.tld",
+				CertURL:           "url",
+				CertStableURL:     "stable url",
+				PrivateKey:        []byte(decodedPrivateKey),
+				Certificate:       []byte(decodedCert),
+				IssuerCertificate: []byte(decodedIssuer),
+				CSR:               nil,
+			},
+			wantErr: false,
 		},
 		{
 			name: "invalid issuer",
