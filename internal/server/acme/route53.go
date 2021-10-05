@@ -60,9 +60,11 @@ func (m *DynamicCredentialsProvider) IsExpired() bool {
 
 func BuildRoute53DnsProvider(credProvider ...DynamicCredentialsProvider) (challenge.Provider, error) {
 	var awsSession *session.Session
-	if nil != credProvider && len(credProvider) > 0 {
+	if nil == credProvider || len(credProvider) == 0 {
+		log.Info().Msg("Trying to use static credentials to build route53 session")
 		awsSession = session.Must(session.NewSession())
 	} else {
+		log.Info().Msg("Passing dynamic credentials provider to build route53 session")
 		awsSession = session.Must(session.NewSession(&aws.Config{
 			Credentials: credentials.NewCredentials(&credProvider[0]),
 		}))
