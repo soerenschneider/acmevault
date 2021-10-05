@@ -13,6 +13,8 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/vault/api"
 	"github.com/rs/zerolog/log"
+	"net/url"
+	"path"
 	"time"
 )
 
@@ -21,7 +23,7 @@ const (
 	backoffRetries = 5
 
 	vaultAcmeApproleLoginPath = "/auth/approle/login"
-	vaultAcmePathPrefix       = "/secret/acme"
+	vaultAcmePathPrefix       = "/secret/data/acme"
 )
 
 type VaultBackend struct {
@@ -78,23 +80,63 @@ func NewVaultBackend(vaultConfig config.VaultConfig, storage TokenStorage) (*Vau
 func (vault *VaultBackend) WriteCertificate(resource *certstorage.AcmeCertificate) error {
 	location := getCertPath(resource.Domain)
 	data := certstorage.CertToMap(resource)
-	_, err := vault.client.Logical().Write(location, data)
+	err := vault.writeSecret(location, data)
 	return err
 }
 
-func (vault *VaultBackend) ReadCertificate(domain string) (*certstorage.AcmeCertificate, error) {
-	location := getCertPath(domain)
-	log.Info().Msgf("Trying to read secret from %s", location)
-	secret, err := vault.client.Logical().Read(location)
+func (vault *VaultBackend) writeSecret(secretPath string, data map[string]interface{}) error {
+	vaultUrl, err := url.Parse(vault.conf.VaultAddr)
 	if err != nil {
-		return nil, fmt.Errorf("could not read secret %s: %v", location, err)
+		return err
+	}
+	vaultUrl.Path = path.Join(vaultUrl.Path, "/v1" + secretPath)
+
+	payload, err := buildSecretPayload(data)
+	if err != nil {
+		return err
+	}
+	req := &api.Request{
+		Method:         "POST",
+		URL:            vaultUrl,
+		ClientToken:    vault.client.Token(),
+		BodyBytes: payload,
+	}
+
+	_, err = vault.client.RawRequest(req)
+	return err
+}
+
+func buildSecretPayload(data map[string]interface{}) ([]byte, error) {
+	if data == nil {
+		data = map[string]interface{}{}
+	}
+	bla := struct {
+		Data map[string]interface{} `json:"data"`
+	}{
+		Data: data,
+	}
+
+	return json.Marshal(bla)
+}
+
+func (vault *VaultBackend) ReadCertificate(domain string) (*certstorage.AcmeCertificate, error) {
+	certPath := getCertPath(domain)
+	log.Info().Msgf("Trying to read secret from %s", certPath)
+	secret, err := vault.client.Logical().Read(certPath)
+	if err != nil {
+		return nil, fmt.Errorf("could not read secret %s: %v", certPath, err)
 	}
 
 	if secret == nil {
 		return nil, fmt.Errorf("no cert found for domain %s", domain)
 	}
 
-	return certstorage.MapToCert(secret.Data)
+	var data map[string]interface{}
+	data, ok := secret.Data["data"].(map[string]interface{})
+	if !ok {
+		return nil, errors.New("could not parse map")
+	}
+	return certstorage.MapToCert(data)
 }
 
 func (vault *VaultBackend) WriteAccount(acmeRegistration certstorage.AcmeAccount) error {
@@ -114,7 +156,8 @@ func (vault *VaultBackend) WriteAccount(acmeRegistration certstorage.AcmeAccount
 
 	path := getAccountPath(acmeRegistration.Email)
 	log.Info().Msgf("Trying to write acme account %s", acmeRegistration.Email)
-	_, err = vault.client.Logical().Write(path, data)
+
+	err = vault.writeSecret(path, data)
 	return err
 }
 
@@ -127,8 +170,14 @@ func (vault *VaultBackend) ReadAccount(hash string) (*certstorage.AcmeAccount, e
 		return nil, errors.New("entry does not exist, yet")
 	}
 
+	var data map[string]interface{}
+	data, ok := secret.Data["data"].(map[string]interface{})
+	if !ok {
+		return nil, errors.New("could not parse map")
+	}
+
 	var account acme.Account
-	accountData := fmt.Sprintf("%v", secret.Data[certstorage.VaultAccountKeyAccount])
+	accountData := fmt.Sprintf("%v", data[certstorage.VaultAccountKeyAccount])
 	accountJson, err := base64.StdEncoding.DecodeString(accountData)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't decode string: %v", err)
@@ -139,16 +188,16 @@ func (vault *VaultBackend) ReadAccount(hash string) (*certstorage.AcmeAccount, e
 	}
 
 	registration := &registration.Resource{
-		URI:  fmt.Sprintf("%s", secret.Data[certstorage.VaultAccountKeyUri]),
+		URI:  fmt.Sprintf("%s", data[certstorage.VaultAccountKeyUri]),
 		Body: account,
 	}
 
-	decodedKey, err := certstorage.FromPem([]byte(fmt.Sprintf("%vault", secret.Data[certstorage.VaultAccountKeyKey])))
+	decodedKey, err := certstorage.FromPem([]byte(fmt.Sprintf("%v", data[certstorage.VaultAccountKeyKey])))
 	if err != nil {
 		return nil, fmt.Errorf("can not decode pem private key: %vault", err)
 	}
 	conf := certstorage.AcmeAccount{
-		Email:        fmt.Sprintf("%vault", secret.Data[certstorage.VaultAccountKeyEmail]),
+		Email:        fmt.Sprintf("%v", data[certstorage.VaultAccountKeyEmail]),
 		Key:          decodedKey,
 		Registration: registration,
 	}
@@ -284,6 +333,7 @@ func (vault *VaultBackend) ReadAwsCredentials() (*AwsDynamicCredentials, error) 
 	path := fmt.Sprintf("/aws/creds/%s", awsRole)
 	secret, err := vault.client.Logical().Read(path)
 	if err != nil {
+		internal.AwsDynCredentialsRequestErrors.Inc()
 		return nil, fmt.Errorf("could not gather dynamic credentials: %v", err)
 	}
 	return mapVaultAwsCredentialResponse(*secret)
