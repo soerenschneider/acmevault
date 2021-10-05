@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.2.1](https://www.github.com/soerenschneider/acmevault/compare/v1.2.0...v1.2.1) (2021-10-05)
+
+
+### Bug Fixes
+
+* Remove role_id prefix from domain ([74006b7](https://www.github.com/soerenschneider/acmevault/commit/74006b77c5df5f7176ef3cac7b1743252edfb69f))
+
 ## [1.2.0](https://www.github.com/soerenschneider/acmevault/compare/v1.1.0...v1.2.0) (2021-10-05)
 
 
