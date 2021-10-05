@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"acmevault/internal"
+	"github.com/soerenschneider/acmevault/internal"
 	"flag"
 	"fmt"
 	"github.com/rs/zerolog/log"

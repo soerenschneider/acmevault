@@ -1,7 +1,6 @@
 package acme
 
 import (
-	"acmevault/pkg/certstorage/vault"
 	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
@@ -11,6 +10,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	legoRoute53 "github.com/go-acme/lego/v4/providers/dns/route53"
 	"github.com/rs/zerolog/log"
+	"github.com/soerenschneider/acmevault/pkg/certstorage/vault"
 	"time"
 )
 
