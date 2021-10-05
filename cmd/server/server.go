@@ -1,6 +1,9 @@
 package main
 
 import (
+	"errors"
+	"fmt"
+	"github.com/rs/zerolog/log"
 	"github.com/soerenschneider/acmevault/cmd"
 	"github.com/soerenschneider/acmevault/internal"
 	"github.com/soerenschneider/acmevault/internal/config"
@@ -8,9 +11,6 @@ import (
 	"github.com/soerenschneider/acmevault/internal/server/acme"
 	"github.com/soerenschneider/acmevault/pkg/certstorage"
 	"github.com/soerenschneider/acmevault/pkg/certstorage/vault"
-	"errors"
-	"fmt"
-	"github.com/rs/zerolog/log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -23,7 +23,7 @@ func main() {
 	if err != nil {
 		log.Fatal().Msgf("Could not load config: %v", err)
 	}
-
+	conf.Print()
 	NewAcmeVaultServer(conf)
 }
 
@@ -62,7 +62,6 @@ func Run(acmeVault *server.AcmeVaultServer, storage certstorage.CertStorage, con
 	if err != nil {
 		return fmt.Errorf("config invalid: %v", err)
 	}
-	conf.Print()
 
 	go internal.StartMetricsServer(conf.MetricsAddr)
 
