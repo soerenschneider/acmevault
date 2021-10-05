@@ -23,6 +23,13 @@ var (
 		Help:      "Total amount of dynamic AWS credentials requested",
 	})
 
+	AwsDynCredentialsRequestErrors = promauto.NewCounter(prometheus.CounterOpts{
+		Namespace: namespace,
+		Subsystem: "server",
+		Name:      "vault_aws_credentials_request_errors_total",
+		Help:      "Total amount of errors while trying to acquire dynamic AWS credentials",
+	})
+
 	ServerLatestIterationTimestamp = promauto.NewGauge(prometheus.GaugeOpts{
 		Namespace: namespace,
 		Subsystem: "server",
