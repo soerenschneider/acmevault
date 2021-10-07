@@ -1,10 +1,10 @@
 package acme
 
 import (
-	"github.com/soerenschneider/acmevault/pkg/certstorage"
 	"crypto"
 	"github.com/go-acme/lego/v4/certcrypto"
 	"github.com/go-acme/lego/v4/registration"
+	"github.com/soerenschneider/acmevault/pkg/certstorage"
 )
 
 const (

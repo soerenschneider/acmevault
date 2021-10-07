@@ -1,8 +1,6 @@
 package acme
 
 import (
-	"github.com/soerenschneider/acmevault/internal/config"
-	"github.com/soerenschneider/acmevault/pkg/certstorage"
 	"errors"
 	"fmt"
 	"github.com/go-acme/lego/v4/certificate"
@@ -10,6 +8,8 @@ import (
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/go-acme/lego/v4/registration"
 	"github.com/rs/zerolog/log"
+	"github.com/soerenschneider/acmevault/internal/config"
+	"github.com/soerenschneider/acmevault/pkg/certstorage"
 )
 
 const DnsProviderRoute53 = "route53"
