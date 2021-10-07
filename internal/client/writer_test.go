@@ -1,6 +1,9 @@
 package client
 
-import "testing"
+import (
+	"runtime"
+	"testing"
+)
 
 func Test_getUidFromUsername(t *testing.T) {
 	type args struct {
@@ -44,13 +47,22 @@ func Test_getGidFromGroup(t *testing.T) {
 		group string
 	}
 	tests := []struct {
+		os      string
 		name    string
 		args    args
 		want    int
 		wantErr bool
 	}{
 		{
-			name:    "existent",
+			os:      "darwin",
+			name:    "existent-darwin",
+			args:    args{"wheel"},
+			want:    0,
+			wantErr: false,
+		},
+		{
+			os:      "linux",
+			name:    "existent-linux",
 			args:    args{"root"},
 			want:    0,
 			wantErr: false,
@@ -63,16 +75,18 @@ func Test_getGidFromGroup(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := getGidFromGroup(tt.args.group)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("getGidFromGroup() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("getGidFromGroup() got = %v, want %v", got, tt.want)
-			}
-		})
+		if runtime.GOOS == tt.os || tt.os == "" {
+			t.Run(tt.name, func(t *testing.T) {
+				got, err := getGidFromGroup(tt.args.group)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("getGidFromGroup() error = %v, wantErr %v", err, tt.wantErr)
+					return
+				}
+				if got != tt.want {
+					t.Errorf("getGidFromGroup() got = %v, want %v", got, tt.want)
+				}
+			})
+		}
 	}
 }
 
