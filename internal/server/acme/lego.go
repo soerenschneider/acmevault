@@ -91,6 +91,7 @@ func (l *GoLego) RenewCert(cert *certstorage.AcmeCertificate) (*certstorage.Acme
 	}
 
 	oldLego := toLego(cert)
+	oldLego.PrivateKey = nil
 	newlegoCert, err := l.client.Certificate.Renew(oldLego, false, false, "")
 	if err != nil {
 		return nil, err
