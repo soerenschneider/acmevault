@@ -1,12 +1,12 @@
 package client
 
 import (
-	"github.com/soerenschneider/acmevault/pkg/certstorage"
 	"bytes"
 	"crypto/md5"
 	"errors"
 	"fmt"
 	"github.com/rs/zerolog/log"
+	"github.com/soerenschneider/acmevault/pkg/certstorage"
 	"io/ioutil"
 	"os"
 	"os/user"

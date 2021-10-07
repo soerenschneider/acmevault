@@ -1,12 +1,12 @@
 package client
 
 import (
-	"github.com/soerenschneider/acmevault/internal"
-	"github.com/soerenschneider/acmevault/internal/config"
-	"github.com/soerenschneider/acmevault/pkg/certstorage"
 	"errors"
 	"fmt"
 	"github.com/rs/zerolog/log"
+	"github.com/soerenschneider/acmevault/internal"
+	"github.com/soerenschneider/acmevault/internal/config"
+	"github.com/soerenschneider/acmevault/pkg/certstorage"
 	"os/exec"
 	"time"
 )
