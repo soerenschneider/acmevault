@@ -146,6 +146,7 @@ func TestMapToCert(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "correct data",
 			args: args{
 				map[string]interface{}{
 					vaultCertKeyCsr:        dummyCsr,
@@ -239,6 +240,29 @@ func TestMapToCert(t *testing.T) {
 			},
 			want:    nil,
 			wantErr: true,
+		},
+		{
+			name: "missing private key data",
+			args: args{
+				map[string]interface{}{
+					vaultCertKeyCsr:        dummyCsr,
+					vaultCertKeyIssuer:     dummyIssuer,
+					vaultCertKeyUrl:        "url",
+					vaultCertKeyCert:       dummyCert,
+					vaultCertKeyDomain:     "domain.tld",
+					vaultCertKeyStableUrl:  "stable url",
+				},
+			},
+			want: &AcmeCertificate{
+				Domain:            "domain.tld",
+				CertURL:           "url",
+				CertStableURL:     "stable url",
+				PrivateKey:        nil,
+				Certificate:       []byte(decodedCert),
+				IssuerCertificate: []byte(decodedIssuer),
+				CSR:               []byte(decodedCsr),
+			},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {

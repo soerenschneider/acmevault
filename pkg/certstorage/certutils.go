@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"github.com/go-acme/lego/v4/certcrypto"
 	"github.com/rs/zerolog/log"
+	"time"
 )
 
 const (
@@ -26,6 +27,11 @@ const (
 	VaultAccountKeyAccount = "account"
 	VaultAccountKeyKey     = "key"
 )
+
+type CertMetadata struct {
+	Expiry time.Time
+	Domain string
+}
 
 func CertToMap(res *AcmeCertificate) map[string]interface{} {
 	if res == nil {
@@ -45,7 +51,7 @@ func CertToMap(res *AcmeCertificate) map[string]interface{} {
 
 func MapToCert(data map[string]interface{}) (*AcmeCertificate, error) {
 	res := &AcmeCertificate{}
-	if data == nil || len(data) < 7 {
+	if data == nil || len(data) < 6 {
 		return nil, errors.New("empty/incomplete map provided")
 	}
 
@@ -53,12 +59,14 @@ func MapToCert(data map[string]interface{}) (*AcmeCertificate, error) {
 	res.CertStableURL = fmt.Sprint(data[vaultCertKeyStableUrl])
 	res.CertURL = fmt.Sprint(data[vaultCertKeyUrl])
 
-	privRaw := fmt.Sprintf("%s", data[vaultCertKeyPrivateKey])
-	priv, err := base64.StdEncoding.DecodeString(privRaw)
-	if err != nil {
-		return nil, fmt.Errorf("can not decode private key: %v", err)
+	_, ok := data[vaultCertKeyPrivateKey]; if ok {
+		privRaw := fmt.Sprintf("%s", data[vaultCertKeyPrivateKey])
+		priv, err := base64.StdEncoding.DecodeString(privRaw)
+		if err != nil {
+			return nil, fmt.Errorf("can not decode private key: %v", err)
+		}
+		res.PrivateKey = priv
 	}
-	res.PrivateKey = priv
 
 	certRaw := fmt.Sprintf("%s", data[vaultCertKeyCert])
 	cert, err := base64.StdEncoding.DecodeString(certRaw)
@@ -78,12 +86,47 @@ func MapToCert(data map[string]interface{}) (*AcmeCertificate, error) {
 	csr, err := base64.StdEncoding.DecodeString(csrRaw)
 	if err != nil {
 		log.Warn().Msg("Could not decode csr")
-		//return nil, fmt.Errorf("can not decode certificate: %v", err)
 	} else {
 		res.CSR = csr
 	}
 
 	return res, nil
+}
+
+func CertToMetadataMap(res *AcmeCertificate) (data map[string]interface{}) {
+	if res == nil {
+		return
+	}
+
+	expiry, _ := res.GetExpiryTimestamp()
+	data["expiry"] = expiry.Unix()
+	data[vaultCertKeyDomain] = res.Domain
+	return
+}
+
+func MetadataFromMap(data map[string]interface{}) (*CertMetadata, error) {
+	if data == nil {
+		return nil, errors.New("empty map given")
+	}
+
+	ret := &CertMetadata{
+		Domain: fmt.Sprint(data[vaultCertKeyDomain]),
+	}
+	expiryValue, ok := data["expiry"]
+	if !ok {
+		return nil, errors.New("no 'expiry' field found in map")
+	}
+	expiryUnix, ok := expiryValue.(int64)
+	if ! ok {
+		return nil, fmt.Errorf("can not parse %v as int64", expiryValue)
+	}
+
+	ret.Expiry = time.Unix(expiryUnix, 0)
+	return ret, nil
+}
+
+func (cert *CertMetadata) GetDurationUntilExpiry() time.Duration {
+	return cert.Expiry.Sub(time.Now().UTC())
 }
 
 func ConvertToPem(privateKey crypto.PrivateKey) (string, error) {
