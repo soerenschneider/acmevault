@@ -1,12 +1,12 @@
 package server
 
 import (
-	"github.com/soerenschneider/acmevault/internal"
-	"github.com/soerenschneider/acmevault/internal/server/acme"
-	"github.com/soerenschneider/acmevault/pkg/certstorage"
 	"errors"
 	"fmt"
 	"github.com/rs/zerolog/log"
+	"github.com/soerenschneider/acmevault/internal"
+	"github.com/soerenschneider/acmevault/internal/server/acme"
+	"github.com/soerenschneider/acmevault/pkg/certstorage"
 	"time"
 )
 
@@ -44,57 +44,52 @@ func (c *AcmeVaultServer) CheckCerts() {
 	internal.ServerLatestIterationTimestamp.SetToCurrentTime()
 	for _, domain := range c.domains {
 		log.Info().Msgf("Acquiring certificate for domain %s", domain)
-		c.obtainCertificate(domain)
+		err := c.obtainCertificate(domain)
+		if err != nil {
+			log.Error().Msgf("error while handling received certificate: %v", err)
+		}
 	}
 }
 
-func (c *AcmeVaultServer) obtainCertificate(domain string) {
-	res, err := c.certStorage.ReadCertificate(domain)
-	if err != nil || res == nil {
-		res, err = c.acmeClient.ObtainCert(domain)
+func (c *AcmeVaultServer) obtainCertificate(domain string) error {
+	read, err := c.certStorage.ReadCertificate(domain)
+	if err != nil || read == nil {
+		obtained, err := c.acmeClient.ObtainCert(domain)
+		internal.CertificatesRetrieved.WithLabelValues(domain).Inc()
 		if err != nil {
 			internal.CertificatesRetrievalErrors.WithLabelValues(domain).Inc()
 		}
-	} else {
-		timeLeft, err := res.GetDurationUntilExpiry()
-		if err != nil {
-			log.Info().Msgf("Could not determine cert lifetime for %s, probably the cert is broken", domain)
-		}
-
-		if timeLeft > MinCertLifetime {
-			log.Info().Msgf("Not renewing cert for domain %s, still valid for %v", domain, timeLeft)
-			return
-		}
-
-		res, err = c.acmeClient.RenewCert(res)
-		if err != nil {
-			internal.CertificatesRenewErrors.WithLabelValues(domain).Inc()
-		} else {
-			internal.CertificatesRenewed.WithLabelValues(domain).Inc()
-		}
+		return handleReceivedCert(obtained, c.certStorage)
 	}
 
-	err = handleReceivedCert(res, err, c.certStorage)
+	timeLeft, err := read.GetDurationUntilExpiry()
 	if err != nil {
-		log.Error().Msgf("error while handling received certificate: %v", err)
+		log.Info().Msgf("Could not determine cert lifetime for %s, probably the cert is broken", domain)
 	}
+
+	if timeLeft > MinCertLifetime {
+		log.Info().Msgf("Not renewing cert for domain %s, still valid for %v", domain, timeLeft)
+		return nil
+	}
+
+	renewed, err := c.acmeClient.RenewCert(read)
+	internal.CertificatesRenewals.WithLabelValues(domain).Inc()
+	if err != nil {
+		internal.CertificatesRenewErrors.WithLabelValues(domain).Inc()
+	}
+	return handleReceivedCert(renewed, c.certStorage)
 }
 
-func handleReceivedCert(cert *certstorage.AcmeCertificate, err error, storage certstorage.CertStorage) error {
-	if err != nil {
-		return fmt.Errorf("receiving certificate unsuccessful: %v", err)
-	}
-
+func handleReceivedCert(cert *certstorage.AcmeCertificate, storage certstorage.CertStorage) error {
 	if cert == nil {
 		return fmt.Errorf("received empty cert for domain %s, this is weird and should not happen", cert.Domain)
 	}
 
-	internal.CertificatesRetrieved.WithLabelValues(cert.Domain).Inc()
 	expiry, err := cert.GetExpiryTimestamp()
 	if err != nil {
 		internal.CertExpiryTimestamp.WithLabelValues(cert.Domain).Set(float64(expiry.Unix()))
 	} else {
-		internal.CertErrors.WithLabelValues(cert.Domain, "expiry")
+		internal.CertErrors.WithLabelValues(cert.Domain, "unknown-expiry")
 	}
 
 	err = storage.WriteCertificate(cert)
