@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"github.com/soerenschneider/acmevault/internal"
 	"flag"
 	"fmt"
 	"github.com/rs/zerolog/log"
+	"github.com/soerenschneider/acmevault/internal"
 	"os"
 	"os/user"
 	"path"
@@ -14,7 +14,7 @@ import (
 const (
 	envConfFile = "ACME_VAULT_CONFIG_FILE"
 	cliConfFile = "conf"
-	cliVersion = "version"
+	cliVersion  = "version"
 )
 
 func ParseCliFlags() (configFile string) {

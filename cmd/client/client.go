@@ -14,6 +14,7 @@ import (
 
 // Prefix of the configured AppRole role_ids for this tool
 const roleIdPrefix = "acme-client-"
+
 var conf config.AcmeVaultClientConfig
 
 func main() {
