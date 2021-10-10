@@ -23,7 +23,7 @@ const (
 	backoffRetries = 5
 
 	vaultAcmeApproleLoginPath = "/auth/approle/login"
-	vaultSecretPathMount = "/secret/data"
+	vaultSecretPathMount = "/secret/data/acmevault"
 	maxVersions = 1
 )
 
@@ -81,13 +81,27 @@ func NewVaultBackend(vaultConfig config.VaultConfig, storage TokenStorage) (*Vau
 }
 
 func (vault *VaultBackend) WriteCertificate(resource *certstorage.AcmeCertificate) error {
-	certPath := vault.getCertDataPath(resource.Domain)
+	// save private key
+	privateKey := resource.PrivateKey
+	resource.PrivateKey = nil
+
 	data := certstorage.CertToMap(resource)
+	certPath := vault.getCertDataPath(resource.Domain)
 	err := vault.writeSecretV2(certPath, data)
 	if err != nil {
 		return fmt.Errorf("could not write certificate data for %s: %v", resource.Domain, err)
 	}
-	return err
+
+	data = map[string]interface{}{
+		"private_key": privateKey,
+	}
+	secretPath := vault.getSecretDataPath(resource.Domain)
+	err = vault.writeSecretV2(secretPath, data)
+	if err != nil {
+		return fmt.Errorf("could not write secrete data for domain %s: %v", resource.Domain, err)
+	}
+
+	return nil
 }
 
 func (vault *VaultBackend) writeSecretV1(secretPath string, data map[string]interface{}) error {
@@ -149,13 +163,43 @@ func wrapPayload(data map[string]interface{}) ([]byte, error) {
 	return json.Marshal(wrappedData)
 }
 
-func (vault *VaultBackend) ReadCertificate(domain string) (*certstorage.AcmeCertificate, error) {
+func (vault *VaultBackend) ReadPublicCertificateData(domain string) (*certstorage.AcmeCertificate, error) {
 	certPath := vault.getCertDataPath(domain)
-	log.Info().Msgf("Trying to read secret from %s", certPath)
-	return vault.read(certPath)
+	log.Info().Msgf("Trying to read public certificate data from %s", certPath)
+	data, err := vault.read(certPath)
+	if err != nil {
+		return nil, fmt.Errorf("could not read public cert data from vault for domain %s: %v", domain, err)
+	}
+	return certstorage.MapToCert(data)
 }
 
-func (vault *VaultBackend) read(certPath string) (*certstorage.AcmeCertificate, error) {
+func (vault *VaultBackend) ReadFullCertificateData(domain string) (*certstorage.AcmeCertificate, error) {
+	cert, err := vault.ReadPublicCertificateData(domain)
+	if err != nil {
+		return nil, err
+	}
+
+	privateKeyPath := vault.getSecretDataPath(domain)
+	data, err := vault.read(privateKeyPath)
+	if err != nil {
+		return nil, fmt.Errorf("could not read private data from vault for domain %s: %v", domain, err)
+	}
+
+	_, ok := data["private_key"]; if !ok {
+		return nil, fmt.Errorf("successfully read secret from vault but no private key data avaialble for domain: %s", domain)
+	}
+
+	privRaw := fmt.Sprintf("%s", data["private_key"])
+	priv, err := base64.StdEncoding.DecodeString(privRaw)
+	if err != nil {
+		return nil, fmt.Errorf("can not decode private key: %v", err)
+	}
+	cert.PrivateKey = priv
+
+	return cert, err
+}
+
+func (vault *VaultBackend) read(certPath string) (map[string]interface{}, error) {
 	secret, err := vault.client.Logical().Read(certPath)
 	if err != nil {
 		return nil, fmt.Errorf("could not read secret %s: %v", certPath, err)
@@ -170,7 +214,8 @@ func (vault *VaultBackend) read(certPath string) (*certstorage.AcmeCertificate, 
 	if !ok {
 		return nil, errors.New("could not parse map")
 	}
-	return certstorage.MapToCert(data)
+
+	return data, nil
 }
 
 func (vault *VaultBackend) WriteAccount(acmeRegistration certstorage.AcmeAccount) error {
@@ -303,7 +348,7 @@ func (vault *VaultBackend) authenticate() (*TokenData, error) {
 	log.Info().Msgf("Trying token from storage backend")
 	token, err := vault.tokenStorage.ReadToken()
 	if err == nil && len(token) > 0 {
-		log.Info().Msg("ReadCertificate token from storage, testing token validity")
+		log.Info().Msg("ReadPublicCertificateData token from storage, testing token validity")
 		tokenData, err := vault.confirmToken(token)
 		if err == nil && tokenData != nil {
 			log.Info().Msgf("Successfully authenticated against vault, token valid until %s", tokenData.PrettyExpiryDate())
@@ -405,9 +450,9 @@ func (vault *VaultBackend) getAccountPath(hash string) string {
 }
 
 func (vault *VaultBackend) getCertDataPath(domain string) string {
-	return fmt.Sprintf("%s/client/data/%s", vault.namespacedPrefix, domain)
+	return fmt.Sprintf("%s/client/%s/pubkey", vault.namespacedPrefix, domain)
 }
 
-func (vault *VaultBackend) getCertMetadataPath(domain string) string {
-	return fmt.Sprintf("%s/client/expiry/%s", vault.namespacedPrefix, domain)
+func (vault *VaultBackend) getSecretDataPath(domain string) string {
+	return fmt.Sprintf("%s/client/%s/privatekey", vault.namespacedPrefix, domain)
 }
