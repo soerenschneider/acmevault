@@ -93,38 +93,6 @@ func MapToCert(data map[string]interface{}) (*AcmeCertificate, error) {
 	return res, nil
 }
 
-func CertToMetadataMap(res *AcmeCertificate) (data map[string]interface{}) {
-	if res == nil {
-		return
-	}
-
-	expiry, _ := res.GetExpiryTimestamp()
-	data["expiry"] = expiry.Unix()
-	data[vaultCertKeyDomain] = res.Domain
-	return
-}
-
-func MetadataFromMap(data map[string]interface{}) (*CertMetadata, error) {
-	if data == nil {
-		return nil, errors.New("empty map given")
-	}
-
-	ret := &CertMetadata{
-		Domain: fmt.Sprint(data[vaultCertKeyDomain]),
-	}
-	expiryValue, ok := data["expiry"]
-	if !ok {
-		return nil, errors.New("no 'expiry' field found in map")
-	}
-	expiryUnix, ok := expiryValue.(int64)
-	if ! ok {
-		return nil, fmt.Errorf("can not parse %v as int64", expiryValue)
-	}
-
-	ret.Expiry = time.Unix(expiryUnix, 0)
-	return ret, nil
-}
-
 func (cert *CertMetadata) GetDurationUntilExpiry() time.Duration {
 	return cert.Expiry.Sub(time.Now().UTC())
 }
