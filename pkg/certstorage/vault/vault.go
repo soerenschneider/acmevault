@@ -135,13 +135,18 @@ func wrapPayload(data map[string]interface{}) ([]byte, error) {
 	if data == nil {
 		data = map[string]interface{}{}
 	}
-	bla := struct {
+
+	wrappedData := struct {
 		Data map[string]interface{} `json:"data"`
+		Options map[string]interface{} `json:"options"`
 	}{
 		Data: data,
+		Options: map[string]interface{}{
+			"max_versions": maxVersions,
+		},
 	}
 
-	return json.Marshal(bla)
+	return json.Marshal(wrappedData)
 }
 
 func (vault *VaultBackend) ReadCertificate(domain string) (*certstorage.AcmeCertificate, error) {
