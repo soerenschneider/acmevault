@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/rs/zerolog/log"
 	"io/ioutil"
+	"net/url"
 	"regexp"
 )
 
@@ -42,6 +43,10 @@ func isValidEmail(email string) bool {
 func (conf AcmeVaultServerConfig) Validate() error {
 	if len(conf.AcmeDnsProvider) == 0 {
 		return errors.New("field `acmeDnsProvider` not configured")
+	}
+	_, err := url.Parse(conf.AcmeDnsProvider)
+	if err != nil {
+		return fmt.Errorf("could not parse `acmeDnsProvider`: %v", err)
 	}
 
 	if len(conf.Domains) == 0 {
@@ -82,6 +87,7 @@ func getDefaultServerConfig() AcmeVaultServerConfig {
 		},
 		IntervalSeconds: defaultIntervalSeconds,
 		MetricsAddr:     defaultMetricsAddr,
+		VaultConfig:     DefaultVaultConfig(),
 	}
 }
 
