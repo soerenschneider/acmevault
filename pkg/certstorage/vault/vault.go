@@ -1,9 +1,6 @@
 package vault
 
 import (
-	"github.com/soerenschneider/acmevault/internal"
-	"github.com/soerenschneider/acmevault/internal/config"
-	"github.com/soerenschneider/acmevault/pkg/certstorage"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -13,6 +10,9 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/vault/api"
 	"github.com/rs/zerolog/log"
+	"github.com/soerenschneider/acmevault/internal"
+	"github.com/soerenschneider/acmevault/internal/config"
+	"github.com/soerenschneider/acmevault/pkg/certstorage"
 	"net/url"
 	"path"
 	"time"
@@ -23,14 +23,16 @@ const (
 	backoffRetries = 5
 
 	vaultAcmeApproleLoginPath = "/auth/approle/login"
-	vaultAcmePathPrefix       = "/secret/data/acme"
+	vaultSecretPathMount = "/secret/data"
+	maxVersions = 1
 )
 
 type VaultBackend struct {
-	client       *api.Client
-	conf         config.VaultConfig
-	tokenStorage TokenStorage
-	revokeToken  bool
+	client           *api.Client
+	conf             config.VaultConfig
+	tokenStorage     TokenStorage
+	revokeToken      bool
+	namespacedPrefix string
 }
 
 func NewVaultBackend(vaultConfig config.VaultConfig, storage TokenStorage) (*VaultBackend, error) {
@@ -52,9 +54,10 @@ func NewVaultBackend(vaultConfig config.VaultConfig, storage TokenStorage) (*Vau
 	client.SetToken(initialToken)
 
 	vault := &VaultBackend{
-		client:       client,
-		conf:         vaultConfig,
-		tokenStorage: storage,
+		client:           client,
+		conf:             vaultConfig,
+		tokenStorage:     storage,
+		namespacedPrefix: fmt.Sprintf("%s/%s", vaultSecretPathMount, vaultConfig.PathPrefix),
 	}
 
 	_, err = vault.authenticate()
@@ -78,20 +81,40 @@ func NewVaultBackend(vaultConfig config.VaultConfig, storage TokenStorage) (*Vau
 }
 
 func (vault *VaultBackend) WriteCertificate(resource *certstorage.AcmeCertificate) error {
-	location := getCertPath(resource.Domain)
+	certPath := vault.getCertDataPath(resource.Domain)
 	data := certstorage.CertToMap(resource)
-	err := vault.writeSecret(location, data)
+	err := vault.writeSecretV2(certPath, data)
+	if err != nil {
+		return fmt.Errorf("could not write certificate data for %s: %v", resource.Domain, err)
+	}
 	return err
 }
 
-func (vault *VaultBackend) writeSecret(secretPath string, data map[string]interface{}) error {
+func (vault *VaultBackend) writeSecretV1(secretPath string, data map[string]interface{}) error {
+	secret, err := vault.client.Logical().Write(secretPath, data)
+	printWarning("Received warnings while writing secretV1", secret)
+	return err
+}
+
+func printWarning(msg string, secret *api.Secret) {
+	if len(secret.Warnings) > 0 {
+		var warningMsg string
+		for _, warn := range secret.Warnings {
+			warningMsg += warn
+			warningMsg += " / "
+		}
+		log.Warn().Msgf("%s: %s", msg, warningMsg)
+	}
+}
+
+func (vault *VaultBackend) writeSecretV2(secretPath string, data map[string]interface{}) error {
 	vaultUrl, err := url.Parse(vault.conf.VaultAddr)
 	if err != nil {
 		return err
 	}
 	vaultUrl.Path = path.Join(vaultUrl.Path, "/v1" + secretPath)
 
-	payload, err := buildSecretPayload(data)
+	payload, err := wrapPayload(data)
 	if err != nil {
 		return err
 	}
@@ -106,7 +129,9 @@ func (vault *VaultBackend) writeSecret(secretPath string, data map[string]interf
 	return err
 }
 
-func buildSecretPayload(data map[string]interface{}) ([]byte, error) {
+// wrapPayload wraps a map containing the payload into a another map, all contained within the
+// `data` field to use the KV2 API of vault. Returns the data as json-encoded []byte slice.
+func wrapPayload(data map[string]interface{}) ([]byte, error) {
 	if data == nil {
 		data = map[string]interface{}{}
 	}
@@ -120,15 +145,19 @@ func buildSecretPayload(data map[string]interface{}) ([]byte, error) {
 }
 
 func (vault *VaultBackend) ReadCertificate(domain string) (*certstorage.AcmeCertificate, error) {
-	certPath := getCertPath(domain)
+	certPath := vault.getCertDataPath(domain)
 	log.Info().Msgf("Trying to read secret from %s", certPath)
+	return vault.read(certPath)
+}
+
+func (vault *VaultBackend) read(certPath string) (*certstorage.AcmeCertificate, error) {
 	secret, err := vault.client.Logical().Read(certPath)
 	if err != nil {
 		return nil, fmt.Errorf("could not read secret %s: %v", certPath, err)
 	}
 
 	if secret == nil {
-		return nil, fmt.Errorf("no cert found for domain %s", domain)
+		return nil, fmt.Errorf("nothing found at %s", certPath)
 	}
 
 	var data map[string]interface{}
@@ -154,15 +183,15 @@ func (vault *VaultBackend) WriteAccount(acmeRegistration certstorage.AcmeAccount
 		certstorage.VaultAccountKeyEmail:   acmeRegistration.Email,
 	}
 
-	path := getAccountPath(acmeRegistration.Email)
+	accountPath := vault.getAccountPath(acmeRegistration.Email)
 	log.Info().Msgf("Trying to write acme account %s", acmeRegistration.Email)
 
-	err = vault.writeSecret(path, data)
+	err = vault.writeSecretV2(accountPath, data)
 	return err
 }
 
-func (vault *VaultBackend) ReadAccount(hash string) (*certstorage.AcmeAccount, error) {
-	secret, err := vault.client.Logical().Read(getAccountPath(hash))
+func (vault *VaultBackend) readPathV1(path string) (map[string]interface{}, error) {
+	secret, err := vault.client.Logical().Read(path)
 	if err != nil {
 		return nil, err
 	}
@@ -170,10 +199,33 @@ func (vault *VaultBackend) ReadAccount(hash string) (*certstorage.AcmeAccount, e
 		return nil, errors.New("entry does not exist, yet")
 	}
 
+	return secret.Data, nil
+}
+
+func (vault *VaultBackend) readPathV2(path string) (map[string]interface{}, error) {
+	secret, err := vault.readPathV1(path)
+	if err != nil {
+		return nil, err
+	}
+
 	var data map[string]interface{}
-	data, ok := secret.Data["data"].(map[string]interface{})
+	_, ok := secret["data"]
 	if !ok {
-		return nil, errors.New("could not parse map")
+		return nil, errors.New("no data portion available")
+	}
+	data, ok = secret["data"].(map[string]interface{})
+	if !ok {
+		return nil, errors.New("could not convert map")
+	}
+
+	return data, nil
+}
+
+func (vault *VaultBackend) ReadAccount(hash string) (*certstorage.AcmeAccount, error) {
+	accountPath := vault.getAccountPath(hash)
+	data, err := vault.readPathV2(accountPath)
+	if err != nil {
+		return nil, fmt.Errorf("could not read account from vault: %v", err)
 	}
 
 	var account acme.Account
@@ -205,7 +257,7 @@ func (vault *VaultBackend) ReadAccount(hash string) (*certstorage.AcmeAccount, e
 	return &conf, nil
 }
 
-// Renew lookups the currently used token and tries to renew it by a given TTL if it's renewable.
+// RenewToken lookups the currently used token and tries to renew it by a given TTL if it's renewable.
 // Returns true if the token was successfully renewed, otherwise false.
 func (vault *VaultBackend) RenewToken(tokenIncrement int) (bool, error) {
 	log.Info().Msgf("Trying to renew token by %d seconds", tokenIncrement)
@@ -330,7 +382,7 @@ func (vault *VaultBackend) Cleanup() {
 
 func (vault *VaultBackend) ReadAwsCredentials() (*AwsDynamicCredentials, error) {
 	internal.AwsDynCredentialsRequested.Inc()
-	path := fmt.Sprintf("/aws/creds/%s", awsRole)
+	path := vault.getAwsCredentialsPath()
 	secret, err := vault.client.Logical().Read(path)
 	if err != nil {
 		internal.AwsDynCredentialsRequestErrors.Inc()
@@ -339,10 +391,18 @@ func (vault *VaultBackend) ReadAwsCredentials() (*AwsDynamicCredentials, error) 
 	return mapVaultAwsCredentialResponse(*secret)
 }
 
-func getAccountPath(hash string) string {
-	return fmt.Sprintf("%s/server/account/%s", vaultAcmePathPrefix, hash)
+func (vault *VaultBackend) getAwsCredentialsPath() string {
+	return fmt.Sprintf("/aws/creds/%s", awsRole)
 }
 
-func getCertPath(domain string) string {
-	return fmt.Sprintf("%s/client/%s", vaultAcmePathPrefix, domain)
+func (vault *VaultBackend) getAccountPath(hash string) string {
+	return fmt.Sprintf("%s/server/account/%s", vault.namespacedPrefix, hash)
+}
+
+func (vault *VaultBackend) getCertDataPath(domain string) string {
+	return fmt.Sprintf("%s/client/data/%s", vault.namespacedPrefix, domain)
+}
+
+func (vault *VaultBackend) getCertMetadataPath(domain string) string {
+	return fmt.Sprintf("%s/client/expiry/%s", vault.namespacedPrefix, domain)
 }

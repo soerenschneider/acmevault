@@ -3,6 +3,8 @@ package config
 import (
 	"errors"
 	"github.com/rs/zerolog/log"
+	"net/url"
+	"strings"
 )
 
 type VaultConfig struct {
@@ -12,6 +14,7 @@ type VaultConfig struct {
 	RoleId                string `json:"roleId"`
 	TokenIncreaseSeconds  int    `json:"tokenIncreaseSeconds"`
 	TokenIncreaseInterval int    `json:"tokenIncreaseInterval"`
+	PathPrefix            string `json:"pathPrefix"`
 }
 
 func (conf *VaultConfig) IsTokenIncreaseEnabled() bool {
@@ -34,6 +37,19 @@ func (conf *VaultConfig) Print() {
 	}
 	if conf.TokenIncreaseInterval > 0 {
 		log.Info().Msgf("TokenIncreaseInterval=%d", conf.TokenIncreaseInterval)
+	}
+	// TODO: Check pathPrefix
+}
+
+func DefaultVaultConfig() VaultConfig {
+	var pathPrefix string
+	parsed, err := url.Parse(letsEncryptStagingUrl)
+	if err == nil {
+		pathPrefix = strings.ToLower(parsed.Host)
+	}
+
+	return VaultConfig{
+		PathPrefix: pathPrefix,
 	}
 }
 

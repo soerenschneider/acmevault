@@ -17,8 +17,8 @@ func Test_buildSecretPayload(t *testing.T) {
 	}{
 		{
 			name: "simple",
-			args:    args{
-				data: map[string]interface{} {
+			args: args{
+				data: map[string]interface{}{
 					"test": "bla",
 				},
 			},
@@ -26,22 +26,21 @@ func Test_buildSecretPayload(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "empty",
-			args:    args{
-			},
+			name:    "empty",
+			args:    args{},
 			want:    []byte("{\"data\":{}}"),
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := buildSecretPayload(tt.args.data)
+			got, err := wrapPayload(tt.args.data)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("buildSecretPayload() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("wrapPayload() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("buildSecretPayload() got = %v, want %v", got, tt.want)
+				t.Errorf("wrapPayload() got = %v, want %v", string(got), string(tt.want))
 			}
 		})
 	}
