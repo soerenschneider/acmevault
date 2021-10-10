@@ -28,7 +28,7 @@ func Test_buildSecretPayload(t *testing.T) {
 		{
 			name:    "empty",
 			args:    args{},
-			want:    []byte("{\"data\":{}}"),
+			want:    []byte("{\"data\":{},\"options\":{\"max_versions\":1}}"),
 			wantErr: false,
 		},
 	}
