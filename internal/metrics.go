@@ -51,7 +51,7 @@ var (
 		Help:      "Total errors while trying to retrieve certificates from ACME provider",
 	}, []string{"domain"})
 
-	CertificatesRenewed = promauto.NewCounterVec(prometheus.CounterOpts{
+	CertificatesRenewals = promauto.NewCounterVec(prometheus.CounterOpts{
 		Namespace: namespace,
 		Subsystem: "server",
 		Name:      "certificates_renewals_total",
