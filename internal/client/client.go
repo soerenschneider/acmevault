@@ -47,7 +47,7 @@ func NewAcmeVaultClient(conf config.AcmeVaultClientConfig, storage certstorage.C
 func (client VaultAcmeClient) RetrieveAndSave(domain string) error {
 	defer client.storage.Cleanup()
 
-	cert, err := client.storage.ReadCertificate(domain)
+	cert, err := client.storage.ReadFullCertificateData(domain)
 	if err != nil {
 		return fmt.Errorf("could not read secret bundle from vault: %v", err)
 	}

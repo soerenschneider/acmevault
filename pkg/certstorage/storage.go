@@ -14,7 +14,8 @@ import (
 
 type CertStorage interface {
 	WriteCertificate(resource *AcmeCertificate) error
-	ReadCertificate(domain string) (*AcmeCertificate, error)
+	ReadPublicCertificateData(domain string) (*AcmeCertificate, error)
+	ReadFullCertificateData(domain string) (*AcmeCertificate, error)
 	Cleanup()
 }
 
