@@ -1,7 +1,6 @@
 package certstorage
 
 import (
-	"github.com/soerenschneider/acmevault/internal"
 	"crypto"
 	"crypto/x509"
 	"encoding/pem"
@@ -9,6 +8,7 @@ import (
 	"fmt"
 	"github.com/go-acme/lego/v4/registration"
 	"github.com/rs/zerolog/log"
+	"github.com/soerenschneider/acmevault/internal"
 	"time"
 )
 
