@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.2.2](https://www.github.com/soerenschneider/acmevault/compare/v1.2.1...v1.2.2) (2021-10-10)
+
+
+### Bug Fixes
+
+* increase privacy of not recycling old private keys ([e2cbad8](https://www.github.com/soerenschneider/acmevault/commit/e2cbad89b4fb08c260d3cc3b16d1c0a4e33d633d))
+
 ### [1.2.1](https://www.github.com/soerenschneider/acmevault/compare/v1.2.0...v1.2.1) (2021-10-05)
 
 
