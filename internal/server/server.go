@@ -52,7 +52,7 @@ func (c *AcmeVaultServer) CheckCerts() {
 }
 
 func (c *AcmeVaultServer) obtainCertificate(domain string) error {
-	read, err := c.certStorage.ReadCertificate(domain)
+	read, err := c.certStorage.ReadPublicCertificateData(domain)
 	if err != nil || read == nil {
 		obtained, err := c.acmeClient.ObtainCert(domain)
 		internal.CertificatesRetrieved.WithLabelValues(domain).Inc()
