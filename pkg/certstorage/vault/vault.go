@@ -23,8 +23,8 @@ const (
 	backoffRetries = 5
 
 	vaultAcmeApproleLoginPath = "/auth/approle/login"
-	vaultSecretPathMount = "/secret/data/acmevault"
-	maxVersions = 1
+	vaultSecretPathMount      = "/secret/data/acmevault"
+	maxVersions               = 1
 )
 
 type VaultBackend struct {
@@ -126,17 +126,17 @@ func (vault *VaultBackend) writeSecretV2(secretPath string, data map[string]inte
 	if err != nil {
 		return err
 	}
-	vaultUrl.Path = path.Join(vaultUrl.Path, "/v1" + secretPath)
+	vaultUrl.Path = path.Join(vaultUrl.Path, "/v1"+secretPath)
 
 	payload, err := wrapPayload(data)
 	if err != nil {
 		return err
 	}
 	req := &api.Request{
-		Method:         "POST",
-		URL:            vaultUrl,
-		ClientToken:    vault.client.Token(),
-		BodyBytes: payload,
+		Method:      "POST",
+		URL:         vaultUrl,
+		ClientToken: vault.client.Token(),
+		BodyBytes:   payload,
 	}
 
 	_, err = vault.client.RawRequest(req)
@@ -151,7 +151,7 @@ func wrapPayload(data map[string]interface{}) ([]byte, error) {
 	}
 
 	wrappedData := struct {
-		Data map[string]interface{} `json:"data"`
+		Data    map[string]interface{} `json:"data"`
 		Options map[string]interface{} `json:"options"`
 	}{
 		Data: data,
@@ -165,7 +165,6 @@ func wrapPayload(data map[string]interface{}) ([]byte, error) {
 
 func (vault *VaultBackend) ReadPublicCertificateData(domain string) (*certstorage.AcmeCertificate, error) {
 	certPath := vault.getCertDataPath(domain)
-	log.Info().Msgf("Trying to read public certificate data from %s", certPath)
 	data, err := vault.read(certPath)
 	if err != nil {
 		return nil, fmt.Errorf("could not read public cert data from vault for domain %s: %v", domain, err)
@@ -185,7 +184,8 @@ func (vault *VaultBackend) ReadFullCertificateData(domain string) (*certstorage.
 		return nil, fmt.Errorf("could not read private data from vault for domain %s: %v", domain, err)
 	}
 
-	_, ok := data["private_key"]; if !ok {
+	_, ok := data["private_key"]
+	if !ok {
 		return nil, fmt.Errorf("successfully read secret from vault but no private key data avaialble for domain: %s", domain)
 	}
 
@@ -234,7 +234,6 @@ func (vault *VaultBackend) WriteAccount(acmeRegistration certstorage.AcmeAccount
 	}
 
 	accountPath := vault.getAccountPath(acmeRegistration.Email)
-	log.Info().Msgf("Trying to write acme account %s", acmeRegistration.Email)
 
 	err = vault.writeSecretV2(accountPath, data)
 	return err
