@@ -39,20 +39,21 @@ $ sha256sum -c checksum.sha256
 ```json
 {
   "vaultAddr": "https://vault:8200",
+  "vaultRoleId": "my_role_id",
+  "vaultSecretId": "my_secret_id",
   "metricsPath": "/var/lib/node_exporter/acmevault_server.prom",
-  "roleId": "my_role_id",
-  "secretId": "my_secret_id",
   "email": "my-acme-email@domain.tld"
 }
 ```
 ### Configuration reference
-| Keyword     | Description                                                                                      | Example                               | Mandatory |
-|-------------|--------------------------------------------------------------------------------------------------|---------------------------------------|-----------|
-| vaultAddr   | Connection string for vault                                                                      | https://vault:8200                    | Y         |
-| roleId      | [AppRole role id](https://www.vaultproject.io/docs/auth/approle) to login                        | 988a9dfd-ea69-4a53-6cb6-9d6b86474bba  | Y         |
-| secretId    | [AppRole secret id](https://www.vaultproject.io/docs/auth/approle) to authenticate against vault | 37b74931-c4cd-d49a-9246-ccc62d682a25  | Y         |
-| email       | Email to register at ACME server                                                                 | your@email.tld                        | Y         |
-| metricsPath | Path to write metrics to on filesystem                                                           | /var/lib/node_exporter/acmevault.prom | N         |
+| Keyword     | Description                                                                                           | Example                               | Mandatory |
+|-------------|-------------------------------------------------------------------------------------------------------|---------------------------------------|-----------|
+| vaultAddr        | Connection string for vault                                                                      | https://vault:8200                    | Y         |
+| vaultRoleId      | [AppRole role id](https://www.vaultproject.io/docs/auth/approle) to login                        | 988a9dfd-ea69-4a53-6cb6-9d6b86474bba  | Y         |
+| vaultSecretId    | [AppRole secret id](https://www.vaultproject.io/docs/auth/approle) to authenticate against vault | 37b74931-c4cd-d49a-9246-ccc62d682a25  | Y         |
+| vaultPathPrefix  | Path prefix for the K/V path in vault for this instance running acmevault                        | production                            | N         |
+| email            | Email to register at ACME server                                                                 | your@email.tld                        | Y         |
+| metricsPath      | Path to write metrics to on filesystem                                                           | /var/lib/node_exporter/acmevault.prom | N         |
 
 ## Client component
 ### Configuration
@@ -76,17 +77,18 @@ $ sha256sum -c checksum.sha256
 
 ### Configuration reference
 
-| Keyword        | Description                                                                                      | Example                               | Mandatory |
-|----------------|--------------------------------------------------------------------------------------------------|---------------------------------------|-----------|
-| vaultAddr      | Connection string for vault                                                                      | https://vault:8200                    | Y         |
-| roleId         | [AppRole role id](https://www.vaultproject.io/docs/auth/approle) to authenticate against vault   | 988a9dfd-ea69-4a53-6cb6-9d6b86474bba  | Y         |
-| secretId       | [AppRole secret id](https://www.vaultproject.io/docs/auth/approle) to authenticate against vault | 37b74931-c4cd-d49a-9246-ccc62d682a25  | Y         |
-| user           | User that will own the written certificate and key on disk                                       | root                                  | Y         |
-| group          | Group that will own the written certificate and key on disk                                      | root                                  | Y         |
-| certFile       | The file path to write the certificate to                                                        | /etc/ssl/ssl-bundle.crt               | Y         |
-| privateKeyFile | The file path to write the private key to                                                        | /etc/ssl/ssl-bundle.key               | Y         |
-| hooks          | Commands to run after new cert files have been written                                           | ["echo", "it worked"]                 | N         |
-| metricsPath    | Path on the disk to write metrics to                                                             | /var/lib/node_exporter/acmevault.prom | N         |
+| Keyword          | Description                                                                                      | Example                               | Mandatory |
+|------------------|--------------------------------------------------------------------------------------------------|---------------------------------------|-----------|
+| vaultAddr        | Connection string for vault                                                                      | https://vault:8200                    | Y         |
+| vaultRoleId      | [AppRole role id](https://www.vaultproject.io/docs/auth/approle) to authenticate against vault   | 988a9dfd-ea69-4a53-6cb6-9d6b86474bba  | Y         |
+| vaultSecretId    | [AppRole secret id](https://www.vaultproject.io/docs/auth/approle) to authenticate against vault | 37b74931-c4cd-d49a-9246-ccc62d682a25  | Y         |
+| vaultPathPrefix  | Path prefix for the K/V path in vault for this instance running acmevault                        | production                            | Y         |
+| user             | User that will own the written certificate and key on disk                                       | root                                  | Y         |
+| group            | Group that will own the written certificate and key on disk                                      | root                                  | Y         |
+| certFile         | The file path to write the certificate to                                                        | /etc/ssl/ssl-bundle.crt               | Y         |
+| privateKeyFile   | The file path to write the private key to                                                        | /etc/ssl/ssl-bundle.key               | Y         |
+| hooks            | Commands to run after new cert files have been written                                           | ["echo", "it worked"]                 | N         |
+| metricsPath      | Path on the disk to write metrics to                                                             | /var/lib/node_exporter/acmevault.prom | N         |
 
 
 ## Vault Resources
