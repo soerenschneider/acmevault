@@ -19,12 +19,12 @@ var conf config.AcmeVaultClientConfig
 
 func main() {
 	configPath := cmd.ParseCliFlags()
-	var err error
-
-	conf, err = config.AcmeVaultClientConfigFromFile(configPath)
+	log.Info().Msgf("acmevault-client version %s, commit %s", internal.BuildVersion, internal.CommitHash)
+	conf, err := config.AcmeVaultClientConfigFromFile(configPath)
 	if err != nil {
 		log.Fatal().Msgf("Can't parse config: %v", err)
 	}
+
 	err = conf.Validate()
 	if err != nil {
 		log.Fatal().Msgf("Invalid config: %v", err)
