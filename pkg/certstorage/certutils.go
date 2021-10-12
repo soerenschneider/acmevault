@@ -38,15 +38,20 @@ func CertToMap(res *AcmeCertificate) map[string]interface{} {
 		return map[string]interface{}{}
 	}
 
-	return map[string]interface{}{
-		vaultCertKeyPrivateKey: res.PrivateKey,
-		vaultCertKeyCert:       res.Certificate,
-		vaultCertKeyDomain:     res.Domain,
-		vaultCertKeyIssuer:     res.IssuerCertificate,
-		vaultCertKeyUrl:        res.CertURL,
-		vaultCertKeyStableUrl:  res.CertStableURL,
-		vaultCertKeyCsr:        res.CSR,
+	data := map[string]interface{}{
+		vaultCertKeyCert:      res.Certificate,
+		vaultCertKeyDomain:    res.Domain,
+		vaultCertKeyIssuer:    res.IssuerCertificate,
+		vaultCertKeyUrl:       res.CertURL,
+		vaultCertKeyStableUrl: res.CertStableURL,
+		vaultCertKeyCsr:       res.CSR,
 	}
+
+	if res.PrivateKey != nil {
+		data[vaultCertKeyPrivateKey] = res.PrivateKey
+	}
+
+	return data
 }
 
 func MapToCert(data map[string]interface{}) (*AcmeCertificate, error) {
@@ -59,7 +64,8 @@ func MapToCert(data map[string]interface{}) (*AcmeCertificate, error) {
 	res.CertStableURL = fmt.Sprint(data[vaultCertKeyStableUrl])
 	res.CertURL = fmt.Sprint(data[vaultCertKeyUrl])
 
-	_, ok := data[vaultCertKeyPrivateKey]; if ok {
+	_, ok := data[vaultCertKeyPrivateKey]
+	if ok {
 		privRaw := fmt.Sprintf("%s", data[vaultCertKeyPrivateKey])
 		priv, err := base64.StdEncoding.DecodeString(privRaw)
 		if err != nil {

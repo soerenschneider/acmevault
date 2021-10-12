@@ -245,12 +245,12 @@ func TestMapToCert(t *testing.T) {
 			name: "missing private key data",
 			args: args{
 				map[string]interface{}{
-					vaultCertKeyCsr:        dummyCsr,
-					vaultCertKeyIssuer:     dummyIssuer,
-					vaultCertKeyUrl:        "url",
-					vaultCertKeyCert:       dummyCert,
-					vaultCertKeyDomain:     "domain.tld",
-					vaultCertKeyStableUrl:  "stable url",
+					vaultCertKeyCsr:       dummyCsr,
+					vaultCertKeyIssuer:    dummyIssuer,
+					vaultCertKeyUrl:       "url",
+					vaultCertKeyCert:      dummyCert,
+					vaultCertKeyDomain:    "domain.tld",
+					vaultCertKeyStableUrl: "stable url",
 				},
 			},
 			want: &AcmeCertificate{
