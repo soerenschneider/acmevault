@@ -59,7 +59,8 @@ func MapToCert(data map[string]interface{}) (*AcmeCertificate, error) {
 	res.CertStableURL = fmt.Sprint(data[vaultCertKeyStableUrl])
 	res.CertURL = fmt.Sprint(data[vaultCertKeyUrl])
 
-	_, ok := data[vaultCertKeyPrivateKey]; if ok {
+	_, ok := data[vaultCertKeyPrivateKey]
+	if ok {
 		privRaw := fmt.Sprintf("%s", data[vaultCertKeyPrivateKey])
 		priv, err := base64.StdEncoding.DecodeString(privRaw)
 		if err != nil {
