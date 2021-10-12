@@ -64,8 +64,9 @@ $ sha256sum -c checksum.sha256
   "group": "root",
   "certFile": "/etc/nginx/my_cert.crt",
   "privateKeyFile": "/etc/nginx/my_private_key.key",
-  "roleId": "my_role_id",
-  "secretId": "my_secret_id",
+  "vaultRoleId": "my_role_id",
+  "vaultSecretId": "my_secret_id",
+  "vaultPathPrefix": "production",
   "hooks": [
     "echo",
     "it works"
