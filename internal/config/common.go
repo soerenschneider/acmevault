@@ -32,7 +32,7 @@ func (conf *VaultConfig) Print() {
 		log.Info().Msgf("VaultSecretId=%s", "*** (Redacted)")
 	}
 	if len(conf.VaultToken) > 0 {
-		log.Info().Msgf("VaultRoleId=%s", "*** (Redacted)")
+		log.Info().Msgf("VaultToken=%s", "*** (Redacted)")
 	}
 	if conf.TokenIncreaseSeconds > 0 {
 		log.Info().Msgf("TokenIncreaseSeconds=%d", conf.TokenIncreaseSeconds)
