@@ -10,11 +10,11 @@ import (
 type VaultConfig struct {
 	VaultToken            string `json:"vaultToken"`
 	VaultAddr             string `json:"vaultAddr"`
-	SecretId              string `json:"secretId"`
-	RoleId                string `json:"roleId"`
+	SecretId              string `json:"vaultSecretId"`
+	RoleId                string `json:"vaultRoleId"`
 	TokenIncreaseSeconds  int    `json:"tokenIncreaseSeconds"`
 	TokenIncreaseInterval int    `json:"tokenIncreaseInterval"`
-	PathPrefix            string `json:"pathPrefix"`
+	PathPrefix            string `json:"vaultPathPrefix"`
 }
 
 func (conf *VaultConfig) IsTokenIncreaseEnabled() bool {
