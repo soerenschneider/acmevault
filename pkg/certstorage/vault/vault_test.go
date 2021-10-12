@@ -22,7 +22,7 @@ func Test_buildSecretPayload(t *testing.T) {
 					"test": "bla",
 				},
 			},
-			want:    []byte("{\"data\":{\"test\":\"bla\"}}"),
+			want:    []byte("{\"data\":{\"test\":\"bla\"},\"options\":{\"max_versions\":1}}"),
 			wantErr: false,
 		},
 		{
