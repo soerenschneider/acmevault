@@ -449,7 +449,7 @@ func (vault *VaultBackend) getAccountPath(hash string) string {
 }
 
 func (vault *VaultBackend) getCertDataPath(domain string) string {
-	return fmt.Sprintf("%s/client/%s/pubkey", vault.namespacedPrefix, domain)
+	return fmt.Sprintf("%s/client/%s/certificate", vault.namespacedPrefix, domain)
 }
 
 func (vault *VaultBackend) getSecretDataPath(domain string) string {
