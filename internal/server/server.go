@@ -57,9 +57,9 @@ func (c *AcmeVaultServer) obtainCertificate(domain string) error {
 		log.Error().Msgf("Error reading cert data from storage for domain %s: %v", domain, err)
 		log.Info().Msgf("Trying to obtain cert from configured ACME provider for domain %s", domain)
 		obtained, err := c.acmeClient.ObtainCert(domain)
-		internal.CertificatesRetrieved.WithLabelValues(domain).Inc()
+		internal.CertificatesRetrieved.Inc()
 		if err != nil {
-			internal.CertificatesRetrievalErrors.WithLabelValues(domain).Inc()
+			internal.CertificatesRetrievalErrors.Inc()
 			return fmt.Errorf("obtaining cert for domain %s failed: %v", domain, err)
 		}
 		return handleReceivedCert(obtained, c.certStorage)
@@ -78,9 +78,9 @@ func (c *AcmeVaultServer) obtainCertificate(domain string) error {
 
 	log.Info().Msgf("Cert for domain %s is only valid for %v, renewing...", domain, timeLeft)
 	renewed, err := c.acmeClient.RenewCert(read)
-	internal.CertificatesRenewals.WithLabelValues(domain).Inc()
+	internal.CertificatesRenewals.Inc()
 	if err != nil {
-		internal.CertificatesRenewErrors.WithLabelValues(domain).Inc()
+		internal.CertificatesRenewErrors.Inc()
 		return fmt.Errorf("renewing cert failed for domain %s: %v", domain, err)
 	}
 	return handleReceivedCert(renewed, c.certStorage)
@@ -95,15 +95,15 @@ func handleReceivedCert(cert *certstorage.AcmeCertificate, storage certstorage.C
 	if err != nil {
 		internal.CertExpiryTimestamp.WithLabelValues(cert.Domain).Set(float64(expiry.Unix()))
 	} else {
-		internal.CertErrors.WithLabelValues(cert.Domain, "unknown-expiry")
+		internal.CertErrors.WithLabelValues("unknown-expiry")
 	}
 
 	err = storage.WriteCertificate(cert)
 	if err != nil {
-		internal.CertWriteError.WithLabelValues(cert.Domain, "server").Inc()
+		internal.CertWriteError.WithLabelValues("server").Inc()
 		return fmt.Errorf("received valid certificate for domain %s but storing it failed: %v", cert.Domain, err)
 	}
 
-	internal.CertWrites.WithLabelValues(cert.Domain, "server").Inc()
+	internal.CertWrites.WithLabelValues("server").Inc()
 	return nil
 }

@@ -54,7 +54,7 @@ func (client VaultAcmeClient) RetrieveAndSave(domain string) error {
 
 	expiryTimestamp, err := cert.GetExpiryTimestamp()
 	if err != nil {
-		internal.CertErrors.WithLabelValues(domain, "expiry")
+		internal.CertErrors.WithLabelValues("unknown-expiry")
 		log.Error().Msgf("Can not determine lifetime of certificate: %v", err)
 	} else {
 		internal.CertExpiryTimestamp.WithLabelValues(cert.Domain).Set(float64(expiryTimestamp.Unix()))
@@ -64,10 +64,10 @@ func (client VaultAcmeClient) RetrieveAndSave(domain string) error {
 
 	runHook, err := client.writer.WriteBundle(cert)
 	if err != nil {
-		internal.CertWriteError.WithLabelValues(domain).Inc()
+		internal.CertWriteError.WithLabelValues("client").Inc()
 		return fmt.Errorf("writing the cert was not successful: %v", err)
 	}
-	internal.CertWrites.WithLabelValues(domain, metricsSubsystem).Inc()
+	internal.CertWrites.WithLabelValues(metricsSubsystem).Inc()
 
 	if !runHook {
 		log.Info().Msg("No update detected, not running any hooks")

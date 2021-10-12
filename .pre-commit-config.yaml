@@ -1,0 +1,9 @@
+---
+repos:
+  - repo: https://github.com/soerenschneider/pre-commit-hooks
+    rev: v1.0.0
+    hooks:
+      - id: gofmt
+      - id: conventional-commit
+
+      - id: yamllint
