@@ -10,6 +10,7 @@ tests:
 	go test ./...
 
 clean:
+	git diff --quiet || { echo 'Dirty work tree' ; false; }
 	rm -rf ./$(BUILD_DIR)
 
 build: version-info
