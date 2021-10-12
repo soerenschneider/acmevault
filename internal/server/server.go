@@ -55,9 +55,9 @@ func (c *AcmeVaultServer) obtainCertificate(domain string) error {
 	read, err := c.certStorage.ReadPublicCertificateData(domain)
 	if err != nil || read == nil {
 		obtained, err := c.acmeClient.ObtainCert(domain)
-		internal.CertificatesRetrieved.WithLabelValues(domain).Inc()
+		internal.CertificatesRetrieved.Inc()
 		if err != nil {
-			internal.CertificatesRetrievalErrors.WithLabelValues(domain).Inc()
+			internal.CertificatesRetrievalErrors.Inc()
 		}
 		return handleReceivedCert(obtained, c.certStorage)
 	}
@@ -73,9 +73,9 @@ func (c *AcmeVaultServer) obtainCertificate(domain string) error {
 	}
 
 	renewed, err := c.acmeClient.RenewCert(read)
-	internal.CertificatesRenewals.WithLabelValues(domain).Inc()
+	internal.CertificatesRenewals.Inc()
 	if err != nil {
-		internal.CertificatesRenewErrors.WithLabelValues(domain).Inc()
+		internal.CertificatesRenewErrors.Inc()
 	}
 	return handleReceivedCert(renewed, c.certStorage)
 }
@@ -89,15 +89,15 @@ func handleReceivedCert(cert *certstorage.AcmeCertificate, storage certstorage.C
 	if err != nil {
 		internal.CertExpiryTimestamp.WithLabelValues(cert.Domain).Set(float64(expiry.Unix()))
 	} else {
-		internal.CertErrors.WithLabelValues(cert.Domain, "unknown-expiry")
+		internal.CertErrors.WithLabelValues("unknown-expiry")
 	}
 
 	err = storage.WriteCertificate(cert)
 	if err != nil {
-		internal.CertWriteError.WithLabelValues(cert.Domain, "server").Inc()
+		internal.CertWriteError.WithLabelValues("server").Inc()
 		return fmt.Errorf("received valid certificate for domain %s but storing it failed: %v", cert.Domain, err)
 	}
 
-	internal.CertWrites.WithLabelValues(cert.Domain, "server").Inc()
+	internal.CertWrites.WithLabelValues("server").Inc()
 	return nil
 }

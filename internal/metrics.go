@@ -37,51 +37,51 @@ var (
 		Help:      "Latest invocation of the server",
 	})
 
-	CertificatesRetrieved = promauto.NewCounterVec(prometheus.CounterOpts{
+	CertificatesRetrieved = promauto.NewCounter(prometheus.CounterOpts{
 		Namespace: namespace,
 		Subsystem: "server",
 		Name:      "certificates_retrieved_total",
 		Help:      "Total amount of certificates retrieved from ACME provider",
-	}, []string{"domain"})
+	})
 
-	CertificatesRetrievalErrors = promauto.NewCounterVec(prometheus.CounterOpts{
+	CertificatesRetrievalErrors = promauto.NewCounter(prometheus.CounterOpts{
 		Namespace: namespace,
 		Subsystem: "server",
 		Name:      "certificate_retrieve_errors_total",
 		Help:      "Total errors while trying to retrieve certificates from ACME provider",
-	}, []string{"domain"})
+	})
 
-	CertificatesRenewals = promauto.NewCounterVec(prometheus.CounterOpts{
+	CertificatesRenewals = promauto.NewCounter(prometheus.CounterOpts{
 		Namespace: namespace,
 		Subsystem: "server",
 		Name:      "certificates_renewals_total",
 		Help:      "Total number of renewed certificates",
-	}, []string{"domain"})
+	})
 
-	CertificatesRenewErrors = promauto.NewCounterVec(prometheus.CounterOpts{
+	CertificatesRenewErrors = promauto.NewCounter(prometheus.CounterOpts{
 		Namespace: namespace,
 		Subsystem: "server",
 		Name:      "certificates_renewal_errors_total",
 		Help:      "Total errors while trying to renew certificates",
-	}, []string{"domain"})
+	})
 
 	CertWrites = promauto.NewCounterVec(prometheus.CounterOpts{
 		Namespace: namespace,
 		Name:      "certificates_written_total",
 		Help:      "Total number of certificates written total",
-	}, []string{"domain", "subsystem"})
+	}, []string{"subsystem"})
 
 	CertWriteError = promauto.NewCounterVec(prometheus.CounterOpts{
 		Namespace: namespace,
 		Name:      "certificates_write_errors_total",
 		Help:      "Total number of errors while writing the certificate",
-	}, []string{"domain", "subsystem"})
+	}, []string{"subsystem"})
 
 	CertErrors = promauto.NewCounterVec(prometheus.CounterOpts{
 		Namespace: namespace,
 		Name:      "certificate_errors_total",
 		Help:      "Total number of errors while handling certificates",
-	}, []string{"domain", "desc"})
+	}, []string{"desc"})
 
 	CertExpiryTimestamp = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: namespace,
