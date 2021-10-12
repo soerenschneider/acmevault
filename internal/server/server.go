@@ -69,9 +69,7 @@ func (c *AcmeVaultServer) obtainCertificate(domain string) error {
 	timeLeft, err := read.GetDurationUntilExpiry()
 	if err != nil {
 		log.Info().Msgf("Could not determine cert lifetime for %s, probably the cert is broken", domain)
-	}
-
-	if timeLeft > MinCertLifetime {
+	} else if timeLeft > MinCertLifetime {
 		log.Info().Msgf("Not renewing cert for domain %s, still valid for %v", domain, timeLeft)
 		return nil
 	}
