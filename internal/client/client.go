@@ -47,6 +47,7 @@ func NewAcmeVaultClient(conf config.AcmeVaultClientConfig, storage certstorage.C
 func (client VaultAcmeClient) RetrieveAndSave(domain string) error {
 	defer client.storage.Cleanup()
 
+	log.Info().Msgf("Trying to read full cert data from storage for domain %s", domain)
 	cert, err := client.storage.ReadFullCertificateData(domain)
 	if err != nil {
 		return fmt.Errorf("could not read secret bundle from vault: %v", err)
@@ -57,14 +58,13 @@ func (client VaultAcmeClient) RetrieveAndSave(domain string) error {
 		internal.CertErrors.WithLabelValues("unknown-expiry")
 		log.Error().Msgf("Can not determine lifetime of certificate: %v", err)
 	} else {
-		internal.CertExpiryTimestamp.WithLabelValues(cert.Domain).Set(float64(expiryTimestamp.Unix()))
 		daysLeft := int64(expiryTimestamp.Sub(time.Now().UTC()).Hours() / 24)
 		log.Info().Msgf("Successfully read secret for domain %s from vault, valid for %d days", cert.Domain, daysLeft)
 	}
 
 	runHook, err := client.writer.WriteBundle(cert)
 	if err != nil {
-		internal.CertWriteError.WithLabelValues("client").Inc()
+		internal.CertWriteError.WithLabelValues(metricsSubsystem).Inc()
 		return fmt.Errorf("writing the cert was not successful: %v", err)
 	}
 	internal.CertWrites.WithLabelValues(metricsSubsystem).Inc()
@@ -86,8 +86,11 @@ func executeHook(hook []string) error {
 	log.Info().Msgf("Executing hook '%s'", hook)
 	cmd := exec.Command(hook[0], hook[1:]...)
 	err := cmd.Run()
+
 	if err != nil {
+		log.Error().Msgf("Error running hook: %v", err)
 		internal.HooksExecutionErrors.Inc()
 	}
+
 	return err
 }
