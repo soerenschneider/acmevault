@@ -1,5 +1,13 @@
 # Changelog
 
+### [1.3.1](https://www.github.com/soerenschneider/acmevault/compare/v1.3.0...v1.3.1) (2021-10-13)
+
+
+### Bug Fixes
+
+* Actually validate config for server ([6d9b969](https://www.github.com/soerenschneider/acmevault/commit/6d9b96992e477fa103952daedb2b3104d962717b))
+* Check if pathPrefix is empty ([28cc23f](https://www.github.com/soerenschneider/acmevault/commit/28cc23fd016081486d053c1af1f9a491a901e026))
+
 ## [1.3.0](https://www.github.com/soerenschneider/acmevault/compare/v1.2.1...v1.3.0) (2021-10-12)
 
 
