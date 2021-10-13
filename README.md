@@ -54,6 +54,7 @@ $ sha256sum -c checksum.sha256
 | vaultPathPrefix  | Path prefix for the K/V path in vault for this instance running acmevault                        | production                            | N         |
 | email            | Email to register at ACME server                                                                 | your@email.tld                        | Y         |
 | metricsPath      | Path to write metrics to on filesystem                                                           | /var/lib/node_exporter/acmevault.prom | N         |
+| acmeUrl          | URL of the acme provider                                                                         | /var/lib/node_exporter/acmevault.prom | N         |
 
 ## Client component
 ### Configuration
