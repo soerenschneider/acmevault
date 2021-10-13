@@ -25,6 +25,10 @@ func main() {
 		log.Fatal().Msgf("Could not load config: %v", err)
 	}
 	conf.Print()
+	err = conf.Validate()
+	if err != nil {
+		log.Fatal().Msgf("Invalid configuration provided: %v", err)
+	}
 	NewAcmeVaultServer(conf)
 }
 
