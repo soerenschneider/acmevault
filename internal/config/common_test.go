@@ -81,6 +81,17 @@ func TestVaultConfig_Validate(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "invalid config - empty path prefix",
+			fields: fields{
+				VaultAddr:             "http://my-vault-instance:443",
+				VaultToken:            "s.VALIDVALIDVALID",
+				TokenIncreaseSeconds:  0,
+				TokenIncreaseInterval: 0,
+				PathPrefix:            "",
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

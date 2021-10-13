@@ -24,7 +24,7 @@ func (conf *VaultConfig) IsTokenIncreaseEnabled() bool {
 
 func (conf *VaultConfig) Print() {
 	log.Info().Msgf("VaultAddr=%s", conf.VaultAddr)
-	log.Info().Msgf("PathPrefix=%s", conf.PathPrefix)
+	log.Info().Msgf("VaultPathPrefix=%s", conf.PathPrefix)
 	if len(conf.RoleId) > 0 {
 		log.Info().Msgf("VaultRoleId=%s", conf.RoleId)
 	}
@@ -63,6 +63,9 @@ func (conf *VaultConfig) Validate() error {
 		return errors.New("can not parse supplied vault addr as url")
 	}
 
+	if len(conf.PathPrefix) == 0 {
+		return errors.New("empty path prefix provided")
+	}
 	for _, prefix := range []string{"/", "secret/"} {
 		if strings.HasPrefix(conf.PathPrefix, prefix) {
 			return fmt.Errorf("vault path prefix must not start with %s", prefix)
