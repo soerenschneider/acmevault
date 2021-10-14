@@ -29,7 +29,7 @@ func (conf FsWriterConfig) Validate() error {
 		return errors.New("missing either certPath and privateKeyPath or pemPath")
 	}
 
-	if !emptyPemPath && (emptyCertPath || emptyPrivateKeyPath) {
+	if emptyPemPath && (emptyCertPath || emptyPrivateKeyPath) {
 		return errors.New("certPath and privateKeyPath must both be specified when no pemPath is defined")
 	}
 
