@@ -2,7 +2,6 @@ package config
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/rs/zerolog/log"
 	"io/ioutil"
@@ -10,12 +9,9 @@ import (
 
 type AcmeVaultClientConfig struct {
 	VaultConfig
-	PrivateKeyPath string   `json:"privateKeyFile"`
-	CertPath       string   `json:"certFile"`
-	User           string   `json:"user"`
-	Group          string   `json:"group"`
-	Hook           []string `json:"hooks"`
-	MetricsPath    string   `json:"metricsPath"`
+	FsWriterConfig
+	Hook        []string `json:"hooks"`
+	MetricsPath string   `json:"metricsPath"`
 }
 
 func AcmeVaultClientConfigFromFile(path string) (AcmeVaultClientConfig, error) {
@@ -31,20 +27,9 @@ func AcmeVaultClientConfigFromFile(path string) (AcmeVaultClientConfig, error) {
 }
 
 func (conf AcmeVaultClientConfig) Validate() error {
-	if len(conf.User) == 0 {
-		return errors.New("no user specified")
-	}
-
-	if len(conf.Group) == 0 {
-		return errors.New("no group specified")
-	}
-
-	if len(conf.CertPath) == 0 {
-		return errors.New("no certPath defined")
-	}
-
-	if len(conf.PrivateKeyPath) == 0 {
-		return errors.New("no privateKeyPath defined")
+	err := conf.FsWriterConfig.Validate()
+	if err != nil {
+		return err
 	}
 
 	return conf.VaultConfig.Validate()
@@ -53,10 +38,7 @@ func (conf AcmeVaultClientConfig) Validate() error {
 func (conf AcmeVaultClientConfig) Print() {
 	log.Info().Msg("--- Client Config Start ---")
 	conf.VaultConfig.Print()
-	log.Info().Msgf("PrivateKeyPath=%s", conf.PrivateKeyPath)
-	log.Info().Msgf("CertificatePath=%s", conf.CertPath)
-	log.Info().Msgf("User=%s", conf.User)
-	log.Info().Msgf("Group=%s", conf.Group)
+	conf.FsWriterConfig.Print()
 	if len(conf.Hook) > 0 {
 		log.Info().Msgf("Hooks=%v", conf.Hook)
 	}

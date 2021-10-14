@@ -62,12 +62,14 @@ func (client VaultAcmeClient) RetrieveAndSave(domain string) error {
 		log.Info().Msgf("Successfully read secret for domain %s from vault, valid for %d days", cert.Domain, daysLeft)
 	}
 
+	log.Info().Msg("Writing received data to configured backend...")
 	runHook, err := client.writer.WriteBundle(cert)
 	if err != nil {
 		internal.CertWriteError.WithLabelValues("client").Inc()
-		return fmt.Errorf("writing the cert was not successful: %v", err)
+		return fmt.Errorf("writing the data was not successful: %v", err)
 	}
 	internal.CertWrites.WithLabelValues(metricsSubsystem).Inc()
+	log.Info().Msg("Successfully written data")
 
 	if !runHook {
 		log.Info().Msg("No update detected, not running any hooks")
@@ -88,6 +90,9 @@ func executeHook(hook []string) error {
 	err := cmd.Run()
 	if err != nil {
 		internal.HooksExecutionErrors.Inc()
+		log.Error().Msgf("Error while running hook: %v", err)
+		return err
 	}
-	return err
+	log.Info().Msg("Hook successfully invoked")
+	return nil
 }

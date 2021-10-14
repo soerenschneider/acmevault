@@ -62,6 +62,15 @@ func (cert *AcmeCertificate) GetDurationUntilExpiry() (time.Duration, error) {
 	return expiry.Sub(time.Now().UTC()), nil
 }
 
+func (cert *AcmeCertificate) AsPem() (pem string) {
+	if len(cert.IssuerCertificate) > 0 {
+		pem += fmt.Sprintln(string(cert.IssuerCertificate))
+	}
+	pem += fmt.Sprintln(string(cert.Certificate))
+	pem += fmt.Sprint(string(cert.PrivateKey))
+	return
+}
+
 type AcmeAccount struct {
 	Email        string
 	Key          crypto.PrivateKey

@@ -6,7 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/rs/zerolog/log"
+	"github.com/soerenschneider/acmevault/internal/config"
 	"github.com/soerenschneider/acmevault/pkg/certstorage"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"os/user"
@@ -16,24 +18,26 @@ import (
 type FSCertWriter struct {
 	CertificatePath string
 	PrivateKeyPath  string
+	PemPath         string
 	Uid             int
 	Gid             int
 }
 
-func NewFsWriter(certPath, privateKeyPath string, username, group string) (*FSCertWriter, error) {
-	uid, err := getUidFromUsername(username)
+func NewFsWriter(conf config.FsWriterConfig) (*FSCertWriter, error) {
+	uid, err := getUidFromUsername(conf.Username)
 	if err != nil {
 		return nil, err
 	}
-	gid, err := getGidFromGroup(group)
+	gid, err := getGidFromGroup(conf.Group)
 	if err != nil {
 		return nil, err
 	}
-	log.Info().Msgf("Resolved username %s to uid %d, group %s to %d", username, uid, group, gid)
+	log.Info().Msgf("Resolved username %s to uid %d, group %s to %d", conf.Username, uid, conf.Group, gid)
 
 	return &FSCertWriter{
-		CertificatePath: certPath,
-		PrivateKeyPath:  privateKeyPath,
+		CertificatePath: conf.CertPath,
+		PrivateKeyPath:  conf.PrivateKeyPath,
+		PemPath:         conf.PemPath,
 		Uid:             uid,
 		Gid:             gid,
 	}, nil
@@ -82,33 +86,59 @@ func (writer *FSCertWriter) ValidatePermissions() error {
 
 func (writer *FSCertWriter) WriteBundle(cert *certstorage.AcmeCertificate) (bool, error) {
 	if nil == cert {
-		return false, errors.New("Empty certificate provided")
+		return false, errors.New("no certificate provided")
 	}
 
-	writer.ValidatePermissions()
+	err := writer.ValidatePermissions()
+	if err != nil {
+		return false, fmt.Errorf("invalid permissions: %v", err)
+	}
 
 	runHook := false
-	identical, err := compareCerts(writer.CertificatePath, cert.Certificate)
-	if err != nil || !identical {
-		err := ioutil.WriteFile(writer.CertificatePath, cert.Certificate, 0644)
+	if len(writer.CertificatePath) > 0 {
+		change, err := writeFile(writer.CertificatePath, cert.Certificate, 0640)
 		if err != nil {
-			log.Fatal().Msgf("could not writeCertificate cert to %s: %v", writer.CertificatePath, err)
+			return false, err
 		}
-
-		runHook = true
+		if change {
+			runHook = true
+		}
 	}
 
-	identical, err = compareCerts(writer.PrivateKeyPath, cert.PrivateKey)
-	if err != nil || !identical {
-		err = ioutil.WriteFile(writer.PrivateKeyPath, cert.PrivateKey, 0600)
+	if len(writer.PrivateKeyPath) > 0 {
+		change, err := writeFile(writer.PrivateKeyPath, cert.PrivateKey, 0600)
 		if err != nil {
-			log.Fatal().Msgf("could not private key to %s: %v", writer.PrivateKeyPath, err)
+			return false, err
 		}
+		if change {
+			runHook = true
+		}
+	}
 
-		runHook = true
+	if len(writer.PemPath) > 0 {
+		pem := []byte(cert.AsPem())
+		change, err := writeFile(writer.PemPath, pem, 0600)
+		if err != nil {
+			return false, err
+		}
+		if change {
+			runHook = true
+		}
 	}
 
 	return runHook, nil
+}
+
+func writeFile(path string, content []byte, perms fs.FileMode) (bool, error) {
+	identical, err := compareCerts(path, content)
+	if err != nil || !identical {
+		err = ioutil.WriteFile(path, content, perms)
+		if err != nil {
+			return false, fmt.Errorf("could not write pem to %s: %v", path, err)
+		}
+		return true, nil
+	}
+	return false, nil
 }
 
 func compareCerts(path string, payload []byte) (bool, error) {

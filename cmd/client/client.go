@@ -36,7 +36,7 @@ func main() {
 		log.Fatal().Msgf("Could not generate desired backend: %v", err)
 	}
 
-	writer, err := client.NewFsWriter(conf.CertPath, conf.PrivateKeyPath, conf.User, conf.Group)
+	writer, err := client.NewFsWriter(conf.FsWriterConfig)
 	if err != nil {
 		log.Fatal().Msgf("Could not create writer: %v", err)
 	}
