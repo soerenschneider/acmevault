@@ -63,9 +63,6 @@ func (cert *AcmeCertificate) GetDurationUntilExpiry() (time.Duration, error) {
 }
 
 func (cert *AcmeCertificate) AsPem() (pem string) {
-	if len(cert.IssuerCertificate) > 0 {
-		pem += fmt.Sprintln(string(cert.IssuerCertificate))
-	}
 	pem += fmt.Sprintln(string(cert.Certificate))
 	pem += fmt.Sprint(string(cert.PrivateKey))
 	return
