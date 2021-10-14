@@ -165,7 +165,6 @@ func wrapPayload(data map[string]interface{}) ([]byte, error) {
 
 func (vault *VaultBackend) ReadPublicCertificateData(domain string) (*certstorage.AcmeCertificate, error) {
 	certPath := vault.getCertDataPath(domain)
-	log.Info().Msgf("Trying to read public certificate data from %s", certPath)
 	data, err := vault.read(certPath)
 	if err != nil {
 		return nil, fmt.Errorf("could not read public cert data from vault for domain %s: %v", domain, err)
@@ -235,7 +234,6 @@ func (vault *VaultBackend) WriteAccount(acmeRegistration certstorage.AcmeAccount
 	}
 
 	accountPath := vault.getAccountPath(acmeRegistration.Email)
-	log.Info().Msgf("Trying to write acme account %s", acmeRegistration.Email)
 
 	err = vault.writeSecretV2(accountPath, data)
 	return err
@@ -451,7 +449,7 @@ func (vault *VaultBackend) getAccountPath(hash string) string {
 }
 
 func (vault *VaultBackend) getCertDataPath(domain string) string {
-	return fmt.Sprintf("%s/client/%s/pubkey", vault.namespacedPrefix, domain)
+	return fmt.Sprintf("%s/client/%s/certificate", vault.namespacedPrefix, domain)
 }
 
 func (vault *VaultBackend) getSecretDataPath(domain string) string {

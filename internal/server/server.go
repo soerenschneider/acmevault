@@ -43,7 +43,6 @@ func NewAcmeVaultServer(domains []string, acmeClient acme.AcmeDealer, storage ce
 func (c *AcmeVaultServer) CheckCerts() {
 	internal.ServerLatestIterationTimestamp.SetToCurrentTime()
 	for _, domain := range c.domains {
-		log.Info().Msgf("Acquiring certificate for domain %s", domain)
 		err := c.obtainCertificate(domain)
 		if err != nil {
 			log.Error().Msgf("error while handling received certificate: %v", err)
@@ -52,30 +51,35 @@ func (c *AcmeVaultServer) CheckCerts() {
 }
 
 func (c *AcmeVaultServer) obtainCertificate(domain string) error {
+	log.Info().Msgf("Trying to read certificate data for domain %s from storage", domain)
 	read, err := c.certStorage.ReadPublicCertificateData(domain)
 	if err != nil || read == nil {
+		log.Error().Msgf("Error reading cert data from storage for domain %s: %v", domain, err)
+		log.Info().Msgf("Trying to obtain cert from configured ACME provider for domain %s", domain)
 		obtained, err := c.acmeClient.ObtainCert(domain)
 		internal.CertificatesRetrieved.Inc()
 		if err != nil {
 			internal.CertificatesRetrievalErrors.Inc()
+			return fmt.Errorf("obtaining cert for domain %s failed: %v", domain, err)
 		}
 		return handleReceivedCert(obtained, c.certStorage)
 	}
 
+	log.Info().Msgf("Successfully read cert data from storage for domain %s", domain)
 	timeLeft, err := read.GetDurationUntilExpiry()
 	if err != nil {
 		log.Info().Msgf("Could not determine cert lifetime for %s, probably the cert is broken", domain)
-	}
-
-	if timeLeft > MinCertLifetime {
+	} else if timeLeft > MinCertLifetime {
 		log.Info().Msgf("Not renewing cert for domain %s, still valid for %v", domain, timeLeft)
 		return nil
 	}
 
+	log.Info().Msgf("Cert for domain %s is only valid for %v, renewing...", domain, timeLeft)
 	renewed, err := c.acmeClient.RenewCert(read)
 	internal.CertificatesRenewals.Inc()
 	if err != nil {
 		internal.CertificatesRenewErrors.Inc()
+		return fmt.Errorf("renewing cert failed for domain %s: %v", domain, err)
 	}
 	return handleReceivedCert(renewed, c.certStorage)
 }

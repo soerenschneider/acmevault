@@ -19,11 +19,16 @@ import (
 
 func main() {
 	configPath := cmd.ParseCliFlags()
+	log.Info().Msgf("acmevault-server version %s, commit %s", internal.BuildVersion, internal.CommitHash)
 	conf, err := config.AcmeVaultServerConfigFromFile(configPath)
 	if err != nil {
 		log.Fatal().Msgf("Could not load config: %v", err)
 	}
 	conf.Print()
+	err = conf.Validate()
+	if err != nil {
+		log.Fatal().Msgf("Invalid configuration provided: %v", err)
+	}
 	NewAcmeVaultServer(conf)
 }
 

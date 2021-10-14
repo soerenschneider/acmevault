@@ -5,6 +5,7 @@
   ],
   "email": "my@email.tld",
   "vaultAddr": "https://vault:8200",
-  "secretId": "secretId",
-  "roleId": "roleId"
+  "vaultSecretId": "secretId",
+  "vaultRoleId": "roleId",
+  "vaultPathPrefix": "preprod"
 }

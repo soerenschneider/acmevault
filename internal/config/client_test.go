@@ -26,9 +26,10 @@ func TestFromFile(t *testing.T) {
 				CertPath:       "/tmp/mydomain.crt",
 				PrivateKeyPath: "/tmp/mydomain.key",
 				VaultConfig: VaultConfig{
-					RoleId:    "roleId",
-					SecretId:  "secretId",
-					VaultAddr: "https://vault:8200",
+					RoleId:     "roleId",
+					SecretId:   "secretId",
+					VaultAddr:  "https://vault:8200",
+					PathPrefix: "my-prefix",
 				},
 			},
 			wantErr: false,

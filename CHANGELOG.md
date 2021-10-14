@@ -1,5 +1,28 @@
 # Changelog
 
+### [1.3.1](https://www.github.com/soerenschneider/acmevault/compare/v1.3.0...v1.3.1) (2021-10-13)
+
+
+### Bug Fixes
+
+* Actually validate config for server ([6d9b969](https://www.github.com/soerenschneider/acmevault/commit/6d9b96992e477fa103952daedb2b3104d962717b))
+* Check if pathPrefix is empty ([28cc23f](https://www.github.com/soerenschneider/acmevault/commit/28cc23fd016081486d053c1af1f9a491a901e026))
+
+## [1.3.0](https://www.github.com/soerenschneider/acmevault/compare/v1.2.1...v1.3.0) (2021-10-12)
+
+
+### Features
+
+* Better validation ([06fec46](https://www.github.com/soerenschneider/acmevault/commit/06fec462ccc9bd48db8c69e99970a4b0057659c3))
+* Enable separation for reading private keys and pub cert data ([413e281](https://www.github.com/soerenschneider/acmevault/commit/413e281ff6c3208ea0574b9ee8b0a5c05817a5ab))
+* print version information in log ([19c9788](https://www.github.com/soerenschneider/acmevault/commit/19c97887bf5d91f7d5daa849918e3059ae8953db))
+
+
+### Bug Fixes
+
+* fix log output when printing config ([89751cb](https://www.github.com/soerenschneider/acmevault/commit/89751cbf3e08abe4c040cf7b8a069f4b9a6f9b72))
+* increase privacy of not recycling old private keys ([e2cbad8](https://www.github.com/soerenschneider/acmevault/commit/e2cbad89b4fb08c260d3cc3b16d1c0a4e33d633d))
+
 ### [1.2.1](https://www.github.com/soerenschneider/acmevault/compare/v1.2.0...v1.2.1) (2021-10-05)
 
 

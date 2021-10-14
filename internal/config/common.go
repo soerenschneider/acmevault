@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"github.com/rs/zerolog/log"
 	"net/url"
 	"strings"
@@ -10,11 +11,11 @@ import (
 type VaultConfig struct {
 	VaultToken            string `json:"vaultToken"`
 	VaultAddr             string `json:"vaultAddr"`
-	SecretId              string `json:"secretId"`
-	RoleId                string `json:"roleId"`
+	SecretId              string `json:"vaultSecretId"`
+	RoleId                string `json:"vaultRoleId"`
 	TokenIncreaseSeconds  int    `json:"tokenIncreaseSeconds"`
 	TokenIncreaseInterval int    `json:"tokenIncreaseInterval"`
-	PathPrefix            string `json:"pathPrefix"`
+	PathPrefix            string `json:"vaultPathPrefix"`
 }
 
 func (conf *VaultConfig) IsTokenIncreaseEnabled() bool {
@@ -23,6 +24,7 @@ func (conf *VaultConfig) IsTokenIncreaseEnabled() bool {
 
 func (conf *VaultConfig) Print() {
 	log.Info().Msgf("VaultAddr=%s", conf.VaultAddr)
+	log.Info().Msgf("VaultPathPrefix=%s", conf.PathPrefix)
 	if len(conf.RoleId) > 0 {
 		log.Info().Msgf("VaultRoleId=%s", conf.RoleId)
 	}
@@ -30,7 +32,7 @@ func (conf *VaultConfig) Print() {
 		log.Info().Msgf("VaultSecretId=%s", "*** (Redacted)")
 	}
 	if len(conf.VaultToken) > 0 {
-		log.Info().Msgf("VaultRoleId=%s", "*** (Redacted)")
+		log.Info().Msgf("VaultToken=%s", "*** (Redacted)")
 	}
 	if conf.TokenIncreaseSeconds > 0 {
 		log.Info().Msgf("TokenIncreaseSeconds=%d", conf.TokenIncreaseSeconds)
@@ -38,7 +40,6 @@ func (conf *VaultConfig) Print() {
 	if conf.TokenIncreaseInterval > 0 {
 		log.Info().Msgf("TokenIncreaseInterval=%d", conf.TokenIncreaseInterval)
 	}
-	// TODO: Check pathPrefix
 }
 
 func DefaultVaultConfig() VaultConfig {
@@ -56,6 +57,19 @@ func DefaultVaultConfig() VaultConfig {
 func (conf *VaultConfig) Validate() error {
 	if len(conf.VaultAddr) == 0 {
 		return errors.New("no Vault address defined")
+	}
+	addr, err := url.ParseRequestURI(conf.VaultAddr)
+	if err != nil || addr.Scheme == "" || addr.Host == "" || addr.Port() == "" {
+		return errors.New("can not parse supplied vault addr as url")
+	}
+
+	if len(conf.PathPrefix) == 0 {
+		return errors.New("empty path prefix provided")
+	}
+	for _, prefix := range []string{"/", "secret/"} {
+		if strings.HasPrefix(conf.PathPrefix, prefix) {
+			return fmt.Errorf("vault path prefix must not start with %s", prefix)
+		}
 	}
 
 	validRoleIdCredentials := len(conf.SecretId) > 0 && len(conf.RoleId) > 0
