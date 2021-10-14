@@ -86,11 +86,13 @@ $ sha256sum -c checksum.sha256
 | vaultPathPrefix  | Path prefix for the K/V path in vault for this instance running acmevault                        | production                            | Y         |
 | user             | User that will own the written certificate and key on disk                                       | root                                  | Y         |
 | group            | Group that will own the written certificate and key on disk                                      | root                                  | Y         |
-| certFile         | The file path to write the certificate to                                                        | /etc/ssl/ssl-bundle.crt               | Y         |
-| privateKeyFile   | The file path to write the private key to                                                        | /etc/ssl/ssl-bundle.key               | Y         |
+| certFile         | The file path to write the certificate to                                                        | /etc/ssl/ssl-bundle.crt               | N*        |
+| privateKeyFile   | The file path to write the private key to                                                        | /etc/ssl/ssl-bundle.key               | N*        |
+| pemFile          | The file path to write the data in the PEM format to                                             | /etc/haproxy/my-domain.pem            | N*        |
 | hooks            | Commands to run after new cert files have been written                                           | ["echo", "it worked"]                 | N         |
 | metricsPath      | Path on the disk to write metrics to                                                             | /var/lib/node_exporter/acmevault.prom | N         |
 
+&ast; You have to either provide pemFile _or_ a certFile / privateKeyFile tuple
 
 ## Vault Resources
 
