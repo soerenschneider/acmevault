@@ -21,10 +21,12 @@ func TestFromFile(t *testing.T) {
 				path: "../../contrib/client.json",
 			},
 			want: AcmeVaultClientConfig{
-				User:           "myusername",
-				Group:          "mygroup",
-				CertPath:       "/tmp/mydomain.crt",
-				PrivateKeyPath: "/tmp/mydomain.key",
+				FsWriterConfig: FsWriterConfig{
+					PrivateKeyPath: "/tmp/mydomain.key",
+					CertPath:       "/tmp/mydomain.crt",
+					Username:       "myusername",
+					Group:          "mygroup",
+				},
 				VaultConfig: VaultConfig{
 					RoleId:     "roleId",
 					SecretId:   "secretId",
