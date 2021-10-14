@@ -8,7 +8,7 @@ import (
 type FsWriterConfig struct {
 	PrivateKeyPath string `json:"privateKeyFile"`
 	CertPath       string `json:"certFile"`
-	PemPath        string `json:"pemPath"`
+	PemPath        string `json:"pemFile"`
 	Username       string `json:"user"`
 	Group          string `json:"group"`
 }
