@@ -35,9 +35,9 @@ func NewFsWriter(conf config.FsWriterConfig) (*FSCertWriter, error) {
 	log.Info().Msgf("Resolved username %s to uid %d, group %s to %d", conf.Username, uid, conf.Group, gid)
 
 	return &FSCertWriter{
-		CertificatePath: conf.CertPath,
-		PrivateKeyPath:  conf.PrivateKeyPath,
-		PemPath:         conf.PemPath,
+		CertificatePath: conf.CertFile,
+		PrivateKeyPath:  conf.PrivateKeyFile,
+		PemPath:         conf.PemFile,
 		Uid:             uid,
 		Gid:             gid,
 	}, nil

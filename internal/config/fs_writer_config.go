@@ -6,9 +6,9 @@ import (
 )
 
 type FsWriterConfig struct {
-	PrivateKeyPath string `json:"privateKeyFile"`
-	CertPath       string `json:"certFile"`
-	PemPath        string `json:"pemFile"`
+	PrivateKeyFile string `json:"privateKeyFile"`
+	CertFile       string `json:"certFile"`
+	PemFile        string `json:"pemFile"`
 	Username       string `json:"user"`
 	Group          string `json:"group"`
 }
@@ -22,14 +22,14 @@ func (conf FsWriterConfig) Validate() error {
 		return errors.New("no group specified")
 	}
 
-	emptyCertPath := len(conf.CertPath) == 0
-	emptyPrivateKeyPath := len(conf.PrivateKeyPath) == 0
-	emptyPemPath := len(conf.PemPath) == 0
-	if emptyCertPath && emptyPrivateKeyPath && emptyPemPath {
+	emptyCertFile := len(conf.CertFile) == 0
+	emptyPrivateKeyFile := len(conf.PrivateKeyFile) == 0
+	emptyPemFile := len(conf.PemFile) == 0
+	if emptyCertFile && emptyPrivateKeyFile && emptyPemFile {
 		return errors.New("missing either certPath and privateKeyPath or pemPath")
 	}
 
-	if emptyPemPath && (emptyCertPath || emptyPrivateKeyPath) {
+	if emptyPemFile && (emptyCertFile || emptyPrivateKeyFile) {
 		return errors.New("certPath and privateKeyPath must both be specified when no pemPath is defined")
 	}
 
@@ -37,14 +37,14 @@ func (conf FsWriterConfig) Validate() error {
 }
 
 func (conf FsWriterConfig) Print() {
-	if len(conf.PemPath) > 0 {
-		log.Info().Msgf("PemPath=%s", conf.PemPath)
+	if len(conf.PemFile) > 0 {
+		log.Info().Msgf("PemFile=%s", conf.PemFile)
 	}
-	if len(conf.PrivateKeyPath) > 0 {
-		log.Info().Msgf("PrivateKeyPath=%s", conf.PrivateKeyPath)
+	if len(conf.PrivateKeyFile) > 0 {
+		log.Info().Msgf("PrivateKeyFile=%s", conf.PrivateKeyFile)
 	}
-	if len(conf.CertPath) > 0 {
-		log.Info().Msgf("CertificatePath=%s", conf.CertPath)
+	if len(conf.CertFile) > 0 {
+		log.Info().Msgf("CertificateFile=%s", conf.CertFile)
 	}
 	log.Info().Msgf("Username=%s", conf.Username)
 	log.Info().Msgf("Group=%s", conf.Group)

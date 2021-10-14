@@ -22,8 +22,8 @@ func TestFromFile(t *testing.T) {
 			},
 			want: AcmeVaultClientConfig{
 				FsWriterConfig: FsWriterConfig{
-					PrivateKeyPath: "/tmp/mydomain.key",
-					CertPath:       "/tmp/mydomain.crt",
+					PrivateKeyFile: "/tmp/mydomain.key",
+					CertFile:       "/tmp/mydomain.crt",
 					Username:       "myusername",
 					Group:          "mygroup",
 				},
