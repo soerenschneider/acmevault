@@ -16,9 +16,9 @@ import (
 )
 
 type FSCertWriter struct {
-	CertificatePath string
-	PrivateKeyPath  string
-	PemPath         string
+	CertificateFile string
+	PrivateKeyFile  string
+	PemFile         string
 	Uid             int
 	Gid             int
 }
@@ -35,9 +35,9 @@ func NewFsWriter(conf config.FsWriterConfig) (*FSCertWriter, error) {
 	log.Info().Msgf("Resolved username %s to uid %d, group %s to %d", conf.Username, uid, conf.Group, gid)
 
 	return &FSCertWriter{
-		CertificatePath: conf.CertFile,
-		PrivateKeyPath:  conf.PrivateKeyFile,
-		PemPath:         conf.PemFile,
+		CertificateFile: conf.CertFile,
+		PrivateKeyFile:  conf.PrivateKeyFile,
+		PemFile:         conf.PemFile,
 		Uid:             uid,
 		Gid:             gid,
 	}, nil
@@ -71,14 +71,14 @@ func getGidFromGroup(group string) (int, error) {
 }
 
 func (writer *FSCertWriter) ValidatePermissions() error {
-	err := createIfNotExists(writer.CertificatePath, 0644, writer.Uid, writer.Gid)
+	err := createIfNotExists(writer.CertificateFile, 0644, writer.Uid, writer.Gid)
 	if err != nil {
-		return fmt.Errorf("can not create cert file %s for user %d, %d: %v", writer.CertificatePath, writer.Uid, writer.Gid, err)
+		return fmt.Errorf("can not create cert file %s for user %d, %d: %v", writer.CertificateFile, writer.Uid, writer.Gid, err)
 	}
 
-	err = createIfNotExists(writer.PrivateKeyPath, 0600, writer.Uid, writer.Gid)
+	err = createIfNotExists(writer.PrivateKeyFile, 0600, writer.Uid, writer.Gid)
 	if err != nil {
-		return fmt.Errorf("can not create private file %s for user %d, %d: %v", writer.PrivateKeyPath, writer.Uid, writer.Gid, err)
+		return fmt.Errorf("can not create private file %s for user %d, %d: %v", writer.PrivateKeyFile, writer.Uid, writer.Gid, err)
 	}
 
 	return nil
@@ -95,8 +95,8 @@ func (writer *FSCertWriter) WriteBundle(cert *certstorage.AcmeCertificate) (bool
 	}
 
 	runHook := false
-	if len(writer.CertificatePath) > 0 {
-		change, err := writeFile(writer.CertificatePath, cert.Certificate, 0640)
+	if len(writer.CertificateFile) > 0 {
+		change, err := writeFile(writer.CertificateFile, cert.Certificate, 0640)
 		if err != nil {
 			return false, err
 		}
@@ -105,8 +105,8 @@ func (writer *FSCertWriter) WriteBundle(cert *certstorage.AcmeCertificate) (bool
 		}
 	}
 
-	if len(writer.PrivateKeyPath) > 0 {
-		change, err := writeFile(writer.PrivateKeyPath, cert.PrivateKey, 0600)
+	if len(writer.PrivateKeyFile) > 0 {
+		change, err := writeFile(writer.PrivateKeyFile, cert.PrivateKey, 0600)
 		if err != nil {
 			return false, err
 		}
@@ -115,9 +115,9 @@ func (writer *FSCertWriter) WriteBundle(cert *certstorage.AcmeCertificate) (bool
 		}
 	}
 
-	if len(writer.PemPath) > 0 {
+	if len(writer.PemFile) > 0 {
 		pem := []byte(cert.AsPem())
-		change, err := writeFile(writer.PemPath, pem, 0600)
+		change, err := writeFile(writer.PemFile, pem, 0600)
 		if err != nil {
 			return false, err
 		}
@@ -129,20 +129,20 @@ func (writer *FSCertWriter) WriteBundle(cert *certstorage.AcmeCertificate) (bool
 	return runHook, nil
 }
 
-func writeFile(path string, content []byte, perms fs.FileMode) (bool, error) {
-	identical, err := compareCerts(path, content)
+func writeFile(file string, content []byte, perms fs.FileMode) (bool, error) {
+	identical, err := compareCerts(file, content)
 	if err != nil || !identical {
-		err = ioutil.WriteFile(path, content, perms)
+		err = ioutil.WriteFile(file, content, perms)
 		if err != nil {
-			return false, fmt.Errorf("could not write pem to %s: %v", path, err)
+			return false, fmt.Errorf("could not write pem to %s: %v", file, err)
 		}
 		return true, nil
 	}
 	return false, nil
 }
 
-func compareCerts(path string, payload []byte) (bool, error) {
-	fileContent, err := ioutil.ReadFile(path)
+func compareCerts(file string, payload []byte) (bool, error) {
+	fileContent, err := ioutil.ReadFile(file)
 	if err != nil {
 		return false, err
 	}
