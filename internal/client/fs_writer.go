@@ -71,14 +71,25 @@ func getGidFromGroup(group string) (int, error) {
 }
 
 func (writer *FSCertWriter) ValidatePermissions() error {
-	err := createIfNotExists(writer.CertificateFile, 0644, writer.Uid, writer.Gid)
-	if err != nil {
-		return fmt.Errorf("can not create cert file %s for user %d, %d: %v", writer.CertificateFile, writer.Uid, writer.Gid, err)
+	if len(writer.CertificateFile) > 0 {
+		err := createIfNotExists(writer.CertificateFile, 0644, writer.Uid, writer.Gid)
+		if err != nil {
+			return fmt.Errorf("can not create cert file %s for user %d, %d: %v", writer.CertificateFile, writer.Uid, writer.Gid, err)
+		}
 	}
 
-	err = createIfNotExists(writer.PrivateKeyFile, 0600, writer.Uid, writer.Gid)
-	if err != nil {
-		return fmt.Errorf("can not create private file %s for user %d, %d: %v", writer.PrivateKeyFile, writer.Uid, writer.Gid, err)
+	if len(writer.PrivateKeyFile) > 0 {
+		err := createIfNotExists(writer.PrivateKeyFile, 0600, writer.Uid, writer.Gid)
+		if err != nil {
+			return fmt.Errorf("can not create private file %s for user %d, %d: %v", writer.PrivateKeyFile, writer.Uid, writer.Gid, err)
+		}
+	}
+
+	if len(writer.PemFile) > 0 {
+		err := createIfNotExists(writer.PemFile, 0600, writer.Uid, writer.Gid)
+		if err != nil {
+			return fmt.Errorf("can not create pem file %s for user %d, %d: %v", writer.PemFile, writer.Uid, writer.Gid, err)
+		}
 	}
 
 	return nil
