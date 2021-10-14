@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.4.0](https://www.github.com/soerenschneider/acmevault/compare/v1.3.1...v1.4.0) (2021-10-14)
+
+
+### Features
+
+* Allow writing data as PEM file ([5678f14](https://www.github.com/soerenschneider/acmevault/commit/5678f14cc0380d9621dd06dfec4f957c8a8b9af1))
+
+
+### Bug Fixes
+
+* check if files are configured before trying to write ([496b116](https://www.github.com/soerenschneider/acmevault/commit/496b116a75f480b27e09374200badb0f4c15ac61))
+* do not include issuer cert in pem ([ef0b324](https://www.github.com/soerenschneider/acmevault/commit/ef0b3246edacf0d846777d877c5cf24e865bc86d))
+* fix incorrect check using the wrong predicate ([1b9f667](https://www.github.com/soerenschneider/acmevault/commit/1b9f6672a10c5ef632a3a9ff0173423578915c35))
+* fix json key name ([1c234e1](https://www.github.com/soerenschneider/acmevault/commit/1c234e1fd17139550bca47e39518459eabd3769a))
+
 ### [1.3.1](https://www.github.com/soerenschneider/acmevault/compare/v1.3.0...v1.3.1) (2021-10-13)
 
 
