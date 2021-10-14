@@ -25,11 +25,11 @@ func main() {
 		log.Fatal().Msgf("Can't parse config: %v", err)
 	}
 
+	conf.Print()
 	err = conf.Validate()
 	if err != nil {
 		log.Fatal().Msgf("Invalid config: %v", err)
 	}
-	conf.Print()
 
 	storage, err := vault.NewVaultBackend(conf.VaultConfig, vault.NewPopulatedInMemoryTokenStorage(conf.VaultToken))
 	if err != nil {
