@@ -348,11 +348,12 @@ func (vault *VaultBackend) authenticate() (*TokenData, error) {
 			return nil, fmt.Errorf("could not login via AppRole '%s' and no wrapping token configured: %v", vault.conf.RoleId, err)
 		}
 
+		log.Info().Msg("Trying to unwrap secret_id...")
 		secretId, err := vault.unwrapAndSaveSecretId(vault.conf.VaultWrappingToken, vault.conf.SecretIdFile)
 		if err != nil {
 			return nil, fmt.Errorf("failed to unwrap and store secret_id from wrappingToken: %v", err)
 		}
-
+		log.Info().Msg("Successfully unwrapped secret_id, trying login with acquired secret_id...")
 		// try again to login via approle using the unwrapped secret_id
 		token, err = vault.loginAppRole(vault.conf.RoleId, secretId)
 		if err != nil {
