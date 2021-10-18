@@ -13,6 +13,7 @@ import (
 	"github.com/soerenschneider/acmevault/internal"
 	"github.com/soerenschneider/acmevault/internal/config"
 	"github.com/soerenschneider/acmevault/pkg/certstorage"
+	"io/ioutil"
 	"net/url"
 	"path"
 	"time"
@@ -30,12 +31,11 @@ const (
 type VaultBackend struct {
 	client           *api.Client
 	conf             config.VaultConfig
-	tokenStorage     TokenStorage
 	revokeToken      bool
 	namespacedPrefix string
 }
 
-func NewVaultBackend(vaultConfig config.VaultConfig, storage TokenStorage) (*VaultBackend, error) {
+func NewVaultBackend(vaultConfig config.VaultConfig) (*VaultBackend, error) {
 	config := &api.Config{
 		Timeout:    timeout,
 		MaxRetries: backoffRetries,
@@ -50,13 +50,10 @@ func NewVaultBackend(vaultConfig config.VaultConfig, storage TokenStorage) (*Vau
 	}
 
 	// set initial token, can be empty as well, ignore potential errors
-	initialToken, _ := storage.ReadToken()
-	client.SetToken(initialToken)
-
+	client.SetToken(vaultConfig.VaultToken)
 	vault := &VaultBackend{
 		client:           client,
 		conf:             vaultConfig,
-		tokenStorage:     storage,
 		namespacedPrefix: fmt.Sprintf("%s/%s", vaultSecretPathMount, vaultConfig.PathPrefix),
 	}
 
@@ -343,22 +340,25 @@ func (vault *VaultBackend) authenticate() (*TokenData, error) {
 		return tokenData, nil
 	}
 
-	// that didn't work, try token from storage
-	log.Info().Msgf("Trying token from storage backend")
-	token, err := vault.tokenStorage.ReadToken()
-	if err == nil && len(token) > 0 {
-		log.Info().Msg("ReadPublicCertificateData token from storage, testing token validity")
-		tokenData, err := vault.confirmToken(token)
-		if err == nil && tokenData != nil {
-			log.Info().Msgf("Successfully authenticated against vault, token valid until %s", tokenData.PrettyExpiryDate())
-			return tokenData, nil
-		}
-	}
 	log.Info().Msgf("Trying to login via AppRole using roleId %s", vault.conf.RoleId)
-
-	token, err = vault.loginAppRole(vault.conf.RoleId, vault.conf.SecretId)
+	secretId, err := vault.getSecretId(vault.conf)
+	token, err := vault.loginAppRole(vault.conf.RoleId, secretId)
 	if err != nil {
-		return nil, fmt.Errorf("could not login via AppRole %s: %v", vault.conf.RoleId, err)
+		if !vault.conf.HasWrappingToken() {
+			return nil, fmt.Errorf("could not login via AppRole '%s' and no wrapping token configured: %v", vault.conf.RoleId, err)
+		}
+
+		log.Info().Msg("Trying to unwrap secret_id...")
+		secretId, err := vault.unwrapAndSaveSecretId(vault.conf.VaultWrappingToken, vault.conf.SecretIdFile)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unwrap and store secret_id from wrappingToken: %v", err)
+		}
+		log.Info().Msg("Successfully unwrapped secret_id, trying login with acquired secret_id...")
+		// try again to login via approle using the unwrapped secret_id
+		token, err = vault.loginAppRole(vault.conf.RoleId, secretId)
+		if err != nil {
+			return nil, fmt.Errorf("logging in via approle using the unwrapped secret_id failed: %v", err)
+		}
 	}
 
 	tokenData, err = vault.confirmToken(token)
@@ -367,12 +367,6 @@ func (vault *VaultBackend) authenticate() (*TokenData, error) {
 	}
 
 	log.Info().Msgf("Successfully authenticated via AppRole %s, token valid until %s", vault.conf.RoleId, tokenData.PrettyExpiryDate())
-	log.Debug().Msg("Storing newly acquired token")
-	err = vault.tokenStorage.StoreToken(token)
-	if err != nil {
-		log.Info().Msgf("could not store token: %v\n", err)
-	}
-
 	return tokenData, nil
 }
 
@@ -397,6 +391,20 @@ func (vault *VaultBackend) lookupToken() (*TokenData, error) {
 		return nil, err
 	}
 	return FromSecret(secret), nil
+}
+
+// getSecretId accepts the config file and returns either the configured secret_id within the config or tries to load
+// the secret_id from the configured file to read it from.
+func (vault *VaultBackend) getSecretId(conf config.VaultConfig) (string, error) {
+	secretId := conf.SecretId
+	if conf.LoadSecretIdFromFile() {
+		read, err := ioutil.ReadFile(conf.SecretIdFile)
+		if err != nil {
+			return "", fmt.Errorf("could not read secret_id from specified file %s: %v", conf.SecretIdFile, err)
+		}
+		secretId = string(read)
+	}
+	return secretId, nil
 }
 
 // loginAppRole performs a login against vault using the "App Role" mechanism. Returns a vault token upon successful
@@ -438,6 +446,34 @@ func (vault *VaultBackend) ReadAwsCredentials() (*AwsDynamicCredentials, error) 
 		return nil, fmt.Errorf("could not gather dynamic credentials: %v", err)
 	}
 	return mapVaultAwsCredentialResponse(*secret)
+}
+
+// UnwrapSecretId accepts a wrapped token and tries to unwrap and return the secret_id.
+func (vault *VaultBackend) UnwrapSecretId(token string) (string, error) {
+	read, err := vault.client.Logical().Unwrap(token)
+	if err != nil {
+		return "", fmt.Errorf("call to unwrap secretID unsuccessful: %v", err)
+	}
+
+	secretID, ok := read.Data["secret_id"]
+	if !ok {
+		return "", errors.New("no field 'secret_id' found in response")
+	}
+	return fmt.Sprint(secretID), nil
+}
+
+// unwrapAndSaveSecretId accepts a wrapping token and a file to write the unwrapped secret_id to.
+func (vault *VaultBackend) unwrapAndSaveSecretId(wrappingToken, secretIdFile string) (string, error) {
+	parsed, err := vault.UnwrapSecretId(wrappingToken)
+	if err != nil {
+		return "", err
+	}
+
+	err = ioutil.WriteFile(secretIdFile, []byte(parsed), 0600)
+	if err != nil {
+		return "", fmt.Errorf("could not write unwrapped secret_id to file '%s': %v", secretIdFile, err)
+	}
+	return parsed, nil
 }
 
 func (vault *VaultBackend) getAwsCredentialsPath() string {

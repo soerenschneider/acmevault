@@ -11,6 +11,8 @@ func TestVaultConfig_Validate(t *testing.T) {
 		TokenIncreaseSeconds  int
 		TokenIncreaseInterval int
 		PathPrefix            string
+		SecretIdFile          string
+		VaultWrappingToken    string
 	}
 	tests := []struct {
 		name    string
@@ -32,6 +34,17 @@ func TestVaultConfig_Validate(t *testing.T) {
 			fields: fields{
 				VaultAddr:             "https://my-vault-instance:443",
 				SecretId:              "super-secret",
+				RoleId:                "my-role",
+				TokenIncreaseSeconds:  0,
+				TokenIncreaseInterval: 0,
+				PathPrefix:            "dev-v002",
+			},
+		},
+		{
+			name: "valid config - approle, secret_id file",
+			fields: fields{
+				VaultAddr:             "https://my-vault-instance:443",
+				SecretIdFile:          "super-secret",
 				RoleId:                "my-role",
 				TokenIncreaseSeconds:  0,
 				TokenIncreaseInterval: 0,
@@ -92,6 +105,38 @@ func TestVaultConfig_Validate(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "invalid config - specifying secretId and secretIdFile",
+			fields: fields{
+				VaultAddr:    "http://my-vault-instance:443",
+				VaultToken:   "s.VALIDVALIDVALID",
+				PathPrefix:   "production",
+				RoleId:       "role",
+				SecretId:     "secret-id",
+				SecretIdFile: "/tmp/secret-id",
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid config - secretIdFile not writable",
+			fields: fields{
+				VaultAddr:    "http://my-vault-instance:443",
+				VaultToken:   "s.VALIDVALIDVALID",
+				PathPrefix:   "production",
+				SecretIdFile: "/bin/sh",
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid config - wrappingToken specified but no file to write to",
+			fields: fields{
+				VaultAddr:          "http://my-vault-instance:443",
+				VaultToken:         "s.VALIDVALIDVALID",
+				PathPrefix:         "production",
+				VaultWrappingToken: "s.XXX",
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -103,6 +148,8 @@ func TestVaultConfig_Validate(t *testing.T) {
 				TokenIncreaseSeconds:  tt.fields.TokenIncreaseSeconds,
 				TokenIncreaseInterval: tt.fields.TokenIncreaseInterval,
 				PathPrefix:            tt.fields.PathPrefix,
+				SecretIdFile:          tt.fields.SecretIdFile,
+				VaultWrappingToken:    tt.fields.VaultWrappingToken,
 			}
 			if err := conf.Validate(); (err != nil) != tt.wantErr {
 				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
