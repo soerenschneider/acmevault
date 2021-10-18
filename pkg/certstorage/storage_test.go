@@ -31,9 +31,7 @@ i totally swear`),
 awesome issuer`),
 				CSR: nil,
 			},
-			want: `so much responsibility
-awesome issuer
-this is me
+			want: `this is me
 i totally swear
 private key
 so much private
