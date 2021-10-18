@@ -16,6 +16,7 @@ import (
 	"io/ioutil"
 	"net/url"
 	"path"
+	"strings"
 	"time"
 )
 
@@ -402,7 +403,8 @@ func (vault *VaultBackend) getSecretId(conf config.VaultConfig) (string, error) 
 		if err != nil {
 			return "", fmt.Errorf("could not read secret_id from specified file %s: %v", conf.SecretIdFile, err)
 		}
-		secretId = string(read)
+		// eliminate a possibly written newline after the secret_id
+		secretId = strings.TrimSuffix(string(read), "\n")
 	}
 	return secretId, nil
 }
