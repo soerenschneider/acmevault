@@ -33,7 +33,7 @@ func main() {
 }
 
 func NewAcmeVaultServer(conf config.AcmeVaultServerConfig) {
-	storage, err := vault.NewVaultBackend(conf.VaultConfig, vault.NewPopulatedInMemoryTokenStorage(conf.VaultToken))
+	storage, err := vault.NewVaultBackend(conf.VaultConfig)
 	if err != nil {
 		log.Fatal().Msgf("Could not generate desired backend: %v", err)
 	}

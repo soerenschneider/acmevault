@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/rs/zerolog/log"
 	"net/url"
+	"os"
 	"strings"
 )
 
@@ -12,6 +13,8 @@ type VaultConfig struct {
 	VaultToken            string `json:"vaultToken"`
 	VaultAddr             string `json:"vaultAddr"`
 	SecretId              string `json:"vaultSecretId"`
+	SecretIdFile          string `json:"vaultSecretIdFile"`
+	VaultWrappingToken    string `json:"vaultWrappingToken"`
 	RoleId                string `json:"vaultRoleId"`
 	TokenIncreaseSeconds  int    `json:"tokenIncreaseSeconds"`
 	TokenIncreaseInterval int    `json:"tokenIncreaseInterval"`
@@ -29,7 +32,13 @@ func (conf *VaultConfig) Print() {
 		log.Info().Msgf("VaultRoleId=%s", conf.RoleId)
 	}
 	if len(conf.SecretId) > 0 {
-		log.Info().Msgf("VaultSecretId=%s", "*** (Redacted)")
+		log.Info().Msg("VaultSecretId=*** (Redacted)")
+	}
+	if len(conf.SecretIdFile) > 0 {
+		log.Info().Msgf("VaultSecretIdFile=%s", conf.SecretIdFile)
+	}
+	if len(conf.VaultWrappingToken) > 0 {
+		log.Info().Msg("VaultWrappingToken=*** (Redacted)")
 	}
 	if len(conf.VaultToken) > 0 {
 		log.Info().Msgf("VaultToken=%s", "*** (Redacted)")
@@ -77,7 +86,38 @@ func (conf *VaultConfig) Validate() error {
 		return errors.New("neither valid 'App Role' credentials nor plain Vault token provided")
 	}
 
+	if conf.HasWrappingToken() && !conf.LoadSecretIdFromFile() {
+		return errors.New("vaultWrappingToken specified but no vaultSecretIdFile specified to write acquired secret to")
+	}
+
+	if len(conf.SecretId) > 0 && conf.LoadSecretIdFromFile() {
+		return errors.New("both secretId and secretIdFile specified, unsure what to do")
+	}
+
+	if conf.LoadSecretIdFromFile() && !isFileWritable(conf.SecretIdFile) {
+		return errors.New("specified secretIdFile is not writable, quitting")
+	}
+
 	return nil
+}
+
+func isFileWritable(fileName string) bool {
+	file, err := os.OpenFile(fileName, os.O_WRONLY, 0600)
+	defer file.Close()
+	if err != nil {
+		if os.IsPermission(err) {
+			return false
+		}
+	}
+	return true
+}
+
+func (conf *VaultConfig) HasWrappingToken() bool {
+	return len(conf.VaultWrappingToken) > 0
+}
+
+func (conf *VaultConfig) LoadSecretIdFromFile() bool {
+	return len(conf.SecretIdFile) > 0
 }
 
 func (conf *VaultConfig) HasLoginToken() bool {
