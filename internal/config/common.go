@@ -81,7 +81,7 @@ func (conf *VaultConfig) Validate() error {
 		}
 	}
 
-	validRoleIdCredentials := len(conf.SecretId) > 0 && len(conf.RoleId) > 0
+	validRoleIdCredentials := (len(conf.SecretId) > 0 || len(conf.SecretIdFile) > 0) && len(conf.RoleId) > 0
 	if !validRoleIdCredentials && len(conf.VaultToken) == 0 {
 		return errors.New("neither valid 'App Role' credentials nor plain Vault token provided")
 	}
