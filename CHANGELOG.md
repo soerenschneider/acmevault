@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://www.github.com/soerenschneider/acmevault/compare/v1.5.0...v1.6.0) (2021-10-19)
+
+
+### Features
+
+* enable loading wrapped token from disk ([d07494c](https://www.github.com/soerenschneider/acmevault/commit/d07494c41295cfedaee4481aea00084cbbdbf792))
+
 ## [1.5.0](https://www.github.com/soerenschneider/acmevault/compare/v1.4.0...v1.5.0) (2021-10-18)
 
 
