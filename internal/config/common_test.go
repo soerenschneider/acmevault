@@ -149,7 +149,7 @@ func TestVaultConfig_Validate(t *testing.T) {
 				TokenIncreaseInterval: tt.fields.TokenIncreaseInterval,
 				PathPrefix:            tt.fields.PathPrefix,
 				SecretIdFile:          tt.fields.SecretIdFile,
-				VaultWrappingToken:    tt.fields.VaultWrappingToken,
+				VaultWrappedToken:     tt.fields.VaultWrappingToken,
 			}
 			if err := conf.Validate(); (err != nil) != tt.wantErr {
 				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)

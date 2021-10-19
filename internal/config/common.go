@@ -12,10 +12,11 @@ import (
 type VaultConfig struct {
 	VaultToken            string `json:"vaultToken"`
 	VaultAddr             string `json:"vaultAddr"`
+	RoleId                string `json:"vaultRoleId"`
 	SecretId              string `json:"vaultSecretId"`
 	SecretIdFile          string `json:"vaultSecretIdFile"`
-	VaultWrappingToken    string `json:"vaultWrappingToken"`
-	RoleId                string `json:"vaultRoleId"`
+	VaultWrappedToken     string `json:"vaultWrappedToken"`
+	VaultWrappedTokenFile string `json:"vaultWrappedTokenFile"`
 	TokenIncreaseSeconds  int    `json:"tokenIncreaseSeconds"`
 	TokenIncreaseInterval int    `json:"tokenIncreaseInterval"`
 	PathPrefix            string `json:"vaultPathPrefix"`
@@ -37,8 +38,11 @@ func (conf *VaultConfig) Print() {
 	if len(conf.SecretIdFile) > 0 {
 		log.Info().Msgf("VaultSecretIdFile=%s", conf.SecretIdFile)
 	}
-	if len(conf.VaultWrappingToken) > 0 {
-		log.Info().Msg("VaultWrappingToken=*** (Redacted)")
+	if len(conf.VaultWrappedToken) > 0 {
+		log.Info().Msg("VaultWrappedToken=*** (Redacted)")
+	}
+	if len(conf.VaultWrappedTokenFile) > 0 {
+		log.Info().Msgf("VaultWrappedFile=%s", conf.VaultWrappedTokenFile)
 	}
 	if len(conf.VaultToken) > 0 {
 		log.Info().Msgf("VaultToken=%s", "*** (Redacted)")
@@ -60,6 +64,8 @@ func DefaultVaultConfig() VaultConfig {
 
 	return VaultConfig{
 		PathPrefix: pathPrefix,
+		VaultToken: os.Getenv("VAULT_TOKEN"),
+		VaultAddr:  os.Getenv("VAULT_ADDR"),
 	}
 }
 
@@ -86,8 +92,8 @@ func (conf *VaultConfig) Validate() error {
 		return errors.New("neither valid 'App Role' credentials nor plain Vault token provided")
 	}
 
-	if conf.HasWrappingToken() && !conf.LoadSecretIdFromFile() {
-		return errors.New("vaultWrappingToken specified but no vaultSecretIdFile specified to write acquired secret to")
+	if conf.HasWrappedToken() && !conf.LoadSecretIdFromFile() {
+		return errors.New("vaultWrappedToken specified but no vaultSecretIdFile specified to write acquired secret to")
 	}
 
 	if len(conf.SecretId) > 0 && conf.LoadSecretIdFromFile() {
@@ -112,14 +118,14 @@ func isFileWritable(fileName string) bool {
 	return true
 }
 
-func (conf *VaultConfig) HasWrappingToken() bool {
-	return len(conf.VaultWrappingToken) > 0
+func (conf *VaultConfig) HasWrappedToken() bool {
+	return len(conf.VaultWrappedToken) > 0 || len(conf.VaultWrappedTokenFile) > 0
+}
+
+func (conf *VaultConfig) LoadWrappedTokenFromFile() bool {
+	return len(conf.VaultWrappedTokenFile) > 0
 }
 
 func (conf *VaultConfig) LoadSecretIdFromFile() bool {
 	return len(conf.SecretIdFile) > 0
-}
-
-func (conf *VaultConfig) HasLoginToken() bool {
-	return false
 }

@@ -345,12 +345,16 @@ func (vault *VaultBackend) authenticate() (*TokenData, error) {
 	secretId, err := vault.getSecretId(vault.conf)
 	token, err := vault.loginAppRole(vault.conf.RoleId, secretId)
 	if err != nil {
-		if !vault.conf.HasWrappingToken() {
+		if !vault.conf.HasWrappedToken() {
 			return nil, fmt.Errorf("could not login via AppRole '%s' and no wrapping token configured: %v", vault.conf.RoleId, err)
 		}
 
+		wrappedToken, err := vault.getWrappedToken(vault.conf)
+		if err != nil {
+			return nil, fmt.Errorf("could not load wrapped token: %v", err)
+		}
 		log.Info().Msg("Trying to unwrap secret_id...")
-		secretId, err := vault.unwrapAndSaveSecretId(vault.conf.VaultWrappingToken, vault.conf.SecretIdFile)
+		secretId, err := vault.unwrapAndSaveSecretId(wrappedToken, vault.conf.SecretIdFile)
 		if err != nil {
 			return nil, fmt.Errorf("failed to unwrap and store secret_id from wrappingToken: %v", err)
 		}
@@ -392,6 +396,19 @@ func (vault *VaultBackend) lookupToken() (*TokenData, error) {
 		return nil, err
 	}
 	return FromSecret(secret), nil
+}
+
+func (vault *VaultBackend) getWrappedToken(conf config.VaultConfig) (string, error) {
+	token := conf.VaultWrappedToken
+	if conf.LoadWrappedTokenFromFile() {
+		read, err := ioutil.ReadFile(conf.VaultWrappedTokenFile)
+		if err != nil {
+			return "", fmt.Errorf("could not read wrapped token from specified file %s: %v", conf.VaultWrappedTokenFile, err)
+		}
+		// eliminate a possibly written newline after the token
+		token = strings.TrimSuffix(string(read), "\n")
+	}
+	return token, nil
 }
 
 // getSecretId accepts the config file and returns either the configured secret_id within the config or tries to load
