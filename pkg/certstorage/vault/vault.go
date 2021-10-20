@@ -16,6 +16,7 @@ import (
 	"io/ioutil"
 	"net/url"
 	"path"
+	"strings"
 	"time"
 )
 
@@ -341,15 +342,20 @@ func (vault *VaultBackend) authenticate() (*TokenData, error) {
 	secretId, err := vault.getSecretId(vault.conf)
 	token, err := vault.loginAppRole(vault.conf.RoleId, secretId)
 	if err != nil {
-		if !vault.conf.HasWrappingToken() {
+		if !vault.conf.HasWrappedToken() {
 			return nil, fmt.Errorf("could not login via AppRole '%s' and no wrapping token configured: %v", vault.conf.RoleId, err)
 		}
 
-		secretId, err := vault.unwrapAndSaveSecretId(vault.conf.VaultWrappingToken, vault.conf.SecretIdFile)
+		wrappedToken, err := vault.getWrappedToken(vault.conf)
+		if err != nil {
+			return nil, fmt.Errorf("could not load wrapped token: %v", err)
+		}
+		log.Info().Msg("Trying to unwrap secret_id...")
+		secretId, err := vault.unwrapAndSaveSecretId(wrappedToken, vault.conf.SecretIdFile)
 		if err != nil {
 			return nil, fmt.Errorf("failed to unwrap and store secret_id from wrappingToken: %v", err)
 		}
-
+		log.Info().Msg("Successfully unwrapped secret_id, trying login with acquired secret_id...")
 		// try again to login via approle using the unwrapped secret_id
 		token, err = vault.loginAppRole(vault.conf.RoleId, secretId)
 		if err != nil {
@@ -389,6 +395,19 @@ func (vault *VaultBackend) lookupToken() (*TokenData, error) {
 	return FromSecret(secret), nil
 }
 
+func (vault *VaultBackend) getWrappedToken(conf config.VaultConfig) (string, error) {
+	token := conf.VaultWrappedToken
+	if conf.LoadWrappedTokenFromFile() {
+		read, err := ioutil.ReadFile(conf.VaultWrappedTokenFile)
+		if err != nil {
+			return "", fmt.Errorf("could not read wrapped token from specified file %s: %v", conf.VaultWrappedTokenFile, err)
+		}
+		// eliminate a possibly written newline after the token
+		token = strings.TrimSuffix(string(read), "\n")
+	}
+	return token, nil
+}
+
 // getSecretId accepts the config file and returns either the configured secret_id within the config or tries to load
 // the secret_id from the configured file to read it from.
 func (vault *VaultBackend) getSecretId(conf config.VaultConfig) (string, error) {
@@ -398,7 +417,8 @@ func (vault *VaultBackend) getSecretId(conf config.VaultConfig) (string, error) 
 		if err != nil {
 			return "", fmt.Errorf("could not read secret_id from specified file %s: %v", conf.SecretIdFile, err)
 		}
-		secretId = string(read)
+		// eliminate a possibly written newline after the secret_id
+		secretId = strings.TrimSuffix(string(read), "\n")
 	}
 	return secretId, nil
 }

@@ -41,6 +41,17 @@ func TestVaultConfig_Validate(t *testing.T) {
 			},
 		},
 		{
+			name: "valid config - approle, secret_id file",
+			fields: fields{
+				VaultAddr:             "https://my-vault-instance:443",
+				SecretIdFile:          "super-secret",
+				RoleId:                "my-role",
+				TokenIncreaseSeconds:  0,
+				TokenIncreaseInterval: 0,
+				PathPrefix:            "dev-v002",
+			},
+		},
+		{
 			name: "invalid config - missing protocol",
 			fields: fields{
 				VaultToken:            "s.asd83hrfhasfjsda",
@@ -100,6 +111,7 @@ func TestVaultConfig_Validate(t *testing.T) {
 				VaultAddr:    "http://my-vault-instance:443",
 				VaultToken:   "s.VALIDVALIDVALID",
 				PathPrefix:   "production",
+				RoleId:       "role",
 				SecretId:     "secret-id",
 				SecretIdFile: "/tmp/secret-id",
 			},
@@ -137,7 +149,7 @@ func TestVaultConfig_Validate(t *testing.T) {
 				TokenIncreaseInterval: tt.fields.TokenIncreaseInterval,
 				PathPrefix:            tt.fields.PathPrefix,
 				SecretIdFile:          tt.fields.SecretIdFile,
-				VaultWrappingToken:    tt.fields.VaultWrappingToken,
+				VaultWrappedToken:     tt.fields.VaultWrappingToken,
 			}
 			if err := conf.Validate(); (err != nil) != tt.wantErr {
 				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)

@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.6.0](https://www.github.com/soerenschneider/acmevault/compare/v1.5.0...v1.6.0) (2021-10-19)
+
+
+### Features
+
+* enable loading wrapped token from disk ([d07494c](https://www.github.com/soerenschneider/acmevault/commit/d07494c41295cfedaee4481aea00084cbbdbf792))
+
+## [1.5.0](https://www.github.com/soerenschneider/acmevault/compare/v1.4.0...v1.5.0) (2021-10-18)
+
+
+### Features
+
+* Support for response wrapped secret_ids ([#79](https://www.github.com/soerenschneider/acmevault/issues/79)) ([8c1c29d](https://www.github.com/soerenschneider/acmevault/commit/8c1c29d2825d8726ee58153fd7340c08111bc5ae))
+
+
+### Bug Fixes
+
+* always write cert expiry metrics ([33535b7](https://www.github.com/soerenschneider/acmevault/commit/33535b799944a56df16a8313dcd3260b88857ae5))
+* eliminate possible newline after the secret_id ([e7452b9](https://www.github.com/soerenschneider/acmevault/commit/e7452b9168f0b52e07cf401f4de5a795f3a74693))
+
 ## [1.4.0](https://www.github.com/soerenschneider/acmevault/compare/v1.3.1...v1.4.0) (2021-10-14)
 
 

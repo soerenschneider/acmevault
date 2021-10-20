@@ -68,15 +68,19 @@ func (c *AcmeVaultServer) obtainCertificate(domain string) error {
 	}
 
 	log.Info().Msgf("Successfully read cert data from storage for domain %s", domain)
-	timeLeft, err := read.GetDurationUntilExpiry()
+	expiry, err := read.GetExpiryTimestamp()
 	if err != nil {
 		log.Info().Msgf("Could not determine cert lifetime for %s, probably the cert is broken", domain)
-	} else if timeLeft > MinCertLifetime {
-		log.Info().Msgf("Not renewing cert for domain %s, still valid for %v", domain, timeLeft)
-		return nil
+	} else {
+		timeLeft := expiry.Sub(time.Now().UTC())
+		if timeLeft > MinCertLifetime {
+			internal.CertExpiryTimestamp.WithLabelValues(domain).Set(float64(expiry.Unix()))
+			log.Info().Msgf("Not renewing cert for domain %s, still valid for %v", domain, timeLeft)
+			return nil
+		}
+		log.Info().Msgf("Cert for domain %s is only valid for %v, renewing...", domain, timeLeft)
 	}
 
-	log.Info().Msgf("Cert for domain %s is only valid for %v, renewing...", domain, timeLeft)
 	renewed, err := c.acmeClient.RenewCert(read)
 	internal.CertificatesRenewals.Inc()
 	if err != nil {
