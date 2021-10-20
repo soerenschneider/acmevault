@@ -98,8 +98,9 @@ var (
 
 	VaultTokenExpiryTimestamp = promauto.NewGauge(prometheus.GaugeOpts{
 		Namespace: namespace,
-		Name:      "timestamp",
-		Help:      "Date of last measure",
+		Subsystem: "vault",
+		Name:      "token_expiry_seconds",
+		Help:      "Expiry of the acquired vault token",
 	})
 )
 
