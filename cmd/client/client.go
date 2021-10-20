@@ -8,51 +8,50 @@ import (
 	"github.com/soerenschneider/acmevault/internal/client"
 	"github.com/soerenschneider/acmevault/internal/config"
 	"github.com/soerenschneider/acmevault/pkg/certstorage/vault"
-	"os"
 	"strings"
 )
 
 // Prefix of the configured AppRole role_ids for this tool
 const roleIdPrefix = "acme-client-"
 
-var conf config.AcmeVaultClientConfig
-
 func main() {
 	configPath := cmd.ParseCliFlags()
 	log.Info().Msgf("acmevault-client version %s, commit %s", internal.BuildVersion, internal.CommitHash)
 	conf, err := config.AcmeVaultClientConfigFromFile(configPath)
 	if err != nil {
-		log.Fatal().Msgf("Can't parse config: %v", err)
+		die("Can't parse config: %v", err, conf)
 	}
 
 	conf.Print()
 	err = conf.Validate()
 	if err != nil {
-		log.Fatal().Msgf("Invalid config: %v", err)
+		die("Invalid config: %v", err, conf)
 	}
 
 	storage, err := vault.NewVaultBackend(conf.VaultConfig)
 	if err != nil {
-		log.Fatal().Msgf("Could not generate desired backend: %v", err)
+		die("Could not generate desired backend: %v", err, conf)
 	}
 
 	writer, err := client.NewFsWriter(conf.FsWriterConfig)
 	if err != nil {
-		log.Fatal().Msgf("Could not create writer: %v", err)
+		die("Could not create writer: %v", err, conf)
 	}
 
 	client, err := client.NewAcmeVaultClient(conf, storage, writer)
 	if err != nil {
-		log.Fatal().Msgf("Could not build client: %v", err)
+		die("Could not build client: %v", err, conf)
 	}
 
 	err = pickUpCerts(client, conf)
-	exitCode := 0
 	if err != nil {
-		log.Error().Msgf("error while picking up and storing certificates: %v", err)
-		exitCode = 1
+		die("error while picking up and storing certificates: %v", err, conf)
 	}
-	os.Exit(exitCode)
+}
+
+func die(msg string, err error, conf config.AcmeVaultClientConfig) {
+	writeMetrics(conf)
+	log.Fatal().Msgf(msg, err)
 }
 
 func pickUpCerts(client *client.VaultAcmeClient, conf config.AcmeVaultClientConfig) error {
@@ -61,7 +60,10 @@ func pickUpCerts(client *client.VaultAcmeClient, conf config.AcmeVaultClientConf
 	}
 
 	domain := strings.ReplaceAll(conf.RoleId, roleIdPrefix, "")
-	err := client.RetrieveAndSave(domain)
+	return client.RetrieveAndSave(domain)
+}
+
+func writeMetrics(conf config.AcmeVaultClientConfig) {
 	if len(conf.MetricsPath) > 0 {
 		// shadow outer error
 		err := internal.WriteMetrics(conf.MetricsPath)
@@ -69,6 +71,4 @@ func pickUpCerts(client *client.VaultAcmeClient, conf config.AcmeVaultClientConf
 			log.Error().Msgf("couldn't write metrics to file: %v", err)
 		}
 	}
-
-	return err
 }
