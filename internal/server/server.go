@@ -41,6 +41,7 @@ func NewAcmeVaultServer(domains []string, acmeClient acme.AcmeDealer, storage ce
 }
 
 func (c *AcmeVaultServer) CheckCerts() {
+	c.certStorage.Authenticate()
 	internal.ServerLatestIterationTimestamp.SetToCurrentTime()
 	for _, domain := range c.domains {
 		err := c.obtainCertificate(domain)
@@ -48,6 +49,7 @@ func (c *AcmeVaultServer) CheckCerts() {
 			log.Error().Msgf("error while handling received certificate: %v", err)
 		}
 	}
+	c.certStorage.Logout()
 }
 
 func (c *AcmeVaultServer) obtainCertificate(domain string) error {

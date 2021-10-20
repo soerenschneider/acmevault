@@ -85,7 +85,7 @@ func Run(acmeVault *server.AcmeVaultServer, storage certstorage.CertStorage, con
 			acmeVault.CheckCerts()
 		case <-done:
 			log.Info().Msg("Received signal, quitting")
-			storage.Cleanup()
+			storage.Logout()
 			ticker.Stop()
 			os.Exit(0)
 		}

@@ -13,16 +13,36 @@ import (
 )
 
 type CertStorage interface {
+	// Authenticate authenticates against the storage subsystem and returns an error about the success of the operation.
+	Authenticate() error
+
+	// WriteCertificate writes the full certificate to the underlying storage.
 	WriteCertificate(resource *AcmeCertificate) error
+
+	// ReadPublicCertificateData reads the public portion of the certificate data (without the private key) from the
+	// storage subsystem. This is intended to be used by the server component that does not need to have permission
+	// to read the full certificate data.
 	ReadPublicCertificateData(domain string) (*AcmeCertificate, error)
+
+	// ReadFullCertificateData reads all data for a given certificate and is intended to be used by the client component.
 	ReadFullCertificateData(domain string) (*AcmeCertificate, error)
-	Cleanup()
+
+	// Logout cleans up and logs out of the storage subsystem.
+	Logout()
 }
 
 type AccountStorage interface {
+	// Authenticate authenticates against the storage subsystem and returns an error about the success of the operation.
+	Authenticate() error
+
+	// WriteAccount writes an ACME account to the storage.
 	WriteAccount(AcmeAccount) error
-	ReadAccount(hash string) (*AcmeAccount, error)
-	Cleanup()
+
+	// ReadAccount reads the ACME account data for a given email address from the storage.
+	ReadAccount(email string) (*AcmeAccount, error)
+
+	// Logout cleans up and logs out of the storage subsystem.
+	Logout()
 }
 
 type AcmeCertificate struct {

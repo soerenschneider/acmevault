@@ -55,27 +55,24 @@ func NewVaultBackend(vaultConfig config.VaultConfig) (*VaultBackend, error) {
 	vault := &VaultBackend{
 		client:           client,
 		conf:             vaultConfig,
+		revokeToken:      true,
 		namespacedPrefix: fmt.Sprintf("%s/%s", vaultSecretPathMount, vaultConfig.PathPrefix),
 	}
 
-	_, err = vault.authenticate()
-	if err != nil {
-		log.Fatal().Msgf("All authentication options exhausted, giving up: %v", err)
-	}
-
-	if vault.conf.IsTokenIncreaseEnabled() {
-		go func() {
-			ticker := time.NewTicker(time.Duration(vault.conf.TokenIncreaseInterval) * time.Second)
-			for {
-				select {
-				case <-ticker.C:
-					vault.RenewToken(vault.conf.TokenIncreaseSeconds)
-				}
-			}
-		}()
-	}
-
 	return vault, nil
+}
+
+func (vault *VaultBackend) Authenticate() error {
+	auth, err := vault.authenticate()
+	if auth != nil {
+		internal.VaultTokenExpiryTimestamp.Set(float64(auth.ExpireTime.Unix()))
+	}
+
+	if err != nil {
+		return fmt.Errorf("all authentication options exhausted, giving up: %v", err)
+	}
+
+	return nil
 }
 
 func (vault *VaultBackend) WriteCertificate(resource *certstorage.AcmeCertificate) error {
@@ -445,7 +442,7 @@ func (vault *VaultBackend) loginAppRole(roleId, secretId string) (string, error)
 	return resp.Auth.ClientToken, nil
 }
 
-func (vault *VaultBackend) Cleanup() {
+func (vault *VaultBackend) Logout() {
 	if !vault.revokeToken {
 		return
 	}
@@ -454,6 +451,7 @@ func (vault *VaultBackend) Cleanup() {
 	if err != nil {
 		log.Info().Msgf("Error while revoking token: %v", err)
 	}
+	vault.client.ClearToken()
 }
 
 func (vault *VaultBackend) ReadAwsCredentials() (*AwsDynamicCredentials, error) {
