@@ -45,7 +45,13 @@ func NewAcmeVaultClient(conf config.AcmeVaultClientConfig, storage certstorage.C
 }
 
 func (client VaultAcmeClient) RetrieveAndSave(domain string) error {
-	defer client.storage.Cleanup()
+	defer client.storage.Logout()
+
+	log.Info().Msg("Logging in to storage...")
+	err := client.storage.Authenticate()
+	if err != nil {
+		return fmt.Errorf("could not login to storage subsystem: %v", err)
+	}
 
 	log.Info().Msgf("Trying to read full cert data from storage for domain %s", domain)
 	cert, err := client.storage.ReadFullCertificateData(domain)
