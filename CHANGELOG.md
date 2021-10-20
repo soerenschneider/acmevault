@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.6.1](https://www.github.com/soerenschneider/acmevault/compare/v1.6.0...v1.6.1) (2021-10-20)
+
+
+### Bug Fixes
+
+* Always write prom metrics before exit ([c254b0c](https://www.github.com/soerenschneider/acmevault/commit/c254b0c802692376dc206dd1ffcd073ae9554851))
+
 ## [1.6.0](https://www.github.com/soerenschneider/acmevault/compare/v1.5.0...v1.6.0) (2021-10-19)
 
 
