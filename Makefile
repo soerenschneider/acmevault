@@ -22,6 +22,7 @@ release: clean version-info cross-build-client cross-build-server
 
 signed-release: release
 	pass keys/signify/github | signify -S -s $(SIGNATURE_KEYFILE) -m $(CHECKSUM_FILE)
+	gh-upload-assets.py -o soerenschneider -r acmevault -f ~/.gh-token builds
 
 cross-build-server:
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0       go build -ldflags="-X '$(MODULE)/internal.BuildVersion=${VERSION}' -X '$(MODULE)/internal.CommitHash=${COMMIT_HASH}'" -o $(BUILD_DIR)/$(BINARY_NAME_SERVER)-linux-amd64    cmd/server/server.go
