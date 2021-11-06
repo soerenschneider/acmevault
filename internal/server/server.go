@@ -11,6 +11,8 @@ import (
 )
 
 const (
+	// MinCertLifetime defines a certs minimum validity. If a certificate's lifetime is less than this threshold, it's
+	// being renewed.
 	MinCertLifetime = time.Duration(30*24) * time.Hour
 )
 
@@ -44,7 +46,7 @@ func (c *AcmeVaultServer) CheckCerts() {
 	c.certStorage.Authenticate()
 	internal.ServerLatestIterationTimestamp.SetToCurrentTime()
 	for _, domain := range c.domains {
-		err := c.obtainCertificate(domain)
+		err := c.obtainAndHandleCert(domain)
 		if err != nil {
 			log.Error().Msgf("error while handling received certificate: %v", err)
 		}
@@ -52,7 +54,7 @@ func (c *AcmeVaultServer) CheckCerts() {
 	c.certStorage.Logout()
 }
 
-func (c *AcmeVaultServer) obtainCertificate(domain string) error {
+func (c *AcmeVaultServer) obtainAndHandleCert(domain string) error {
 	log.Info().Msgf("Trying to read certificate data for domain %s from storage", domain)
 	read, err := c.certStorage.ReadPublicCertificateData(domain)
 	if err != nil || read == nil {
