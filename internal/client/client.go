@@ -5,25 +5,32 @@ import (
 	"fmt"
 	"github.com/rs/zerolog/log"
 	"github.com/soerenschneider/acmevault/internal"
+	"github.com/soerenschneider/acmevault/internal/client/hooks"
 	"github.com/soerenschneider/acmevault/internal/config"
 	"github.com/soerenschneider/acmevault/pkg/certstorage"
-	"os/exec"
 	"time"
 )
 
 const metricsSubsystem = "client"
 
+// CertificateWriter defines a method to write a received certificate to a pluggable backend.
 type CertificateWriter interface {
 	WriteBundle(*certstorage.AcmeCertificate) (bool, error)
 }
 
-type VaultAcmeClient struct {
-	conf    config.AcmeVaultClientConfig
-	storage certstorage.CertStorage
-	writer  CertificateWriter
+// PostHook defines a mechanism to run a hook after a certificate has been updated.
+type PostHook interface {
+	Invoke() error
 }
 
-func NewAcmeVaultClient(conf config.AcmeVaultClientConfig, storage certstorage.CertStorage, writer CertificateWriter) (*VaultAcmeClient, error) {
+type VaultAcmeClient struct {
+	conf     config.AcmeVaultClientConfig
+	storage  certstorage.CertStorage
+	writer   CertificateWriter
+	postHook PostHook
+}
+
+func NewAcmeVaultClient(conf config.AcmeVaultClientConfig, storage certstorage.CertStorage, writer CertificateWriter, hook PostHook) (*VaultAcmeClient, error) {
 	err := conf.Validate()
 	if err != nil {
 		return nil, fmt.Errorf("invalid config: %v", err)
@@ -37,10 +44,15 @@ func NewAcmeVaultClient(conf config.AcmeVaultClientConfig, storage certstorage.C
 		return nil, errors.New("supplied writer is nil")
 	}
 
+	if hook == nil {
+		hook = &hooks.NopHook{}
+	}
+
 	return &VaultAcmeClient{
-		conf:    conf,
-		storage: storage,
-		writer:  writer,
+		conf:     conf,
+		storage:  storage,
+		writer:   writer,
+		postHook: hook,
 	}, nil
 }
 
@@ -57,6 +69,10 @@ func (client VaultAcmeClient) RetrieveAndSave(domain string) error {
 	cert, err := client.storage.ReadFullCertificateData(domain)
 	if err != nil {
 		return fmt.Errorf("could not read secret bundle from vault: %v", err)
+	}
+
+	if cert == nil {
+		return fmt.Errorf("no cert returned")
 	}
 
 	expiryTimestamp, err := cert.GetExpiryTimestamp()
@@ -83,24 +99,8 @@ func (client VaultAcmeClient) RetrieveAndSave(domain string) error {
 	}
 
 	log.Info().Msgf("Noticed update when writing secrets for domain %s", cert.Domain)
-	return executeHook(client.conf.Hook)
-}
-
-func executeHook(hook []string) error {
-	if len(hook) == 0 {
-		return nil
-	}
-
-	log.Info().Msgf("Executing hook '%s'", hook)
-	cmd := exec.Command(hook[0], hook[1:]...)
-	err := cmd.Run()
-	if err != nil {
-		log.Error().Msgf("Error running hook: %v", err)
-		internal.HooksExecutionErrors.Inc()
-		log.Error().Msgf("Error while running hook: %v", err)
-		return err
-	}
-
-	log.Info().Msg("Hook successfully invoked")
-	return nil
+	err = client.postHook.Invoke()
+	internal.HooksExecutionErrors.Inc()
+	log.Error().Msgf("Error while running hook: %v", err)
+	return err
 }

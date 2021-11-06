@@ -6,6 +6,7 @@ import (
 	"github.com/soerenschneider/acmevault/cmd"
 	"github.com/soerenschneider/acmevault/internal"
 	"github.com/soerenschneider/acmevault/internal/client"
+	"github.com/soerenschneider/acmevault/internal/client/hooks"
 	"github.com/soerenschneider/acmevault/internal/config"
 	"github.com/soerenschneider/acmevault/pkg/certstorage/vault"
 	"strings"
@@ -38,7 +39,12 @@ func main() {
 		die("Could not create writer: %v", err, conf)
 	}
 
-	client, err := client.NewAcmeVaultClient(conf, storage, writer)
+	hook, err := hooks.NewCommandPostHook(conf.Hook)
+	if err != nil {
+		die("Could not create post hook: %v", err, conf)
+	}
+
+	client, err := client.NewAcmeVaultClient(conf, storage, writer, hook)
 	if err != nil {
 		die("Could not build client: %v", err, conf)
 	}

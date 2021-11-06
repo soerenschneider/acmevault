@@ -90,42 +90,6 @@ func Test_getGidFromGroup(t *testing.T) {
 	}
 }
 
-func Test_runHooks(t *testing.T) {
-	tests := []struct {
-		name    string
-		args    []string
-		wantErr bool
-	}{
-		{
-			name:    "nil",
-			args:    nil,
-			wantErr: false,
-		},
-		{
-			name:    "empty",
-			args:    []string{},
-			wantErr: false,
-		},
-		{
-			name:    "cmd",
-			args:    []string{"date"},
-			wantErr: false,
-		},
-		{
-			name:    "cmd with arg",
-			args:    []string{"date", "+%s"},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := executeHook(tt.args); (err != nil) != tt.wantErr {
-				t.Errorf("executeHook() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
 func TestMd5Compare(t *testing.T) {
 	type args struct {
 		a []byte
