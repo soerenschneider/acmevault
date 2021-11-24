@@ -7,7 +7,9 @@ SIGNATURE_KEYFILE = ~/.signify/github.sec
 DOCKER_PREFIX = ghcr.io/soerenschneider
 
 tests:
-	go test ./...
+	go test ./... -covermode=count -coverprofile=coverage.out
+	go tool cover -html=coverage.out -o=coverage.html
+	go tool cover -func=coverage.out -o=coverage.out
 
 clean:
 	git diff --quiet || { echo 'Dirty work tree' ; false; }
