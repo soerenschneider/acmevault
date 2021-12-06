@@ -3,7 +3,7 @@ module github.com/soerenschneider/acmevault
 go 1.16
 
 require (
-	github.com/aws/aws-sdk-go v1.42.13
+	github.com/aws/aws-sdk-go v1.42.19
 	github.com/blushft/go-diagrams v0.0.0-20201006005127-c78c821223d9
 	github.com/go-acme/lego/v4 v4.5.3
 	github.com/hashicorp/go-retryablehttp v0.7.0
