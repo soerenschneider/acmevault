@@ -33,6 +33,8 @@ func NewGoLegoDealer(accountStorage certstorage.AccountStorage, acmeConfig confi
 			Email: acmeConfig.Email,
 			Key:   key,
 		}
+	} else {
+		log.Info().Msgf("Successfully read account from storage for %s", account.GetEmail())
 	}
 
 	legoConfig := lego.NewConfig(account)
@@ -61,7 +63,7 @@ func NewGoLegoDealer(accountStorage certstorage.AccountStorage, acmeConfig confi
 
 	err = l.client.Challenge.SetDNS01Provider(dnsProvider)
 	if err != nil {
-		return nil, fmt.Errorf("could not build dns provider: %v", err)
+		return nil, fmt.Errorf("could not set dns challenge: %v", err)
 	}
 
 	return l, nil
