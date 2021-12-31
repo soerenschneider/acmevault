@@ -1,5 +1,13 @@
 # Changelog
 
+### [1.6.2](https://www.github.com/soerenschneider/acmevault/compare/v1.6.1...v1.6.2) (2021-12-31)
+
+
+### Bug Fixes
+
+* Also write metrics in case of no error ([c6b28fb](https://www.github.com/soerenschneider/acmevault/commit/c6b28fb055f980abc35cc1a8728273e0e563b7f4))
+* authenticate before reading acme account from storage ([d6d0324](https://www.github.com/soerenschneider/acmevault/commit/d6d0324cf837de3ba9f087ddf06de0c87309bc76))
+
 ### [1.6.1](https://www.github.com/soerenschneider/acmevault/compare/v1.6.0...v1.6.1) (2021-10-20)
 
 
