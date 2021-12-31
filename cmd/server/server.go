@@ -38,6 +38,11 @@ func NewAcmeVaultServer(conf config.AcmeVaultServerConfig) {
 		log.Fatal().Msgf("Could not generate desired backend: %v", err)
 	}
 
+	err = storage.Authenticate()
+	if err != nil {
+		log.Fatal().Msgf("Could not authenticate against storage: %v", err)
+	}
+
 	dynamicCredentialsProvider, _ := acme.NewDynamicCredentialsProvider(storage)
 	dnsProvider, _ := acme.BuildRoute53DnsProvider(*dynamicCredentialsProvider)
 	acmeClient, err := acme.NewGoLegoDealer(storage, conf.AcmeConfig, dnsProvider)
