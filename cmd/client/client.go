@@ -50,14 +50,14 @@ func main() {
 	}
 
 	err = pickUpCerts(client, conf)
-	if err != nil {
-		die("error while picking up and storing certificates: %v", err, conf)
-	}
+	die("error while picking up and storing certificates: %v", err, conf)
 }
 
 func die(msg string, err error, conf config.AcmeVaultClientConfig) {
 	writeMetrics(conf)
-	log.Fatal().Msgf(msg, err)
+	if err != nil {
+		log.Fatal().Msgf(msg, err)
+	}
 }
 
 func pickUpCerts(client *client.VaultAcmeClient, conf config.AcmeVaultClientConfig) error {
