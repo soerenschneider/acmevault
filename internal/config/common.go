@@ -20,6 +20,7 @@ type VaultConfig struct {
 	TokenIncreaseSeconds  int    `json:"tokenIncreaseSeconds"`
 	TokenIncreaseInterval int    `json:"tokenIncreaseInterval"`
 	PathPrefix            string `json:"vaultPathPrefix"`
+	DomainPathFormat      string `json:"domainPathFormat"`
 }
 
 func (conf *VaultConfig) IsTokenIncreaseEnabled() bool {
@@ -52,6 +53,9 @@ func (conf *VaultConfig) Print() {
 	}
 	if conf.TokenIncreaseInterval > 0 {
 		log.Info().Msgf("TokenIncreaseInterval=%d", conf.TokenIncreaseInterval)
+	}
+	if len(conf.DomainPathFormat) > 0 {
+		log.Info().Msgf("DomainPathFormat=%s", conf.DomainPathFormat)
 	}
 }
 
@@ -102,6 +106,12 @@ func (conf *VaultConfig) Validate() error {
 
 	if conf.LoadSecretIdFromFile() && !isFileWritable(conf.SecretIdFile) {
 		return errors.New("specified secretIdFile is not writable, quitting")
+	}
+
+	if len(conf.DomainPathFormat) > 0 {
+		if !strings.ContainsRune(conf.DomainPathFormat, '%') {
+			return fmt.Errorf("the domainPathFormat '%s' does not seem to be a valid format string", conf.DomainPathFormat)
+		}
 	}
 
 	return nil

@@ -9,11 +9,7 @@ import (
 	"github.com/soerenschneider/acmevault/internal/client/hooks"
 	"github.com/soerenschneider/acmevault/internal/config"
 	"github.com/soerenschneider/acmevault/pkg/certstorage/vault"
-	"strings"
 )
-
-// Prefix of the configured AppRole role_ids for this tool
-const roleIdPrefix = "acme-client-"
 
 func main() {
 	configPath := cmd.ParseCliFlags()
@@ -65,8 +61,7 @@ func pickUpCerts(client *client.VaultAcmeClient, conf config.AcmeVaultClientConf
 		return errors.New("empty client passed")
 	}
 
-	domain := strings.ReplaceAll(conf.RoleId, roleIdPrefix, "")
-	return client.RetrieveAndSave(domain)
+	return client.RetrieveAndSave(conf.Domain)
 }
 
 func writeMetrics(conf config.AcmeVaultClientConfig) {
