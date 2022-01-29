@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://www.github.com/soerenschneider/acmevault/compare/v1.6.2...v1.7.0) (2022-01-29)
+
+
+### Features
+
+* domain format ([#108](https://www.github.com/soerenschneider/acmevault/issues/108)) ([25f0779](https://www.github.com/soerenschneider/acmevault/commit/25f0779bf921900280ad353f08f59182ba39d9ca))
+
 ### [1.6.2](https://www.github.com/soerenschneider/acmevault/compare/v1.6.1...v1.6.2) (2021-12-31)
 
 
