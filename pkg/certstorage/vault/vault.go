@@ -493,6 +493,13 @@ func (vault *VaultBackend) unwrapAndSaveSecretId(wrappingToken, secretIdFile str
 	return parsed, nil
 }
 
+func (vault *VaultBackend) formatDomain(domain string) string {
+	if len(vault.conf.DomainPathFormat) == 0 {
+		return domain
+	}
+	return fmt.Sprintf(vault.conf.DomainPathFormat, domain)
+}
+
 func (vault *VaultBackend) getAwsCredentialsPath() string {
 	return fmt.Sprintf("/aws/creds/%s", awsRole)
 }
@@ -502,9 +509,11 @@ func (vault *VaultBackend) getAccountPath(hash string) string {
 }
 
 func (vault *VaultBackend) getCertDataPath(domain string) string {
-	return fmt.Sprintf("%s/client/%s/certificate", vault.namespacedPrefix, domain)
+	domainFormatted := vault.formatDomain(domain)
+	return fmt.Sprintf("%s/client/%s/certificate", vault.namespacedPrefix, domainFormatted)
 }
 
 func (vault *VaultBackend) getSecretDataPath(domain string) string {
-	return fmt.Sprintf("%s/client/%s/privatekey", vault.namespacedPrefix, domain)
+	domainFormatted := vault.formatDomain(domain)
+	return fmt.Sprintf("%s/client/%s/privatekey", vault.namespacedPrefix, domainFormatted)
 }

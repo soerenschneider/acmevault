@@ -20,6 +20,7 @@ type VaultConfig struct {
 	TokenIncreaseSeconds  int    `json:"tokenIncreaseSeconds"`
 	TokenIncreaseInterval int    `json:"tokenIncreaseInterval"`
 	PathPrefix            string `json:"vaultPathPrefix"`
+	DomainPathFormat      string `json:"domainPathFormat"`
 }
 
 func (conf *VaultConfig) IsTokenIncreaseEnabled() bool {
