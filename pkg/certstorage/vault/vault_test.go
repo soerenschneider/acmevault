@@ -64,9 +64,9 @@ func TestVaultBackend_getSecretDataPath(t *testing.T) {
 		{
 			name: "custom domain path",
 			fields: fields{
-				client:           nil,
-				conf:             config.VaultConfig{
-					DomainPathFormat:      "machine-%s",
+				client: nil,
+				conf: config.VaultConfig{
+					DomainPathFormat: "machine-%s",
 				},
 				revokeToken:      false,
 				namespacedPrefix: "acmevault",

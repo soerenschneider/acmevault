@@ -61,8 +61,7 @@ func pickUpCerts(client *client.VaultAcmeClient, conf config.AcmeVaultClientConf
 		return errors.New("empty client passed")
 	}
 
-	domain := conf.Domain
-	return client.RetrieveAndSave(domain)
+	return client.RetrieveAndSave(conf.Domain)
 }
 
 func writeMetrics(conf config.AcmeVaultClientConfig) {
