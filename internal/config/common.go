@@ -108,7 +108,7 @@ func (conf *VaultConfig) Validate() error {
 		return errors.New("specified secretIdFile is not writable, quitting")
 	}
 
-	if len(conf.DomainPathFormat) >= 0 {
+	if len(conf.DomainPathFormat) > 0 {
 		if !strings.ContainsRune(conf.DomainPathFormat, '%') {
 			return fmt.Errorf("the domainPathFormat '%s' does not seem to be a valid format string", conf.DomainPathFormat)
 		}
