@@ -7,6 +7,7 @@ import (
 	"github.com/soerenschneider/acmevault/internal"
 	"github.com/soerenschneider/acmevault/internal/client"
 	"github.com/soerenschneider/acmevault/internal/client/hooks"
+	"github.com/soerenschneider/acmevault/internal/client/metrics"
 	"github.com/soerenschneider/acmevault/internal/config"
 	"github.com/soerenschneider/acmevault/pkg/certstorage/vault"
 )
@@ -67,7 +68,7 @@ func pickUpCerts(client *client.VaultAcmeClient, conf config.AcmeVaultClientConf
 func writeMetrics(conf config.AcmeVaultClientConfig) {
 	if len(conf.MetricsPath) > 0 {
 		// shadow outer error
-		err := internal.WriteMetrics(conf.MetricsPath)
+		err := metrics.WriteMetrics(conf.MetricsPath)
 		if err != nil {
 			log.Error().Msgf("couldn't write metrics to file: %v", err)
 		}

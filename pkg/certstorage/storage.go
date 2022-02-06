@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"github.com/go-acme/lego/v4/registration"
 	"github.com/rs/zerolog/log"
-	"github.com/soerenschneider/acmevault/internal"
+	"github.com/soerenschneider/acmevault/internal/server/metrics"
 	"time"
 )
 
@@ -75,7 +75,7 @@ func (cert *AcmeCertificate) GetExpiryTimestamp() (time.Time, error) {
 func (cert *AcmeCertificate) GetDurationUntilExpiry() (time.Duration, error) {
 	expiry, err := cert.GetExpiryTimestamp()
 	if err != nil {
-		internal.CertErrors.WithLabelValues("unknown-expiry")
+		metrics.CertErrors.WithLabelValues("unknown-expiry")
 		return -1, err
 	}
 

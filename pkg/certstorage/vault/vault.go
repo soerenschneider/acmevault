@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/vault/api"
 	"github.com/rs/zerolog/log"
-	"github.com/soerenschneider/acmevault/internal"
 	"github.com/soerenschneider/acmevault/internal/config"
+	"github.com/soerenschneider/acmevault/internal/server/metrics"
 	"github.com/soerenschneider/acmevault/pkg/certstorage"
 	"io/ioutil"
 	"net/url"
@@ -63,15 +63,10 @@ func NewVaultBackend(vaultConfig config.VaultConfig) (*VaultBackend, error) {
 }
 
 func (vault *VaultBackend) Authenticate() error {
-	auth, err := vault.authenticate()
-	if auth != nil {
-		internal.VaultTokenExpiryTimestamp.Set(float64(auth.ExpireTime.Unix()))
-	}
-
+	_, err := vault.authenticate()
 	if err != nil {
 		return fmt.Errorf("all authentication options exhausted, giving up: %v", err)
 	}
-
 	return nil
 }
 
@@ -377,11 +372,6 @@ func (vault *VaultBackend) authenticate() (*TokenData, error) {
 func (vault *VaultBackend) confirmToken(token string) (*TokenData, error) {
 	vault.client.SetToken(token)
 	tokenData, err := vault.lookupToken()
-
-	// Update token lifetime metric
-	if err == nil && tokenData != nil && !tokenData.ExpireTime.IsZero() {
-		internal.VaultTokenExpiryTimestamp.Set(float64(tokenData.ExpireTime.Unix()))
-	}
 	return tokenData, err
 }
 
@@ -455,11 +445,11 @@ func (vault *VaultBackend) Logout() {
 }
 
 func (vault *VaultBackend) ReadAwsCredentials() (*AwsDynamicCredentials, error) {
-	internal.AwsDynCredentialsRequested.Inc()
+	metrics.AwsDynCredentialsRequested.Inc()
 	path := vault.getAwsCredentialsPath()
 	secret, err := vault.client.Logical().Read(path)
 	if err != nil {
-		internal.AwsDynCredentialsRequestErrors.Inc()
+		metrics.AwsDynCredentialsRequestErrors.Inc()
 		return nil, fmt.Errorf("could not gather dynamic credentials: %v", err)
 	}
 	return mapVaultAwsCredentialResponse(*secret)

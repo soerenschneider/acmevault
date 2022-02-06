@@ -9,6 +9,7 @@ import (
 	"github.com/soerenschneider/acmevault/internal/config"
 	"github.com/soerenschneider/acmevault/internal/server"
 	"github.com/soerenschneider/acmevault/internal/server/acme"
+	"github.com/soerenschneider/acmevault/internal/server/metrics"
 	"github.com/soerenschneider/acmevault/pkg/certstorage"
 	"github.com/soerenschneider/acmevault/pkg/certstorage/vault"
 	"os"
@@ -73,7 +74,7 @@ func Run(acmeVault *server.AcmeVaultServer, storage certstorage.CertStorage, con
 		return fmt.Errorf("config invalid: %v", err)
 	}
 
-	go internal.StartMetricsServer(conf.MetricsAddr)
+	go metrics.StartMetricsServer(conf.MetricsAddr)
 
 	ticker := time.NewTicker(time.Duration(conf.IntervalSeconds) * time.Second)
 	done := make(chan os.Signal, 1)

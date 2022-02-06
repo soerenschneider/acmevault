@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/rs/zerolog/log"
-	"github.com/soerenschneider/acmevault/internal"
 	"github.com/soerenschneider/acmevault/internal/client/hooks"
+	"github.com/soerenschneider/acmevault/internal/client/metrics"
 	"github.com/soerenschneider/acmevault/internal/config"
 	"github.com/soerenschneider/acmevault/pkg/certstorage"
 	"time"
@@ -62,36 +62,38 @@ func (client VaultAcmeClient) RetrieveAndSave(domain string) error {
 	log.Info().Msg("Logging in to storage...")
 	err := client.storage.Authenticate()
 	if err != nil {
+		metrics.AuthErrors.Inc()
 		return fmt.Errorf("could not login to storage subsystem: %v", err)
 	}
 
 	log.Info().Msgf("Trying to read full cert data from storage for domain %s", domain)
 	cert, err := client.storage.ReadFullCertificateData(domain)
 	if err != nil {
+		metrics.CertReadErrors.WithLabelValues(domain).Inc()
 		return fmt.Errorf("could not read secret bundle from vault: %v", err)
 	}
 
 	if cert == nil {
+		metrics.CertErrors.WithLabelValues(domain, "empty-cert").Inc()
 		return fmt.Errorf("no cert returned")
 	}
 
 	expiryTimestamp, err := cert.GetExpiryTimestamp()
 	if err != nil {
-		internal.CertErrors.WithLabelValues("unknown-expiry")
+		metrics.CertErrors.WithLabelValues(domain, "unknown-expiry").Inc()
 		log.Error().Msgf("Can not determine lifetime of certificate: %v", err)
 	} else {
 		daysLeft := int64(expiryTimestamp.Sub(time.Now().UTC()).Hours() / 24)
 		log.Info().Msgf("Successfully read secret for domain %s from vault, valid for %d days", cert.Domain, daysLeft)
+		metrics.CertExpiryTimestamp.WithLabelValues(domain).Set(float64(expiryTimestamp.Unix()))
 	}
 
 	log.Info().Msg("Writing received data to configured backend...")
 	runHook, err := client.writer.WriteBundle(cert)
 	if err != nil {
-		internal.CertWriteError.WithLabelValues(metricsSubsystem).Inc()
+		metrics.PersistCertErrors.WithLabelValues(domain).Inc()
 		return fmt.Errorf("writing the data was not successful: %v", err)
 	}
-	internal.CertWrites.WithLabelValues(metricsSubsystem).Inc()
-	log.Info().Msg("Successfully written data")
 
 	if !runHook {
 		log.Info().Msg("No update detected, not running any hooks")
@@ -100,7 +102,10 @@ func (client VaultAcmeClient) RetrieveAndSave(domain string) error {
 
 	log.Info().Msgf("Noticed update when writing secrets for domain %s", cert.Domain)
 	err = client.postHook.Invoke()
-	internal.HooksExecutionErrors.Inc()
-	log.Error().Msgf("Error while running hook: %v", err)
-	return err
+	if err != nil {
+		metrics.HooksExecutionErrors.Inc()
+		return fmt.Errorf("error while running hook: %v", err)
+	}
+
+	return nil
 }
