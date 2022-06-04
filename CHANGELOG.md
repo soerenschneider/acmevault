@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.7.2](https://www.github.com/soerenschneider/acmevault/compare/v1.7.1...v1.7.2) (2022-06-04)
+
+
+### Miscellaneous Chores
+
+* release 1.7.2 ([ee42f8f](https://www.github.com/soerenschneider/acmevault/commit/ee42f8f21091251f6bcce38a90399f23892688d3))
+
 ### [1.7.1](https://www.github.com/soerenschneider/acmevault/compare/v1.7.0...v1.7.1) (2022-02-07)
 
 
