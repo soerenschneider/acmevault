@@ -6,7 +6,8 @@ ENV MODE="$MODE"
 ENV MODULE=github.com/soerenschneider/acmevault
 WORKDIR /build/
 ADD . /build/
-RUN go build -ldflags="-X $MODULE/internal.BuildVersion=$(git describe --tags --abbrev=0 || echo dev) -X $MODULE/internal.CommitHash=$(git rev-parse HEAD)" -o "acmevault-$MODE" -tags $MODE "cmd/$MODE/$MODE.go"
+RUN go build -ldflags="-X $MODULE/internal.BuildVersion=$(git describe --tags --abbrev=0 || echo dev) \
+     -X $MODULE/internal.CommitHash=$(git rev-parse HEAD)" -o "acmevault-$MODE" -tags $MODE "cmd/$MODE/$MODE.go"
 
 FROM gcr.io/distroless/base
 ARG MODE
