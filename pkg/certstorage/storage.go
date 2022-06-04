@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"github.com/go-acme/lego/v4/registration"
 	"github.com/rs/zerolog/log"
-	"github.com/soerenschneider/acmevault/internal/server/metrics"
+	"github.com/soerenschneider/acmevault/internal/metrics"
 	"time"
 )
 

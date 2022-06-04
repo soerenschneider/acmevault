@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/rs/zerolog/log"
 	"github.com/soerenschneider/acmevault/internal/client/hooks"
-	"github.com/soerenschneider/acmevault/internal/client/metrics"
 	"github.com/soerenschneider/acmevault/internal/config"
+	"github.com/soerenschneider/acmevault/internal/metrics"
 	"github.com/soerenschneider/acmevault/pkg/certstorage"
 	"time"
 )
@@ -85,7 +85,7 @@ func (client VaultAcmeClient) RetrieveAndSave(domain string) error {
 	} else {
 		daysLeft := int64(expiryTimestamp.Sub(time.Now().UTC()).Hours() / 24)
 		log.Info().Msgf("Successfully read secret for domain %s from vault, valid for %d days", cert.Domain, daysLeft)
-		metrics.CertExpiryTimestamp.WithLabelValues(domain).Set(float64(expiryTimestamp.Unix()))
+		metrics.CertClientExpiryTimestamp.WithLabelValues(domain).Set(float64(expiryTimestamp.Unix()))
 	}
 
 	log.Info().Msg("Writing received data to configured backend...")

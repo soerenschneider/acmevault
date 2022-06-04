@@ -1,3 +1,6 @@
+//go:build client
+// +build client
+
 package metrics
 
 import (
@@ -7,10 +10,6 @@ import (
 	"github.com/prometheus/common/expfmt"
 	"github.com/rs/zerolog/log"
 	"io/ioutil"
-)
-
-const (
-	namespace = "acmevault"
 )
 
 var (
@@ -28,7 +27,7 @@ var (
 		Help:      "Errors while trying to read the certificate from the backend",
 	}, []string{"domain"})
 
-	CertExpiryTimestamp = promauto.NewGaugeVec(prometheus.GaugeOpts{
+	CertClientExpiryTimestamp = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: namespace,
 		Subsystem: "client",
 		Name:      "certificate_expiry_time",
@@ -42,7 +41,7 @@ var (
 		Help:      "Errors while invoking the hooks",
 	})
 
-	CertErrors = promauto.NewCounterVec(prometheus.CounterOpts{
+	CertClientErrors = promauto.NewCounterVec(prometheus.CounterOpts{
 		Namespace: namespace,
 		Subsystem: "client",
 		Name:      "certificate_format_errors_total",

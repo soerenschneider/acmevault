@@ -7,8 +7,8 @@ import (
 	"github.com/soerenschneider/acmevault/internal"
 	"github.com/soerenschneider/acmevault/internal/client"
 	"github.com/soerenschneider/acmevault/internal/client/hooks"
-	"github.com/soerenschneider/acmevault/internal/client/metrics"
 	"github.com/soerenschneider/acmevault/internal/config"
+	"github.com/soerenschneider/acmevault/internal/metrics"
 	"github.com/soerenschneider/acmevault/pkg/certstorage/vault"
 )
 

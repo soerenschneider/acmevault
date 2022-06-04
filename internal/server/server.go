@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/rs/zerolog/log"
+	"github.com/soerenschneider/acmevault/internal/metrics"
 	"github.com/soerenschneider/acmevault/internal/server/acme"
-	"github.com/soerenschneider/acmevault/internal/server/metrics"
 	"github.com/soerenschneider/acmevault/pkg/certstorage"
 	"time"
 )
@@ -76,7 +76,7 @@ func (c *AcmeVaultServer) obtainAndHandleCert(domain string) error {
 	} else {
 		timeLeft := expiry.Sub(time.Now().UTC())
 		if timeLeft > MinCertLifetime {
-			metrics.CertExpiryTimestamp.WithLabelValues(domain).Set(float64(expiry.Unix()))
+			metrics.CertServerExpiryTimestamp.WithLabelValues(domain).Set(float64(expiry.Unix()))
 			log.Info().Msgf("Not renewing cert for domain %s, still valid for %v", domain, timeLeft)
 			return nil
 		}
@@ -99,7 +99,7 @@ func handleReceivedCert(cert *certstorage.AcmeCertificate, storage certstorage.C
 
 	expiry, err := cert.GetExpiryTimestamp()
 	if err != nil {
-		metrics.CertExpiryTimestamp.WithLabelValues(cert.Domain).Set(float64(expiry.Unix()))
+		metrics.CertServerExpiryTimestamp.WithLabelValues(cert.Domain).Set(float64(expiry.Unix()))
 	} else {
 		metrics.CertErrors.WithLabelValues("unknown-expiry")
 	}

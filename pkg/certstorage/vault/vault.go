@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/vault/api"
 	"github.com/rs/zerolog/log"
 	"github.com/soerenschneider/acmevault/internal/config"
-	"github.com/soerenschneider/acmevault/internal/server/metrics"
+	"github.com/soerenschneider/acmevault/internal/metrics"
 	"github.com/soerenschneider/acmevault/pkg/certstorage"
 	"io/ioutil"
 	"net/url"
