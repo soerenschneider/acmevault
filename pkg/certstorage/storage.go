@@ -75,7 +75,7 @@ func (cert *AcmeCertificate) GetExpiryTimestamp() (time.Time, error) {
 func (cert *AcmeCertificate) GetDurationUntilExpiry() (time.Duration, error) {
 	expiry, err := cert.GetExpiryTimestamp()
 	if err != nil {
-		metrics.CertErrors.WithLabelValues("unknown-expiry")
+		metrics.CertErrors.WithLabelValues(cert.Domain, "unknown-expiry")
 		return -1, err
 	}
 
