@@ -73,9 +73,11 @@ func (l *GoLego) RegisterAccount() (*registration.Resource, error) {
 	return l.client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
 }
 
-func (l *GoLego) ObtainCert(domain string) (*certstorage.AcmeCertificate, error) {
+func (l *GoLego) ObtainCert(domain config.AcmeServerDomains) (*certstorage.AcmeCertificate, error) {
+	domains := []string{domain.Domain}
+	domains = append(domains, domain.Sans...)
 	request := certificate.ObtainRequest{
-		Domains: []string{domain},
+		Domains: domains,
 		Bundle:  true,
 	}
 

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/rs/zerolog/log"
+	"github.com/soerenschneider/acmevault/internal/config"
 	"github.com/soerenschneider/acmevault/internal/metrics"
 	"github.com/soerenschneider/acmevault/internal/server/acme"
 	"github.com/soerenschneider/acmevault/pkg/certstorage"
@@ -19,11 +20,11 @@ const (
 type AcmeVaultServer struct {
 	acmeClient  acme.AcmeDealer
 	certStorage certstorage.CertStorage
-	domains     []string
+	domains     []config.AcmeServerDomains
 }
 
-func NewAcmeVaultServer(domains []string, acmeClient acme.AcmeDealer, storage certstorage.CertStorage) (*AcmeVaultServer, error) {
-	if nil == domains || len(domains) == 0 {
+func NewAcmeVaultServer(domains []config.AcmeServerDomains, acmeClient acme.AcmeDealer, storage certstorage.CertStorage) (*AcmeVaultServer, error) {
+	if len(domains) == 0 {
 		return nil, errors.New("no domains given")
 	}
 
@@ -54,17 +55,17 @@ func (c *AcmeVaultServer) CheckCerts() {
 	c.certStorage.Logout()
 }
 
-func (c *AcmeVaultServer) obtainAndHandleCert(domain string) error {
-	log.Info().Msgf("Trying to read certificate data for domain %s from storage", domain)
-	read, err := c.certStorage.ReadPublicCertificateData(domain)
+func (c *AcmeVaultServer) obtainAndHandleCert(domain config.AcmeServerDomains) error {
+	log.Info().Msgf("Trying to read certificate data for domain %s from storage", domain.Domain)
+	read, err := c.certStorage.ReadPublicCertificateData(domain.Domain)
 	if err != nil || read == nil {
-		log.Error().Msgf("Error reading cert data from storage for domain %s: %v", domain, err)
-		log.Info().Msgf("Trying to obtain cert from configured ACME provider for domain %s", domain)
+		log.Error().Msgf("Error reading cert data from storage for domain %s: %v", domain.Domain, err)
+		log.Info().Msgf("Trying to obtain cert from configured ACME provider for domain %s", domain.Domain)
 		obtained, err := c.acmeClient.ObtainCert(domain)
 		metrics.CertificatesRetrieved.Inc()
 		if err != nil {
 			metrics.CertificatesRetrievalErrors.Inc()
-			return fmt.Errorf("obtaining cert for domain %s failed: %v", domain, err)
+			return fmt.Errorf("obtaining cert for domain %s failed: %v", domain.Domain, err)
 		}
 		return handleReceivedCert(obtained, c.certStorage)
 	}
@@ -76,7 +77,7 @@ func (c *AcmeVaultServer) obtainAndHandleCert(domain string) error {
 	} else {
 		timeLeft := expiry.Sub(time.Now().UTC())
 		if timeLeft > MinCertLifetime {
-			metrics.CertServerExpiryTimestamp.WithLabelValues(domain).Set(float64(expiry.Unix()))
+			metrics.CertServerExpiryTimestamp.WithLabelValues(domain.Domain).Set(float64(expiry.Unix()))
 			log.Info().Msgf("Not renewing cert for domain %s, still valid for %v", domain, timeLeft)
 			return nil
 		}

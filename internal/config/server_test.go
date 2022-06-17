@@ -31,8 +31,16 @@ func TestAcmeVaultServerConfigFromFile(t *testing.T) {
 					AcmeDnsProvider: "",
 				},
 				IntervalSeconds: 43200,
-				Domains:         []string{"domain1.tld", "domain2.tld"},
-				MetricsAddr:     "127.0.0.1:9112",
+				Domains: []AcmeServerDomains{
+					{
+						Domain: "domain1.tld",
+						Sans:   []string{"domain3.tld", "domain4.tld"},
+					},
+					{
+						Domain: "domain2.tld",
+					},
+				},
+				MetricsAddr: "127.0.0.1:9112",
 			},
 			wantErr: false,
 		},

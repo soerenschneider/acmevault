@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/asaskevich/govalidator"
 	"github.com/rs/zerolog/log"
 	"io/ioutil"
 	"net/url"
@@ -22,9 +23,35 @@ var (
 type AcmeVaultServerConfig struct {
 	VaultConfig
 	AcmeConfig
-	IntervalSeconds int      `json:"intervalSeconds"`
-	Domains         []string `json:"domains"`
-	MetricsAddr     string   `json:"metricsAddr"`
+	IntervalSeconds int                 `json:"intervalSeconds"`
+	Domains         []AcmeServerDomains `json:"domains"`
+	MetricsAddr     string              `json:"metricsAddr"`
+}
+
+type AcmeServerDomains struct {
+	Domain string   `json:"domain"`
+	Sans   []string `json:"sans,omitempty"`
+}
+
+func (a AcmeServerDomains) Verify() error {
+	if ok := govalidator.IsDNSName(a.Domain); !ok {
+		return fmt.Errorf("invalid domain name: '%s' is not a domain name", a.Domain)
+	}
+	for _, domain := range a.Sans {
+		if ok := govalidator.IsDNSName(domain); !ok {
+			return fmt.Errorf("invalid sans domain name: '%s' is not a domain name", domain)
+		}
+	}
+
+	return nil
+}
+
+func (a AcmeServerDomains) String() string {
+	if len(a.Sans) > 0 {
+		return fmt.Sprintf("%s (%v)", a.Domain, a.Sans)
+	}
+
+	return a.Domain
 }
 
 type AcmeConfig struct {
@@ -33,14 +60,7 @@ type AcmeConfig struct {
 	AcmeDnsProvider string `json:"acmeDnsProvider"`
 }
 
-func isValidEmail(email string) bool {
-	if len(email) < 3 || len(email) > 254 {
-		return false
-	}
-	return emailRegex.MatchString(email)
-}
-
-func (conf AcmeVaultServerConfig) Validate() error {
+func (conf AcmeConfig) Validate() error {
 	if len(conf.AcmeDnsProvider) == 0 {
 		return errors.New("field `acmeDnsProvider` not configured")
 	}
@@ -49,14 +69,20 @@ func (conf AcmeVaultServerConfig) Validate() error {
 		return fmt.Errorf("could not parse `acmeDnsProvider`: %v", err)
 	}
 
-	if len(conf.Domains) == 0 {
-		return errors.New("field `domains` not configured")
+	if !govalidator.IsEmail(conf.Email) {
+		return fmt.Errorf("field `email` not configured (correctly): %s", conf.Email)
 	}
 
-	if !isValidEmail(conf.Email) {
-		return errors.New("field `email` not configured (correctly)")
-	}
+	return nil
+}
 
+func (conf AcmeConfig) Print() {
+	log.Info().Msgf("AcmeEmail=%s", conf.Email)
+	log.Info().Msgf("AcmeUrl=%s", conf.AcmeUrl)
+	log.Info().Msgf("AcmeDnsProvider=%s", conf.AcmeDnsProvider)
+}
+
+func (conf AcmeVaultServerConfig) Validate() error {
 	if conf.IntervalSeconds < 0 {
 		return fmt.Errorf("field `intervalSeconds` can not be a negative number: %d", conf.IntervalSeconds)
 	}
@@ -65,18 +91,33 @@ func (conf AcmeVaultServerConfig) Validate() error {
 		return fmt.Errorf("field `intervalSeconds` shouldn't be > 86400: %d", conf.IntervalSeconds)
 	}
 
+	if len(conf.Domains) == 0 {
+		return errors.New("no domains configured")
+	}
+	for _, domain := range conf.Domains {
+		err := domain.Verify()
+		if err != nil {
+			return err
+		}
+	}
+	err := conf.AcmeConfig.Validate()
+	if err != nil {
+		return err
+	}
+
 	return conf.VaultConfig.Validate()
 }
 
 func (conf AcmeVaultServerConfig) Print() {
 	log.Info().Msg("--- Server Config Start ---")
 	conf.VaultConfig.Print()
-	log.Info().Msgf("AcmeDomains=%s", conf.Domains)
-	log.Info().Msgf("AcmeEmail=%s", conf.Email)
-	log.Info().Msgf("AcmeUrl=%s", conf.AcmeUrl)
+	conf.AcmeConfig.Print()
+	for index, domain := range conf.Domains {
+		log.Info().Msgf("AcmeDomains[%d]=%s", index, domain.String())
+	}
+
 	log.Info().Msgf("IntervalSeconds=%d", conf.IntervalSeconds)
 	log.Info().Msgf("MetricsAddr=%s", conf.MetricsAddr)
-	log.Info().Msgf("AcmeDnsProvider=%s", conf.AcmeDnsProvider)
 	log.Info().Msg("--- Server Config End ---")
 }
 

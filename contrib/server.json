@@ -1,7 +1,15 @@
 {
   "domains": [
-    "domain1.tld",
-    "domain2.tld"
+    {
+      "domain": "domain1.tld",
+      "sans": [
+        "domain3.tld",
+        "domain4.tld"
+      ]
+    },
+    {
+      "domain": "domain2.tld"
+    }
   ],
   "email": "my@email.tld",
   "vaultAddr": "https://vault:8200",
