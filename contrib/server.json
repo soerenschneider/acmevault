@@ -1,7 +1,11 @@
 {
   "domains": [
     {
-      "domain": "domain1.tld"
+      "domain": "domain1.tld",
+      "sans": [
+        "domain3.tld",
+        "domain4.tld"
+      ]
     },
     {
       "domain": "domain2.tld"
