@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.3](https://github.com/soerenschneider/acmevault/compare/v1.7.2...v1.7.3) (2022-06-06)
+
+
+### Bug Fixes
+
+* Fix metric dimension ([ad633ad](https://github.com/soerenschneider/acmevault/commit/ad633ad40cee2cdb815de5c87536cbfe14bc0d68))
+
 ### [1.7.2](https://www.github.com/soerenschneider/acmevault/compare/v1.7.1...v1.7.2) (2022-06-04)
 
 

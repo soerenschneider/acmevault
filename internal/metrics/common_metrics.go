@@ -29,5 +29,5 @@ var (
 		Subsystem: "server",
 		Name:      "certificate_errors_total",
 		Help:      "Total number of errors while handling certificates",
-	}, []string{"desc"})
+	}, []string{"domain", "desc"})
 )
