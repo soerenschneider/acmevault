@@ -2,6 +2,7 @@ package server
 
 import (
 	"github.com/go-acme/lego/v4/registration"
+	"github.com/soerenschneider/acmevault/internal/config"
 	"github.com/soerenschneider/acmevault/pkg/certstorage"
 	"github.com/stretchr/testify/mock"
 	"testing"
@@ -13,7 +14,7 @@ func TestServerHappyPathRenewal(t *testing.T) {
 	server := AcmeVaultServer{
 		acmeClient:  dealer,
 		certStorage: certStorage,
-		domains:     []string{"domain"},
+		domains:     []config.AcmeServerDomains{{Domain: "example.com"}},
 	}
 
 	old := &certstorage.AcmeCertificate{}
@@ -38,7 +39,8 @@ func (m *MockAcmeDealer) RegisterAccount() (*registration.Resource, error) {
 	}
 	return args.Get(0).(*registration.Resource), args.Error(1)
 }
-func (m *MockAcmeDealer) ObtainCert(domain string) (*certstorage.AcmeCertificate, error) {
+
+func (m *MockAcmeDealer) ObtainCert(domains config.AcmeServerDomains) (*certstorage.AcmeCertificate, error) {
 	args := m.Called()
 	if nil == args.Get(0) {
 		return nil, args.Error(1)

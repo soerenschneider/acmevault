@@ -30,7 +30,7 @@ type AcmeVaultServerConfig struct {
 
 type AcmeServerDomains struct {
 	Domain string   `json:"domain"`
-	Sans   []string `json:"sans"`
+	Sans   []string `json:"sans,omitempty"`
 }
 
 func (a AcmeServerDomains) Verify() error {
