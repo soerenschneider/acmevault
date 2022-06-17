@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.8.0](https://github.com/soerenschneider/acmevault/compare/v1.7.3...v1.8.0) (2022-06-17)
+
+
+### Features
+
+* Support SANs ([#157](https://github.com/soerenschneider/acmevault/issues/157)) ([c2953ee](https://github.com/soerenschneider/acmevault/commit/c2953eeaee0e94aa3c3334cf88caf6774756c475))
+
 ## [1.7.3](https://github.com/soerenschneider/acmevault/compare/v1.7.2...v1.7.3) (2022-06-06)
 
 
