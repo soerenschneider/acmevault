@@ -10,7 +10,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.1
 	github.com/hashicorp/vault/api v1.7.2
 	github.com/prometheus/client_golang v1.12.2
-	github.com/prometheus/common v0.34.0
+	github.com/prometheus/common v0.35.0
 	github.com/rs/zerolog v1.27.0
 	github.com/stretchr/testify v1.7.2
 	golang.org/x/crypto v0.0.0-20211215165025-cf75a172585e // indirect
