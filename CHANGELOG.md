@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.0](https://github.com/soerenschneider/acmevault/compare/v1.8.0...v1.9.0) (2022-08-17)
+
+
+### Features
+
+* Implement custom dns servers ([1759626](https://github.com/soerenschneider/acmevault/commit/17596261e2ddd28c5723c923abf54b1202d8dab5))
+
 ## [1.8.0](https://github.com/soerenschneider/acmevault/compare/v1.7.3...v1.8.0) (2022-06-17)
 
 
