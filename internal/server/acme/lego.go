@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/go-acme/lego/v4/certificate"
 	"github.com/go-acme/lego/v4/challenge"
+	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/go-acme/lego/v4/registration"
 	"github.com/rs/zerolog/log"
@@ -61,7 +62,12 @@ func NewGoLegoDealer(accountStorage certstorage.AccountStorage, acmeConfig confi
 		}
 	}
 
-	err = l.client.Challenge.SetDNS01Provider(dnsProvider)
+	var opts []dns01.ChallengeOption
+	if len(acmeConfig.AcmeCustomDnsServers) > 0 {
+		opts = append(opts, dns01.AddRecursiveNameservers(acmeConfig.AcmeCustomDnsServers))
+	}
+
+	err = l.client.Challenge.SetDNS01Provider(dnsProvider, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not set dns challenge: %v", err)
 	}
