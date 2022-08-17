@@ -55,9 +55,10 @@ func (a AcmeServerDomains) String() string {
 }
 
 type AcmeConfig struct {
-	Email           string `json:"email"`
-	AcmeUrl         string `json:"acmeUrl"`
-	AcmeDnsProvider string `json:"acmeDnsProvider"`
+	Email                string   `json:"email"`
+	AcmeUrl              string   `json:"acmeUrl"`
+	AcmeDnsProvider      string   `json:"acmeDnsProvider"`
+	AcmeCustomDnsServers []string `json:"acmeCustomDnsServers,omitempty"`
 }
 
 func (conf AcmeConfig) Validate() error {
@@ -80,6 +81,9 @@ func (conf AcmeConfig) Print() {
 	log.Info().Msgf("AcmeEmail=%s", conf.Email)
 	log.Info().Msgf("AcmeUrl=%s", conf.AcmeUrl)
 	log.Info().Msgf("AcmeDnsProvider=%s", conf.AcmeDnsProvider)
+	if len(conf.AcmeCustomDnsServers) > 0 {
+		log.Info().Msgf("AcmeCustomDnsServers=%v", conf.AcmeCustomDnsServers)
+	}
 }
 
 func (conf AcmeVaultServerConfig) Validate() error {
