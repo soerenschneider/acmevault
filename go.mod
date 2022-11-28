@@ -9,7 +9,7 @@ require (
 	github.com/go-acme/lego/v4 v4.9.1
 	github.com/hashicorp/go-retryablehttp v0.7.1
 	github.com/hashicorp/vault/api v1.8.2
-	github.com/prometheus/client_golang v1.13.0
+	github.com/prometheus/client_golang v1.14.0
 	github.com/prometheus/common v0.37.0
 	github.com/rs/zerolog v1.28.0
 	github.com/stretchr/testify v1.8.1
