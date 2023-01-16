@@ -46,7 +46,7 @@ jobs:
             type=sha
       
       - name: Build and push container image
-        uses: docker/build-push-action@v3.2.0
+        uses: docker/build-push-action@v3.3.0
         with:
           context: .
           push: true
