@@ -1,6 +1,6 @@
 ARG MODE=client
 
-FROM golang:1.19.4 as builder
+FROM golang:1.20.0 as builder
 ARG MODE
 ENV MODE="$MODE"
 ENV MODULE=github.com/soerenschneider/acmevault
