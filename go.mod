@@ -7,7 +7,7 @@ require (
 	github.com/aws/aws-sdk-go v1.44.196
 	github.com/blushft/go-diagrams v0.0.0-20201006005127-c78c821223d9
 	github.com/go-acme/lego/v4 v4.9.1
-	github.com/hashicorp/go-retryablehttp v0.7.1
+	github.com/hashicorp/go-retryablehttp v0.7.2
 	github.com/hashicorp/vault/api v1.8.3
 	github.com/prometheus/client_golang v1.14.0
 	github.com/prometheus/common v0.39.0
