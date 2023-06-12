@@ -33,7 +33,7 @@ jobs:
 
       - name: Extract metadata for container
         id: meta
-        uses: docker/metadata-action@v4.4.0
+        uses: docker/metadata-action@v4.5.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{ matrix.mode }}
           tags: |
