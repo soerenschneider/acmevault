@@ -9,7 +9,15 @@ import (
 	"github.com/go-acme/lego/v4/registration"
 	"github.com/rs/zerolog/log"
 	"github.com/soerenschneider/acmevault/internal/metrics"
+	"math/rand"
 	"time"
+)
+
+const (
+	// MinCertLifetime defines a certs minimum validity. If a certificate's lifetime is less than this threshold, it's
+	// being renewed.
+	MinCertLifetime = time.Duration(24*30) * time.Hour
+	Skew            = time.Duration(24*60) * time.Hour
 )
 
 type CertStorage interface {
@@ -53,6 +61,27 @@ type AcmeCertificate struct {
 	Certificate       []byte `json:"-"`
 	IssuerCertificate []byte `json:"-"`
 	CSR               []byte `json:"-"`
+}
+
+func (cert *AcmeCertificate) NeedsRenewal() (bool, error) {
+	expiry, err := cert.GetExpiryTimestamp()
+	if err != nil {
+		return false, fmt.Errorf("could not determine cert expiry for domain '%s': %v", cert.Domain, err)
+	}
+
+	metrics.CertServerExpiryTimestamp.WithLabelValues(cert.Domain).Set(float64(expiry.Unix()))
+	timeLeft := expiry.Sub(time.Now().UTC())
+	log.Info().Msgf("Not renewing cert for domain %s, still valid for %v", cert.Domain, timeLeft)
+
+	if timeLeft > MinCertLifetime && timeLeft <= Skew {
+		rand.Seed(time.Now().UnixNano())
+		if rand.Intn(100) >= 97 {
+			log.Info().Msgf("Earlier renewal of cert for domain %s to distribute cert expiries (%v)", cert.Domain, timeLeft)
+			return true, nil
+		}
+	}
+
+	return timeLeft <= MinCertLifetime, nil
 }
 
 func (cert *AcmeCertificate) GetExpiryTimestamp() (time.Time, error) {

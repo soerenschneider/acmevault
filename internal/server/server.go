@@ -8,13 +8,6 @@ import (
 	"github.com/soerenschneider/acmevault/internal/metrics"
 	"github.com/soerenschneider/acmevault/internal/server/acme"
 	"github.com/soerenschneider/acmevault/pkg/certstorage"
-	"time"
-)
-
-const (
-	// MinCertLifetime defines a certs minimum validity. If a certificate's lifetime is less than this threshold, it's
-	// being renewed.
-	MinCertLifetime = time.Duration(30*24) * time.Hour
 )
 
 type AcmeVaultServer struct {
@@ -71,26 +64,21 @@ func (c *AcmeVaultServer) obtainAndHandleCert(domain config.AcmeServerDomains) e
 	}
 
 	log.Info().Msgf("Successfully read cert data from storage for domain %s", domain)
-	expiry, err := read.GetExpiryTimestamp()
+	renewCert, err := read.NeedsRenewal()
 	if err != nil {
 		log.Info().Msgf("Could not determine cert lifetime for %s, probably the cert is broken", domain)
-	} else {
-		timeLeft := expiry.Sub(time.Now().UTC())
-		if timeLeft > MinCertLifetime {
-			metrics.CertServerExpiryTimestamp.WithLabelValues(domain.Domain).Set(float64(expiry.Unix()))
-			log.Info().Msgf("Not renewing cert for domain %s, still valid for %v", domain, timeLeft)
-			return nil
-		}
-		log.Info().Msgf("Cert for domain %s is only valid for %v, renewing...", domain, timeLeft)
 	}
 
-	renewed, err := c.acmeClient.RenewCert(read)
-	metrics.CertificatesRenewals.Inc()
-	if err != nil {
-		metrics.CertificatesRenewErrors.Inc()
-		return fmt.Errorf("renewing cert failed for domain %s: %v", domain, err)
+	if renewCert {
+		renewed, err := c.acmeClient.RenewCert(read)
+		metrics.CertificatesRenewals.Inc()
+		if err != nil {
+			metrics.CertificatesRenewErrors.Inc()
+			return fmt.Errorf("renewing cert failed for domain %s: %v", domain, err)
+		}
+		return handleReceivedCert(renewed, c.certStorage)
 	}
-	return handleReceivedCert(renewed, c.certStorage)
+	return nil
 }
 
 func handleReceivedCert(cert *certstorage.AcmeCertificate, storage certstorage.CertStorage) error {
