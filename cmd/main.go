@@ -1,0 +1,135 @@
+package main
+
+import (
+	"errors"
+	"flag"
+	"fmt"
+	"github.com/rs/zerolog/log"
+	"github.com/soerenschneider/acmevault/internal"
+	"github.com/soerenschneider/acmevault/internal/config"
+	"github.com/soerenschneider/acmevault/internal/metrics"
+	"github.com/soerenschneider/acmevault/internal/server"
+	"github.com/soerenschneider/acmevault/internal/server/acme"
+	"github.com/soerenschneider/acmevault/pkg/certstorage"
+	"github.com/soerenschneider/acmevault/pkg/certstorage/vault"
+	"os"
+	"os/signal"
+	"os/user"
+	"path"
+	"strings"
+	"syscall"
+	"time"
+)
+
+func main() {
+	configPath := parseCli()
+	log.Info().Msgf("acmevault-server version %s, commit %s", internal.BuildVersion, internal.CommitHash)
+	conf, err := config.AcmeVaultServerConfigFromFile(configPath)
+	if err != nil {
+		log.Fatal().Msgf("Could not load config: %v", err)
+	}
+	conf.Print()
+	err = conf.Validate()
+	if err != nil {
+		log.Fatal().Msgf("Invalid configuration provided: %v", err)
+	}
+	NewAcmeVaultServer(conf)
+}
+
+const (
+	envConfFile = "ACME_VAULT_CONFIG_FILE"
+	cliConfFile = "conf"
+	cliVersion  = "version"
+)
+
+func parseCli() (configFile string) {
+	flag.StringVar(&configFile, cliConfFile, os.Getenv(envConfFile), "path to the config file")
+	version := flag.Bool(cliVersion, false, "Print version and exit")
+	flag.Parse()
+
+	if *version {
+		fmt.Printf("%s (revision %s)", internal.BuildVersion, internal.CommitHash)
+		os.Exit(0)
+	}
+
+	if len(configFile) == 0 {
+		log.Fatal().Msgf("No config file specified, use flag '-%s' or env var '%s'", cliConfFile, envConfFile)
+	}
+
+	if strings.HasPrefix(configFile, "~/") {
+		configFile = path.Join(getUserHomeDirectory(), configFile[2:])
+	}
+
+	return
+}
+
+func getUserHomeDirectory() string {
+	usr, _ := user.Current()
+	dir := usr.HomeDir
+	return dir
+}
+
+func NewAcmeVaultServer(conf config.AcmeVaultServerConfig) {
+	storage, err := vault.NewVaultBackend(conf.VaultConfig)
+	if err != nil {
+		log.Fatal().Msgf("Could not generate desired backend: %v", err)
+	}
+
+	err = storage.Authenticate()
+	if err != nil {
+		log.Fatal().Msgf("Could not authenticate against storage: %v", err)
+	}
+
+	dynamicCredentialsProvider, _ := acme.NewDynamicCredentialsProvider(storage)
+	dnsProvider, _ := acme.BuildRoute53DnsProvider(*dynamicCredentialsProvider)
+	acmeClient, err := acme.NewGoLegoDealer(storage, conf.AcmeConfig, dnsProvider)
+	if err != nil {
+		log.Fatal().Msgf("Could not initialize acme client: %v", err)
+	}
+
+	acmeVaultServer, err := server.NewAcmeVaultServer(conf.Domains, acmeClient, storage)
+	if err != nil {
+		log.Fatal().Msgf("Couldn't build server: %v", err)
+	}
+
+	err = Run(acmeVaultServer, storage, conf)
+	if err != nil {
+		log.Fatal().Msgf("Couldn't start server: %v", err)
+	}
+}
+
+func Run(acmeVault *server.AcmeVaultServer, storage certstorage.CertStorage, conf config.AcmeVaultServerConfig) error {
+	if acmeVault == nil {
+		return errors.New("empty acmevault provided")
+	}
+	if storage == nil {
+		return errors.New("storage provider not provided")
+	}
+	err := conf.Validate()
+	if err != nil {
+		return fmt.Errorf("config invalid: %v", err)
+	}
+
+	go metrics.StartMetricsServer(conf.MetricsAddr)
+
+	ticker := time.NewTicker(time.Duration(conf.IntervalSeconds) * time.Second)
+	done := make(chan os.Signal, 1)
+	signal.Notify(done,
+		syscall.SIGHUP,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		syscall.SIGQUIT)
+
+	acmeVault.CheckCerts()
+	for {
+		select {
+		case <-ticker.C:
+			acmeVault.CheckCerts()
+		case <-done:
+			log.Info().Msg("Received signal, quitting")
+			storage.Logout()
+			ticker.Stop()
+			os.Exit(0)
+		}
+	}
+}
