@@ -84,37 +84,10 @@ lO0QUHECgYAPdZuMSgZkIiUlQ1zPzxo0KBJtKkaKTktJ57R7TgAHSzIddk6DnnZF
 C9cu+isNLQkPO9VBQsag88ANsIO9cdLNLzCXYTf/gpo/8UmJWmFwrpKQinuQo5Xb
 mh2ZO6+zpTijFdJJ5f6nxy8mU/+iQ0Yc+B0GORnNwwb5PhiFD5d2kA==`
 
-const dummyCsr = `MIIEowIBAAKCAQEA5PrvLkhSK5hxHpv1f4s2NH4SdMZZbMPBX31POm1nQG7X5CZ0
-d4cr/mRDM/kOGVNpC3TPt5Bnl8H31DwmgKYIw2NbVy7YIlhieW2yUIi4NDljat7i
-cr1Sm3+w91TT5+qgfh7kNOV4p84nTovyVIEsYEUbEvbYhD/lFirOskHDEhAY73PE
-a6JszeGjCuWMr8HapcG5S1075codevk8nR+GUFzc7GaLJKbH3scFm6Uf97A7CMlz
-n0avppkAxKuU5/+lYpgjQ69SZbebnuAlaXvK0Jm3BwugHHSCnPZ/FoSCh2xsUvlf
-qObQ9SxODFYC7P1SyFuXOIhHuJy3S83P5ErAiQIDAQABAoIBACdrE1WyWYLrwT11
-t7N3MaOjuGWl56sTn+xiVAtI3id3bW73N8GD4YzvkaoWy9iMRV8VgtSk5VB4scM1
-f6NR8dxA9G5zv/1Zncotmi7G+n7zCixRpkX+VYQzXTGWxsv71hkgFEUO49BvatDY
-wqTNf+gqvVhsaiWKIlPIlsCVFZG8JEUCn3xb/lNmEfhDdvn6H4U2eYVh1Dlxoies
-Cey1+otXs7P/W3M6KWX6WMR9tM85SGe6Svpif6peFq3x0C3BLBER560xBgq+abTy
-XtaYPWfDpiN0O84G5w8MWe4z2FNkIAfbF7wA2zL5YkBpgt49NEv/ADxdh4iIRtSY
-IQLU2MkCgYEA+vQshNHij3ThbzOcEUomRlf/GOEcgYQVdj5c/zXrAIaZWfGpKLpZ
-/+1qNSk9TgW6Q52xTEjFdXXBGPkuYARLxHhIVBbTLY/hwLjjQlxrXcyyAwf+Z/Tw
-3Yxyn8GN/OjMJUqUvIs0noBvjwNGNAgl6/wrpDIV68PUaAD8XpTmNXsCgYEA6ZWl
-0DX3We9jSSm2sDv3q7xm2PbccVVGM9iVfLGt5Bt9vFlh88K2gcdvcwgcLyOEEOZt
-RjpJ/wnSBwRXcio9tTT3QIPAKRtCcawIgnTIcy/m19K0eAvcS+9x7J3CxkLO2kCk
-Lmn4SPgmgQC3gtbcsvd/aHFfQXOhKNV73G9viMsCgYEArlH2qrxwuF3kSq569ref
-JrXxiYK1nnH1xpFDYDQ/7bmRxJzNeHEaG2D7qbnfz9bCsD1V7zuNji4h2AsfX6sc
-RnmXJHJGdxu/IXRMyMgR/LI35UskOWo39m2dIcP9sXS0eiL4do/sGT32QE1x8qrG
-TMp6NjBkccUyQpyMsdaUowkCgYAKAS3b8CPLB1TSUmYPwFHIWkZxbolclVFvcQxe
-DeIrzf2hrpZicWmNv3QHkkZawoOqkaQGiQKYWNxVDpuMOUDxXPZmHf6CBDfhVIP8
-ynG3dUrG3bB7H87stbHEd7Fa+ouPj4s4rbNDtNU5W0WA5iEHzU/4sjppPEGf1Rz8
-AQ3e5wKBgArwE9Z+LIMY4GirDyBKHHthBQ5a1wlndDNot/r3LMv5d9imeZl8qteH
-YPOVK2/hqXzN+3pdq+vJFzMS0MLogynzDwCDWib1jH9HfFPDMAZjp7urMHKzgoZM
-mtyMdGDPrwtHw0sGs6rFlk6DC6YBKAvvFssnIyRyWy3GhLppymul`
-
 func TestMapToCert(t *testing.T) {
 	decodedPrivateKey, _ := base64.StdEncoding.DecodeString(dummyRsaPrivate)
 	decodedCert, _ := base64.StdEncoding.DecodeString(dummyCert)
 	decodedIssuer, _ := base64.StdEncoding.DecodeString(dummyIssuer)
-	decodedCsr, _ := base64.StdEncoding.DecodeString(dummyCsr)
 
 	type args struct {
 		data map[string]interface{}
@@ -149,7 +122,6 @@ func TestMapToCert(t *testing.T) {
 			name: "correct data",
 			args: args{
 				map[string]interface{}{
-					vaultCertKeyCsr:        dummyCsr,
 					vaultCertKeyIssuer:     dummyIssuer,
 					vaultCertKeyUrl:        "url",
 					vaultCertKeyCert:       dummyCert,
@@ -165,7 +137,6 @@ func TestMapToCert(t *testing.T) {
 				PrivateKey:        []byte(decodedPrivateKey),
 				Certificate:       []byte(decodedCert),
 				IssuerCertificate: []byte(decodedIssuer),
-				CSR:               []byte(decodedCsr),
 			},
 			wantErr: false,
 		},
@@ -173,7 +144,6 @@ func TestMapToCert(t *testing.T) {
 			name: "invalid csr",
 			args: args{
 				map[string]interface{}{
-					vaultCertKeyCsr:        "invalid",
 					vaultCertKeyIssuer:     dummyIssuer,
 					vaultCertKeyUrl:        "url",
 					vaultCertKeyCert:       dummyCert,
@@ -197,7 +167,6 @@ func TestMapToCert(t *testing.T) {
 			name: "invalid issuer",
 			args: args{
 				map[string]interface{}{
-					vaultCertKeyCsr:        dummyCsr,
 					vaultCertKeyIssuer:     "invalid",
 					vaultCertKeyUrl:        "url",
 					vaultCertKeyCert:       dummyCert,
@@ -213,7 +182,6 @@ func TestMapToCert(t *testing.T) {
 			name: "invalid cert",
 			args: args{
 				map[string]interface{}{
-					vaultCertKeyCsr:        dummyCsr,
 					vaultCertKeyIssuer:     dummyIssuer,
 					vaultCertKeyUrl:        "url",
 					vaultCertKeyCert:       "invalid",
@@ -229,7 +197,6 @@ func TestMapToCert(t *testing.T) {
 			name: "invalid private key",
 			args: args{
 				map[string]interface{}{
-					vaultCertKeyCsr:        dummyCsr,
 					vaultCertKeyIssuer:     dummyIssuer,
 					vaultCertKeyUrl:        "url",
 					vaultCertKeyCert:       dummyCert,
@@ -245,7 +212,6 @@ func TestMapToCert(t *testing.T) {
 			name: "missing private key data",
 			args: args{
 				map[string]interface{}{
-					vaultCertKeyCsr:       dummyCsr,
 					vaultCertKeyIssuer:    dummyIssuer,
 					vaultCertKeyUrl:       "url",
 					vaultCertKeyCert:      dummyCert,
@@ -260,7 +226,6 @@ func TestMapToCert(t *testing.T) {
 				PrivateKey:        nil,
 				Certificate:       []byte(decodedCert),
 				IssuerCertificate: []byte(decodedIssuer),
-				CSR:               []byte(decodedCsr),
 			},
 			wantErr: false,
 		},

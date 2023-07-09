@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-acme/lego/v4/certcrypto"
-	"github.com/rs/zerolog/log"
 	"time"
 )
 
@@ -20,7 +19,6 @@ const (
 	vaultCertKeyIssuer     = "dummyIssuer"
 	vaultCertKeyUrl        = "url"
 	vaultCertKeyStableUrl  = "stable_url"
-	vaultCertKeyCsr        = "dummyCsr"
 
 	VaultAccountKeyUri     = "uri"
 	VaultAccountKeyEmail   = "email"
@@ -44,7 +42,6 @@ func CertToMap(res *AcmeCertificate) map[string]interface{} {
 		vaultCertKeyIssuer:    res.IssuerCertificate,
 		vaultCertKeyUrl:       res.CertURL,
 		vaultCertKeyStableUrl: res.CertStableURL,
-		vaultCertKeyCsr:       res.CSR,
 	}
 
 	if res.PrivateKey != nil {
@@ -56,7 +53,7 @@ func CertToMap(res *AcmeCertificate) map[string]interface{} {
 
 func MapToCert(data map[string]interface{}) (*AcmeCertificate, error) {
 	res := &AcmeCertificate{}
-	if data == nil || len(data) < 6 {
+	if data == nil || len(data) < 5 {
 		return nil, errors.New("empty/incomplete map provided")
 	}
 
@@ -87,14 +84,6 @@ func MapToCert(data map[string]interface{}) (*AcmeCertificate, error) {
 		return nil, fmt.Errorf("can not decode issuer cert: %v", err)
 	}
 	res.IssuerCertificate = issuer
-
-	csrRaw := fmt.Sprintf("%s", data[vaultCertKeyCsr])
-	csr, err := base64.StdEncoding.DecodeString(csrRaw)
-	if err != nil {
-		log.Warn().Msg("Could not decode csr")
-	} else {
-		res.CSR = csr
-	}
 
 	return res, nil
 }
