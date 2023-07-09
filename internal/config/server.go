@@ -4,18 +4,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/asaskevich/govalidator"
-	"github.com/rs/zerolog/log"
 	"io/ioutil"
 	"net/url"
-	"regexp"
+
+	"github.com/asaskevich/govalidator"
+	"github.com/rs/zerolog/log"
 )
 
 const letsEncryptUrl = "https://acme-v02.api.letsencrypt.org/directory"
 const letsEncryptStagingUrl = "https://acme-staging-v02.api.letsencrypt.org/directory"
 
 var (
-	emailRegex             = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 	defaultIntervalSeconds = 60 * 60 * 12
 	defaultMetricsAddr     = "127.0.0.1:9112"
 )

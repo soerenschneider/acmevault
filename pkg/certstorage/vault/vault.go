@@ -5,6 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/url"
+	"path"
+	"strings"
+	"time"
+
 	"github.com/go-acme/lego/v4/acme"
 	"github.com/go-acme/lego/v4/registration"
 	"github.com/hashicorp/go-retryablehttp"
@@ -13,11 +19,6 @@ import (
 	"github.com/soerenschneider/acmevault/internal/config"
 	"github.com/soerenschneider/acmevault/internal/metrics"
 	"github.com/soerenschneider/acmevault/pkg/certstorage"
-	"io/ioutil"
-	"net/url"
-	"path"
-	"strings"
-	"time"
 )
 
 const (
@@ -92,23 +93,6 @@ func (vault *VaultBackend) WriteCertificate(resource *certstorage.AcmeCertificat
 	}
 
 	return nil
-}
-
-func (vault *VaultBackend) writeSecretV1(secretPath string, data map[string]interface{}) error {
-	secret, err := vault.client.Logical().Write(secretPath, data)
-	printWarning("Received warnings while writing secretV1", secret)
-	return err
-}
-
-func printWarning(msg string, secret *api.Secret) {
-	if len(secret.Warnings) > 0 {
-		var warningMsg string
-		for _, warn := range secret.Warnings {
-			warningMsg += warn
-			warningMsg += " / "
-		}
-		log.Warn().Msgf("%s: %s", msg, warningMsg)
-	}
 }
 
 func (vault *VaultBackend) writeSecretV2(secretPath string, data map[string]interface{}) error {
