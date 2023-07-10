@@ -6,11 +6,12 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"math/rand"
+	"time"
+
 	"github.com/go-acme/lego/v4/registration"
 	"github.com/rs/zerolog/log"
 	"github.com/soerenschneider/acmevault/internal/metrics"
-	"math/rand"
-	"time"
 )
 
 const (
@@ -19,6 +20,8 @@ const (
 	MinCertLifetime = time.Duration(24*30) * time.Hour
 	Skew            = time.Duration(24*60) * time.Hour
 )
+
+var rnd *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano())) // #nosec G404
 
 type CertStorage interface {
 	// Authenticate authenticates against the storage subsystem and returns an error about the success of the operation.
@@ -74,9 +77,8 @@ func (cert *AcmeCertificate) NeedsRenewal() (bool, error) {
 	log.Info().Msgf("Not renewing cert for domain %s, still valid for %v", cert.Domain, timeLeft)
 
 	if timeLeft > MinCertLifetime && timeLeft <= Skew {
-		rand.Seed(time.Now().UnixNano())
-		if rand.Intn(100) >= 97 {
-			log.Info().Msgf("Earlier renewal of cert for domain %s to distribute cert expiries (%v)", cert.Domain, timeLeft)
+		if rnd.Intn(100) >= 97 {
+			log.Info().Msgf("Earlier renewal of cert for domain %s to distribute cert expires (%v)", cert.Domain, timeLeft)
 			return true, nil
 		}
 	}
