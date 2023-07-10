@@ -26,7 +26,7 @@ const (
 	backoffRetries = 5
 
 	vaultAcmeApproleLoginPath = "/auth/approle/login"
-	vaultSecretPathMount      = "/secret/data/acmevault"
+	vaultSecretPathMount      = "/secret/data/acmevault" // #nosec: G101
 	maxVersions               = 1
 )
 
