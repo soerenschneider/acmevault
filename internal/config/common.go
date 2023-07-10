@@ -21,35 +21,7 @@ type VaultConfig struct {
 }
 
 func (conf *VaultConfig) Print() {
-	log.Info().Msgf("VaultAddr=%s", conf.VaultAddr)
-	log.Info().Msgf("VaultPathPrefix=%s", conf.PathPrefix)
-	if len(conf.RoleId) > 0 {
-		log.Info().Msgf("VaultRoleId=%s", conf.RoleId)
-	}
-	if len(conf.SecretId) > 0 {
-		log.Info().Msg("VaultSecretId=*** (Redacted)")
-	}
-	if len(conf.SecretIdFile) > 0 {
-		log.Info().Msgf("VaultSecretIdFile=%s", conf.SecretIdFile)
-	}
-	if len(conf.VaultWrappedToken) > 0 {
-		log.Info().Msg("VaultWrappedToken=*** (Redacted)")
-	}
-	if len(conf.VaultWrappedTokenFile) > 0 {
-		log.Info().Msgf("VaultWrappedFile=%s", conf.VaultWrappedTokenFile)
-	}
-	if len(conf.VaultToken) > 0 {
-		log.Info().Msgf("VaultToken=%s", "*** (Redacted)")
-	}
-	if conf.TokenIncreaseSeconds > 0 {
-		log.Info().Msgf("TokenIncreaseSeconds=%d", conf.TokenIncreaseSeconds)
-	}
-	if conf.TokenIncreaseInterval > 0 {
-		log.Info().Msgf("TokenIncreaseInterval=%d", conf.TokenIncreaseInterval)
-	}
-	if len(conf.DomainPathFormat) > 0 {
-		log.Info().Msgf("DomainPathFormat=%s", conf.DomainPathFormat)
-	}
+	PrintFields(conf, SensitiveFields...)
 }
 
 func DefaultVaultConfig() VaultConfig {
