@@ -73,13 +73,11 @@ func (conf *VaultConfig) Validate() error {
 func isFileWritable(fileName string) bool {
 	file, err := os.OpenFile(fileName, os.O_WRONLY, 0600)
 	if err != nil {
-		return false
-	}
-	defer file.Close()
-	if err != nil {
 		if os.IsPermission(err) {
 			return false
 		}
+	} else {
+		defer file.Close()
 	}
 	return true
 }
