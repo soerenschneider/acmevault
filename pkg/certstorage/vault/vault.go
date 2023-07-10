@@ -369,19 +369,6 @@ func (vault *VaultBackend) lookupToken() (*TokenData, error) {
 	return FromSecret(secret), nil
 }
 
-func (vault *VaultBackend) getWrappedToken(conf config.VaultConfig) (string, error) {
-	token := conf.VaultWrappedToken
-	if conf.LoadWrappedTokenFromFile() {
-		read, err := ioutil.ReadFile(conf.VaultWrappedTokenFile)
-		if err != nil {
-			return "", fmt.Errorf("could not read wrapped token from specified file %s: %v", conf.VaultWrappedTokenFile, err)
-		}
-		// eliminate a possibly written newline after the token
-		token = strings.TrimSuffix(string(read), "\n")
-	}
-	return token, nil
-}
-
 // getSecretId accepts the config file and returns either the configured secret_id within the config or tries to load
 // the secret_id from the configured file to read it from.
 func (vault *VaultBackend) getSecretId(conf config.VaultConfig) (string, error) {
