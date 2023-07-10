@@ -70,26 +70,6 @@ func (conf *VaultConfig) Validate() error {
 	return validate.Struct(conf)
 }
 
-func isFileWritable(fileName string) bool {
-	file, err := os.OpenFile(fileName, os.O_WRONLY, 0600)
-	if err != nil {
-		if os.IsPermission(err) {
-			return false
-		}
-	} else {
-		defer file.Close()
-	}
-	return true
-}
-
-func (conf *VaultConfig) HasWrappedToken() bool {
-	return len(conf.VaultWrappedToken) > 0 || len(conf.VaultWrappedTokenFile) > 0
-}
-
-func (conf *VaultConfig) LoadWrappedTokenFromFile() bool {
-	return len(conf.VaultWrappedTokenFile) > 0
-}
-
 func (conf *VaultConfig) LoadSecretIdFromFile() bool {
 	return len(conf.SecretIdFile) > 0
 }
