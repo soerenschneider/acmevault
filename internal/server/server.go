@@ -3,11 +3,13 @@ package server
 import (
 	"errors"
 	"fmt"
+
 	"github.com/rs/zerolog/log"
 	"github.com/soerenschneider/acmevault/internal/config"
 	"github.com/soerenschneider/acmevault/internal/metrics"
 	"github.com/soerenschneider/acmevault/internal/server/acme"
 	"github.com/soerenschneider/acmevault/pkg/certstorage"
+	"go.uber.org/multierr"
 )
 
 type AcmeVaultServer struct {
@@ -36,16 +38,18 @@ func NewAcmeVaultServer(domains []config.AcmeServerDomains, acmeClient acme.Acme
 	}, nil
 }
 
-func (c *AcmeVaultServer) CheckCerts() {
-	c.certStorage.Authenticate()
+func (c *AcmeVaultServer) CheckCerts() error {
+	err := c.certStorage.Authenticate()
+	if err != nil {
+		return err
+	}
+
 	metrics.ServerLatestIterationTimestamp.SetToCurrentTime()
 	for _, domain := range c.domains {
-		err := c.obtainAndHandleCert(domain)
-		if err != nil {
-			log.Error().Msgf("error while handling received certificate: %v", err)
-		}
+		err = multierr.Append(err, c.obtainAndHandleCert(domain))
 	}
 	c.certStorage.Logout()
+	return err
 }
 
 func (c *AcmeVaultServer) obtainAndHandleCert(domain config.AcmeServerDomains) error {

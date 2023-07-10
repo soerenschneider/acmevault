@@ -4,6 +4,14 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"os"
+	"os/signal"
+	"os/user"
+	"path"
+	"strings"
+	"syscall"
+	"time"
+
 	"github.com/rs/zerolog/log"
 	"github.com/soerenschneider/acmevault/internal"
 	"github.com/soerenschneider/acmevault/internal/config"
@@ -12,13 +20,6 @@ import (
 	"github.com/soerenschneider/acmevault/internal/server/acme"
 	"github.com/soerenschneider/acmevault/pkg/certstorage"
 	"github.com/soerenschneider/acmevault/pkg/certstorage/vault"
-	"os"
-	"os/signal"
-	"os/user"
-	"path"
-	"strings"
-	"syscall"
-	"time"
 )
 
 func main() {
@@ -120,11 +121,17 @@ func Run(acmeVault *server.AcmeVaultServer, storage certstorage.CertStorage, con
 		syscall.SIGTERM,
 		syscall.SIGQUIT)
 
-	acmeVault.CheckCerts()
+	err = acmeVault.CheckCerts()
+	if err != nil {
+		log.Error().Err(err).Msg("error checking certs")
+	}
 	for {
 		select {
 		case <-ticker.C:
-			acmeVault.CheckCerts()
+			err = acmeVault.CheckCerts()
+			if err != nil {
+				log.Error().Err(err).Msg("error checking certs")
+			}
 		case <-done:
 			log.Info().Msg("Received signal, quitting")
 			storage.Logout()
