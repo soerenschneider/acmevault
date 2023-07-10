@@ -2,9 +2,10 @@ package vault
 
 import (
 	"fmt"
-	"github.com/hashicorp/vault/api"
 	"strconv"
 	"time"
+
+	"github.com/hashicorp/vault/api"
 )
 
 type TokenData struct {
@@ -13,7 +14,7 @@ type TokenData struct {
 }
 
 func (token *TokenData) MinutesUntilExpiry() int64 {
-	return int64(token.ExpireTime.Sub(time.Now()).Minutes())
+	return int64(time.Until(token.ExpireTime).Minutes())
 }
 
 func (token *TokenData) PrettyExpiryDate() string {
