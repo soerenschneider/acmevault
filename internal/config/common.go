@@ -1,31 +1,23 @@
 package config
 
 import (
-	"errors"
-	"fmt"
 	"net/url"
 	"os"
 	"strings"
 
-	"github.com/rs/zerolog/log"
+	"github.com/go-playground/validator/v10"
 )
 
-type VaultConfig struct {
-	VaultToken            string `json:"vaultToken"`
-	VaultAddr             string `json:"vaultAddr"`
-	RoleId                string `json:"vaultRoleId"`
-	SecretId              string `json:"vaultSecretId"`
-	SecretIdFile          string `json:"vaultSecretIdFile"`
-	VaultWrappedToken     string `json:"vaultWrappedToken"`
-	VaultWrappedTokenFile string `json:"vaultWrappedTokenFile"`
-	TokenIncreaseSeconds  int    `json:"tokenIncreaseSeconds"`
-	TokenIncreaseInterval int    `json:"tokenIncreaseInterval"`
-	PathPrefix            string `json:"vaultPathPrefix"`
-	DomainPathFormat      string `json:"domainPathFormat"`
-}
+var validate = validator.New()
 
-func (conf *VaultConfig) IsTokenIncreaseEnabled() bool {
-	return conf.TokenIncreaseInterval > 0 || conf.TokenIncreaseSeconds > 0
+type VaultConfig struct {
+	VaultToken       string `json:"vaultToken" validate:"required_if=RoleId ''"`
+	VaultAddr        string `json:"vaultAddr" validate:"required,http_url"`
+	RoleId           string `json:"vaultRoleId" validate:"required_if=VaultToken ''"`
+	SecretId         string `json:"vaultSecretId" validate:"excluded_unless=SecretIdFile '',required_if=SecretIdFile '' VaultToken ''"`
+	SecretIdFile     string `json:"vaultSecretIdFile" validate:"excluded_unless=SecretId '',required_if=SecretId '' VaultToken ''"`
+	PathPrefix       string `json:"vaultPathPrefix" validate:"required,startsnotwith=/,startsnotwith=/secret"`
+	DomainPathFormat string `json:"domainPathFormat" validate:"omitempty,containsrune=%"`
 }
 
 func (conf *VaultConfig) Print() {
@@ -75,47 +67,7 @@ func DefaultVaultConfig() VaultConfig {
 }
 
 func (conf *VaultConfig) Validate() error {
-	if len(conf.VaultAddr) == 0 {
-		return errors.New("no Vault address defined")
-	}
-	addr, err := url.ParseRequestURI(conf.VaultAddr)
-	if err != nil || addr.Scheme == "" || addr.Host == "" || addr.Port() == "" {
-		return errors.New("can not parse supplied vault addr as url")
-	}
-
-	if len(conf.PathPrefix) == 0 {
-		return errors.New("empty path prefix provided")
-	}
-	for _, prefix := range []string{"/", "secret/"} {
-		if strings.HasPrefix(conf.PathPrefix, prefix) {
-			return fmt.Errorf("vault path prefix must not start with %s", prefix)
-		}
-	}
-
-	validRoleIdCredentials := (len(conf.SecretId) > 0 || len(conf.SecretIdFile) > 0) && len(conf.RoleId) > 0
-	if !validRoleIdCredentials && len(conf.VaultToken) == 0 {
-		return errors.New("neither valid 'App Role' credentials nor plain Vault token provided")
-	}
-
-	if conf.HasWrappedToken() && !conf.LoadSecretIdFromFile() {
-		return errors.New("vaultWrappedToken specified but no vaultSecretIdFile specified to write acquired secret to")
-	}
-
-	if len(conf.SecretId) > 0 && conf.LoadSecretIdFromFile() {
-		return errors.New("both secretId and secretIdFile specified, unsure what to do")
-	}
-
-	if conf.LoadSecretIdFromFile() && !isFileWritable(conf.SecretIdFile) {
-		return errors.New("specified secretIdFile is not writable, quitting")
-	}
-
-	if len(conf.DomainPathFormat) > 0 {
-		if !strings.ContainsRune(conf.DomainPathFormat, '%') {
-			return fmt.Errorf("the domainPathFormat '%s' does not seem to be a valid format string", conf.DomainPathFormat)
-		}
-	}
-
-	return nil
+	return validate.Struct(conf)
 }
 
 func isFileWritable(fileName string) bool {

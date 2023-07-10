@@ -17,13 +17,10 @@ func TestAcmeVaultServerConfigFromFile(t *testing.T) {
 			path: "../../contrib/server.json",
 			want: AcmeVaultServerConfig{
 				VaultConfig: VaultConfig{
-					VaultToken:            "",
-					VaultAddr:             "https://vault:8200",
-					SecretId:              "secretId",
-					RoleId:                "roleId",
-					TokenIncreaseSeconds:  0,
-					TokenIncreaseInterval: 0,
-					PathPrefix:            "preprod",
+					VaultAddr:  "https://vault:8200",
+					SecretId:   "secretId",
+					RoleId:     "roleId",
+					PathPrefix: "preprod",
 				},
 				AcmeConfig: AcmeConfig{
 					Email:           "my@email.tld",

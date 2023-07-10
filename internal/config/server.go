@@ -54,10 +54,10 @@ func (a AcmeServerDomains) String() string {
 }
 
 type AcmeConfig struct {
-	Email                string   `json:"email"`
+	Email                string   `json:"email" validate:"email"`
 	AcmeUrl              string   `json:"acmeUrl"`
 	AcmeDnsProvider      string   `json:"acmeDnsProvider"`
-	AcmeCustomDnsServers []string `json:"acmeCustomDnsServers,omitempty"`
+	AcmeCustomDnsServers []string `json:"acmeCustomDnsServers,omitempty" validate:"dive,ip"`
 }
 
 func (conf AcmeConfig) Validate() error {
