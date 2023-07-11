@@ -3,6 +3,8 @@ package acme
 import (
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -11,7 +13,6 @@ import (
 	legoRoute53 "github.com/go-acme/lego/v4/providers/dns/route53"
 	"github.com/rs/zerolog/log"
 	"github.com/soerenschneider/acmevault/pkg/certstorage/vault"
-	"time"
 )
 
 const AwsIamPropagationImpediment = 20 * time.Second
@@ -61,14 +62,21 @@ func (m *DynamicCredentialsProvider) IsExpired() bool {
 
 func BuildRoute53DnsProvider(credProvider ...DynamicCredentialsProvider) (challenge.Provider, error) {
 	var awsSession *session.Session
+	var err error
 	if nil == credProvider || len(credProvider) == 0 {
 		log.Info().Msg("Trying to use static credentials to build route53 session")
-		awsSession = session.Must(session.NewSession())
+		awsSession, err = session.NewSession()
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		log.Info().Msg("Passing dynamic credentials provider to build route53 session")
-		awsSession = session.Must(session.NewSession(&aws.Config{
+		awsSession, err = session.NewSession(&aws.Config{
 			Credentials: credentials.NewCredentials(&credProvider[0]),
-		}))
+		})
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	svc := awsRoute53.New(awsSession)
