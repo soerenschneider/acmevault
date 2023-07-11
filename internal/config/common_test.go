@@ -4,13 +4,13 @@ import "testing"
 
 func TestVaultConfig_Validate(t *testing.T) {
 	type fields struct {
-		VaultToken         string
-		VaultAddr          string
-		SecretId           string
-		RoleId             string
-		PathPrefix         string
-		SecretIdFile       string
-		VaultWrappingToken string
+		VaultToken       string
+		VaultAddr        string
+		SecretId         string
+		RoleId           string
+		PathPrefix       string
+		SecretIdFile     string
+		DomainPathFormat string
 	}
 	tests := []struct {
 		name    string

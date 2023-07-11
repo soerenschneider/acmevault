@@ -3,6 +3,7 @@ package acme
 import (
 	"errors"
 	"fmt"
+
 	"github.com/go-acme/lego/v4/certificate"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -19,19 +20,19 @@ type GoLego struct {
 	client *lego.Client
 }
 
-func NewGoLegoDealer(accountStorage certstorage.AccountStorage, acmeConfig config.AcmeConfig, dnsProvider challenge.Provider) (*GoLego, error) {
-	log.Info().Msgf("Trying to read account details for %s from vault...", acmeConfig.Email)
-	account, err := accountStorage.ReadAccount(acmeConfig.Email)
+func NewGoLegoDealer(accountStorage certstorage.AccountStorage, conf config.AcmeVaultServerConfig, dnsProvider challenge.Provider) (*GoLego, error) {
+	log.Info().Msgf("Trying to read account details for %s from vault...", conf.AcmeEmail)
+	account, err := accountStorage.ReadAccount(conf.AcmeEmail)
 	// TODO: Introduce customize error types that signal whether to continue or not
 	if err != nil {
-		log.Info().Msgf("Received error when reading account %s: %v", acmeConfig.Email, err)
+		log.Info().Msgf("Received error when reading account %s: %v", conf.AcmeEmail, err)
 	}
 	registerNewAccount := account == nil || err != nil
 	if registerNewAccount {
 		log.Info().Msg("No (valid) account data found in vault, attempting to register a new account")
 		key, _ := GeneratePrivateKey()
 		account = &certstorage.AcmeAccount{
-			Email: acmeConfig.Email,
+			Email: conf.AcmeEmail,
 			Key:   key,
 		}
 	} else {
@@ -40,8 +41,8 @@ func NewGoLegoDealer(accountStorage certstorage.AccountStorage, acmeConfig confi
 
 	legoConfig := lego.NewConfig(account)
 	legoConfig.Certificate.KeyType = certPrivateKeyType
-	if len(acmeConfig.AcmeUrl) > 0 {
-		legoConfig.CADirURL = acmeConfig.AcmeUrl
+	if len(conf.AcmeUrl) > 0 {
+		legoConfig.CADirURL = conf.AcmeUrl
 	}
 
 	l := &GoLego{}
@@ -63,8 +64,8 @@ func NewGoLegoDealer(accountStorage certstorage.AccountStorage, acmeConfig confi
 	}
 
 	var opts []dns01.ChallengeOption
-	if len(acmeConfig.AcmeCustomDnsServers) > 0 {
-		opts = append(opts, dns01.AddRecursiveNameservers(acmeConfig.AcmeCustomDnsServers))
+	if len(conf.AcmeCustomDnsServers) > 0 {
+		opts = append(opts, dns01.AddRecursiveNameservers(conf.AcmeCustomDnsServers))
 	}
 
 	err = l.client.Challenge.SetDNS01Provider(dnsProvider, opts...)
