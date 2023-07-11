@@ -82,8 +82,11 @@ func NewAcmeVaultServer(conf config.AcmeVaultServerConfig) {
 	}
 
 	dynamicCredentialsProvider, _ := acme.NewDynamicCredentialsProvider(storage)
-	dnsProvider, _ := acme.BuildRoute53DnsProvider(*dynamicCredentialsProvider)
-	acmeClient, err := acme.NewGoLegoDealer(storage, conf.AcmeConfig, dnsProvider)
+	dnsProvider, err := acme.BuildRoute53DnsProvider(*dynamicCredentialsProvider)
+	if err != nil {
+		log.Fatal().Err(err).Msg("could not build dns provider")
+	}
+	acmeClient, err := acme.NewGoLegoDealer(storage, conf, dnsProvider)
 	if err != nil {
 		log.Fatal().Msgf("Could not initialize acme client: %v", err)
 	}
