@@ -21,6 +21,8 @@ const (
 	Skew            = time.Duration(24*60) * time.Hour
 )
 
+var ErrNotFound = errors.New("not found")
+var ErrPermissionDenied = errors.New("permission denied")
 var rnd *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano())) // #nosec G404
 
 type CertStorage interface {
@@ -39,8 +41,10 @@ type CertStorage interface {
 	ReadFullCertificateData(domain string) (*AcmeCertificate, error)
 
 	// Logout cleans up and logs out of the storage subsystem.
-	Logout()
+	Logout() error
 }
+
+var ErrAccountNotFound = errors.New("account not found")
 
 type AccountStorage interface {
 	// Authenticate authenticates against the storage subsystem and returns an error about the success of the operation.
@@ -53,7 +57,7 @@ type AccountStorage interface {
 	ReadAccount(email string) (*AcmeAccount, error)
 
 	// Logout cleans up and logs out of the storage subsystem.
-	Logout()
+	Logout() error
 }
 
 type AcmeCertificate struct {

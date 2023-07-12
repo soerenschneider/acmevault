@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/hashicorp/vault/api/auth/approle"
 	"github.com/rs/zerolog/log"
 	"github.com/soerenschneider/acmevault/internal"
 	"github.com/soerenschneider/acmevault/internal/config"
@@ -70,8 +71,28 @@ func getUserHomeDirectory() string {
 	return dir
 }
 
+func buildVaultAuth(conf config.AcmeVaultServerConfig) (vault.Auth, error) {
+	switch conf.AuthMethod {
+	case "token":
+		return vault.NewTokenAuth(conf.VaultToken)
+	case "approle":
+		secretId := &approle.SecretID{
+			FromFile:   conf.SecretIdFile,
+			FromString: conf.SecretId,
+		}
+		return vault.NewApproleAuth(conf.RoleId, secretId)
+	default:
+		return nil, fmt.Errorf("no valid auth method: %s", conf.AuthMethod)
+	}
+}
+
 func NewAcmeVaultServer(conf config.AcmeVaultServerConfig) {
-	storage, err := vault.NewVaultBackend(conf.VaultConfig)
+	vaultAuth, err := buildVaultAuth(conf)
+	if err != nil {
+		log.Fatal().Err(err).Msg("could not build token auth")
+	}
+
+	storage, err := vault.NewVaultBackend(conf.VaultConfig, vaultAuth)
 	if err != nil {
 		log.Fatal().Msgf("Could not generate desired backend: %v", err)
 	}
@@ -137,7 +158,9 @@ func Run(acmeVault *server.AcmeVaultServer, storage certstorage.CertStorage, con
 			}
 		case <-done:
 			log.Info().Msg("Received signal, quitting")
-			storage.Logout()
+			if err := storage.Logout(); err != nil {
+				log.Warn().Err(err).Msg("Logging out failed")
+			}
 			ticker.Stop()
 			os.Exit(0)
 		}

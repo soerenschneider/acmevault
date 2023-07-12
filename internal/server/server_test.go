@@ -1,11 +1,12 @@
 package server
 
 import (
+	"testing"
+
 	"github.com/go-acme/lego/v4/registration"
 	"github.com/soerenschneider/acmevault/internal/config"
 	"github.com/soerenschneider/acmevault/pkg/certstorage"
 	"github.com/stretchr/testify/mock"
-	"testing"
 )
 
 func TestServerHappyPathRenewal(t *testing.T) {
@@ -89,6 +90,7 @@ func (m *MockStorage) ReadFullCertificateData(domain string) (*certstorage.AcmeC
 	return args.Get(0).(*certstorage.AcmeCertificate), args.Error(1)
 }
 
-func (m *MockStorage) Logout() {
-	m.Called()
+func (m *MockStorage) Logout() error {
+	args := m.Called()
+	return args.Error(0)
 }

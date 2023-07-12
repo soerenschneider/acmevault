@@ -11,6 +11,7 @@ import (
 var validate = validator.New()
 
 type VaultConfig struct {
+	AuthMethod       string `json:"vaultAuthMethod" validate:"required,oneof=token approle"`
 	VaultToken       string `json:"vaultToken" validate:"required_if=RoleId ''"`
 	VaultAddr        string `json:"vaultAddr" validate:"required,http_url"`
 	RoleId           string `json:"vaultRoleId" validate:"required_if=VaultToken ''"`
@@ -18,6 +19,7 @@ type VaultConfig struct {
 	SecretIdFile     string `json:"vaultSecretIdFile" validate:"excluded_unless=SecretId '',required_if=SecretId '' VaultToken ''"`
 	PathPrefix       string `json:"vaultPathPrefix" validate:"required,startsnotwith=/,startsnotwith=/secret"`
 	DomainPathFormat string `json:"domainPathFormat" validate:"omitempty,containsrune=%"`
+	Kv2MountPath     string `json:"vaultKv2MountPath" validate:"required,endsnotwith=/,startsnotwith=/"`
 }
 
 func (conf *VaultConfig) Print() {
@@ -32,9 +34,10 @@ func DefaultVaultConfig() VaultConfig {
 	}
 
 	return VaultConfig{
-		PathPrefix: pathPrefix,
-		VaultToken: os.Getenv("VAULT_TOKEN"),
-		VaultAddr:  os.Getenv("VAULT_ADDR"),
+		PathPrefix:   pathPrefix,
+		VaultToken:   os.Getenv("VAULT_TOKEN"),
+		VaultAddr:    os.Getenv("VAULT_ADDR"),
+		Kv2MountPath: "secret",
 	}
 }
 

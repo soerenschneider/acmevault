@@ -3,13 +3,12 @@ module github.com/soerenschneider/acmevault
 go 1.18
 
 require (
-	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 	github.com/aws/aws-sdk-go v1.44.298
 	github.com/blushft/go-diagrams v0.0.0-20201006005127-c78c821223d9
 	github.com/go-acme/lego/v4 v4.12.3
 	github.com/go-playground/validator/v10 v10.14.1
-	github.com/hashicorp/go-retryablehttp v0.7.4
 	github.com/hashicorp/vault/api v1.9.2
+	github.com/hashicorp/vault/api/auth/approle v0.4.1
 	github.com/prometheus/client_golang v1.16.0
 	github.com/rs/zerolog v1.29.1
 	github.com/stretchr/testify v1.8.4
@@ -32,6 +31,7 @@ require (
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.4 // indirect
 	github.com/hashicorp/go-rootcerts v1.0.2 // indirect
 	github.com/hashicorp/go-secure-stdlib/parseutil v0.1.6 // indirect
 	github.com/hashicorp/go-secure-stdlib/strutil v0.1.2 // indirect

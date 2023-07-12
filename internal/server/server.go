@@ -48,7 +48,10 @@ func (c *AcmeVaultServer) CheckCerts() error {
 	for _, domain := range c.domains {
 		err = multierr.Append(err, c.obtainAndHandleCert(domain))
 	}
-	c.certStorage.Logout()
+	if err := c.certStorage.Logout(); err != nil {
+		log.Error().Err(err).Msg("logging out failed")
+	}
+
 	return err
 }
 

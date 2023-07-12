@@ -3,8 +3,9 @@ package vault
 import (
 	"errors"
 	"fmt"
-	"github.com/hashicorp/vault/api"
 	"time"
+
+	"github.com/hashicorp/vault/api"
 )
 
 const awsRole = "acmevault"
