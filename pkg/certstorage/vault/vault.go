@@ -12,6 +12,7 @@ import (
 	"github.com/go-acme/lego/v4/registration"
 	"github.com/hashicorp/vault/api"
 	vault "github.com/hashicorp/vault/api"
+	"github.com/rs/zerolog/log"
 	"github.com/soerenschneider/acmevault/internal/config"
 	"github.com/soerenschneider/acmevault/internal/metrics"
 	"github.com/soerenschneider/acmevault/pkg/certstorage"
@@ -42,7 +43,7 @@ func NewVaultBackend(vaultConfig config.VaultConfig, auth Auth) (*VaultBackend, 
 	config := &api.Config{
 		Timeout:    timeout,
 		MaxRetries: backoffRetries,
-		Address:    vaultConfig.VaultAddr,
+		Address:    vaultConfig.Addr,
 	}
 
 	client, err := api.NewClient(config)
@@ -54,7 +55,8 @@ func NewVaultBackend(vaultConfig config.VaultConfig, auth Auth) (*VaultBackend, 
 		auth:     auth,
 		client:   client,
 		conf:     vaultConfig,
-		basePath: fmt.Sprintf("%s/data/%s", vaultConfig.Kv2MountPath, vaultConfig.PathPrefix),
+		basePath: fmt.Sprintf("acmevault/%s", vaultConfig.PathPrefix),
+		//basePath: fmt.Sprintf("%s/data/%s", vaultConfig.Kv2MountPath, vaultConfig.PathPrefix),
 	}
 
 	return vault, nil
@@ -145,7 +147,7 @@ func (vault *VaultBackend) ReadAccount(hash string) (*certstorage.AcmeAccount, e
 	accountPath := vault.getAccountPath(hash)
 	data, err := vault.readKv2Secret(accountPath)
 	if err != nil {
-		return nil, fmt.Errorf("could not readKv2Secret account from vault: %v", err)
+		return nil, fmt.Errorf("could not readKv2Secret account from vault: %v", translateError(err))
 	}
 
 	var account acme.Account
@@ -154,8 +156,8 @@ func (vault *VaultBackend) ReadAccount(hash string) (*certstorage.AcmeAccount, e
 	if err != nil {
 		return nil, fmt.Errorf("couldn't decode string: %v", err)
 	}
-	err = json.Unmarshal(accountJson, &account)
-	if err != nil {
+
+	if err = json.Unmarshal(accountJson, &account); err != nil {
 		return nil, fmt.Errorf("couldn't unmarshal json: %v", err)
 	}
 
@@ -178,7 +180,10 @@ func (vault *VaultBackend) ReadAccount(hash string) (*certstorage.AcmeAccount, e
 }
 
 func (vault *VaultBackend) Authenticate() error {
-	_, err := vault.client.Auth().Login(context.Background(), vault.auth)
+	secret, err := vault.client.Auth().Login(context.Background(), vault.auth)
+	if err == nil {
+		log.Info().Msgf("Login token valid for %d seconds (until %v)", secret.Auth.LeaseDuration, time.Now().Add(time.Second*time.Duration(secret.Auth.LeaseDuration)))
+	}
 	return err
 }
 
@@ -194,31 +199,39 @@ func (vault *VaultBackend) ReadAwsCredentials() (*AwsDynamicCredentials, error) 
 		metrics.AwsDynCredentialsRequestErrors.Inc()
 		return nil, fmt.Errorf("could not gather dynamic credentials: %v", err)
 	}
-	return mapVaultAwsCredentialResponse(*secret)
+
+	return mapVaultAwsCredentialResponse(secret)
 }
 
 func (vault *VaultBackend) writeKv2Secret(secretPath string, data map[string]interface{}) error {
-	_, err := vault.client.Logical().Write(secretPath, data)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+	_, err := vault.client.KVv2(vault.conf.Kv2MountPath).Put(ctx, secretPath, data)
 	return err
 }
 
 func (vault *VaultBackend) readKv2Secret(path string) (map[string]interface{}, error) {
-	secret, err := vault.client.Logical().Read(path)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+	secret, err := vault.client.KVv2(vault.conf.Kv2MountPath).Get(ctx, path)
 	if err != nil {
 		return nil, translateError(err)
 	}
 
-	data, ok := secret.Data["data"].(map[string]interface{})
-	if !ok {
-		return nil, fmt.Errorf("no field 'data' in response")
+	if secret == nil {
+		return nil, certstorage.ErrNotFound
 	}
 
-	return data, nil
+	return secret.Data, nil
 }
 
 func translateError(err error) error {
 	if err == nil {
 		return nil
+	}
+
+	if errors.Is(err, vault.ErrSecretNotFound) {
+		return certstorage.ErrNotFound
 	}
 
 	vaultErr, ok := err.(*vault.ResponseError)
@@ -245,7 +258,7 @@ func (vault *VaultBackend) formatDomain(domain string) string {
 }
 
 func (vault *VaultBackend) getAwsCredentialsPath() string {
-	return fmt.Sprintf("/aws/creds/%s", awsRole)
+	return fmt.Sprintf("%s/creds/%s", vault.conf.AwsMountPath, vault.conf.AwsRole)
 }
 
 func (vault *VaultBackend) getAccountPath(hash string) string {

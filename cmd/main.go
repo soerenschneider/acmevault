@@ -74,7 +74,7 @@ func getUserHomeDirectory() string {
 func buildVaultAuth(conf config.AcmeVaultServerConfig) (vault.Auth, error) {
 	switch conf.AuthMethod {
 	case "token":
-		return vault.NewTokenAuth(conf.VaultToken)
+		return vault.NewTokenAuth(conf.Token)
 	case "approle":
 		secretId := &approle.SecretID{
 			FromFile:   conf.SecretIdFile,

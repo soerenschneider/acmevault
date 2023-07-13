@@ -56,10 +56,9 @@ func (c *AcmeVaultServer) CheckCerts() error {
 }
 
 func (c *AcmeVaultServer) obtainAndHandleCert(domain config.AcmeServerDomains) error {
-	log.Info().Msgf("Trying to read certificate data for domain %s from storage", domain.Domain)
 	read, err := c.certStorage.ReadPublicCertificateData(domain.Domain)
 	if err != nil || read == nil {
-		log.Error().Msgf("Error reading cert data from storage for domain %s: %v", domain.Domain, err)
+		log.Error().Err(err).Msgf("Error reading cert data from storage for domain '%s'", domain.Domain)
 		log.Info().Msgf("Trying to obtain cert from configured ACME provider for domain %s", domain.Domain)
 		obtained, err := c.acmeClient.ObtainCert(domain)
 		metrics.CertificatesRetrieved.Inc()
@@ -70,7 +69,7 @@ func (c *AcmeVaultServer) obtainAndHandleCert(domain config.AcmeServerDomains) e
 		return handleReceivedCert(obtained, c.certStorage)
 	}
 
-	log.Info().Msgf("Successfully read cert data from storage for domain %s", domain)
+	log.Info().Msgf("Successfully read cert data from storage for domain '%s'", domain)
 	renewCert, err := read.NeedsRenewal()
 	if err != nil {
 		log.Info().Msgf("Could not determine cert lifetime for %s, probably the cert is broken", domain)

@@ -2,13 +2,10 @@ package vault
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/hashicorp/vault/api"
 )
-
-const awsRole = "acmevault"
 
 type AwsDynamicCredentials struct {
 	AccessKeyId     string
@@ -16,15 +13,19 @@ type AwsDynamicCredentials struct {
 	Expiry          time.Time
 }
 
-func mapVaultAwsCredentialResponse(secret api.Secret) (*AwsDynamicCredentials, error) {
-	if secret.Data == nil {
-		return nil, errors.New("no 'Data' payload available")
+func mapVaultAwsCredentialResponse(secret *api.Secret) (*AwsDynamicCredentials, error) {
+	if secret == nil || secret.Data == nil {
+		return nil, errors.New("empty secret / payload")
 	}
 
-	accessKey := fmt.Sprintf("%s", secret.Data["access_key"])
-	secretKey := fmt.Sprintf("%s", secret.Data["secret_key"])
-	if len(accessKey) == 0 || len(secretKey) == 0 {
-		return nil, errors.New("missing access- and/or secret-key")
+	accessKey, ok := secret.Data["access_key"].(string)
+	if !ok {
+		return nil, errors.New("empty 'access_key'")
+	}
+
+	secretKey, ok := secret.Data["secret_key"].(string)
+	if !ok {
+		return nil, errors.New("empty 'secret_key'")
 	}
 
 	return &AwsDynamicCredentials{

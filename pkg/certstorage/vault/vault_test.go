@@ -55,3 +55,7 @@ func TestVaultBackend_getSecretDataPath(t *testing.T) {
 		})
 	}
 }
+
+func TestVaultBackend_writeKv2Secret(t *testing.T) {
+
+}

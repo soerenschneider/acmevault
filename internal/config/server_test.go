@@ -17,12 +17,14 @@ func TestAcmeVaultServerConfigFromFile(t *testing.T) {
 			path: "../../contrib/server.json",
 			want: AcmeVaultServerConfig{
 				VaultConfig: VaultConfig{
-					VaultAddr:    "https://vault:8200",
+					Addr:         "https://vault:8200",
 					SecretId:     "secretId",
 					RoleId:       "roleId",
 					PathPrefix:   "preprod",
 					AuthMethod:   "approle",
 					Kv2MountPath: "secret",
+					AwsMountPath: "custom-aws-mountpath",
+					AwsRole:      "my-custom-role",
 				},
 				AcmeEmail:       "my@email.tld",
 				AcmeUrl:         letsEncryptUrl,
@@ -76,12 +78,14 @@ func TestAcmeVaultServerConfig_Validate(t *testing.T) {
 			name: "valid example",
 			fields: fields{
 				VaultConfig: VaultConfig{
-					VaultToken:       "token",
-					VaultAddr:        "https://my-vault",
+					Token:            "token",
+					Addr:             "https://my-vault",
 					PathPrefix:       "bla",
 					DomainPathFormat: "blub-%s",
 					AuthMethod:       "approle",
 					Kv2MountPath:     "secret",
+					AwsMountPath:     "custom-aws-mountpath",
+					AwsRole:          "my-custom-role",
 				},
 				AcmeEmail:            "ac@me.com",
 				AcmeUrl:              letsEncryptUrl,
@@ -102,8 +106,8 @@ func TestAcmeVaultServerConfig_Validate(t *testing.T) {
 			name: "invalid custom dns servers",
 			fields: fields{
 				VaultConfig: VaultConfig{
-					VaultToken:       "token",
-					VaultAddr:        "https://my-vault",
+					Token:            "token",
+					Addr:             "https://my-vault",
 					PathPrefix:       "bla",
 					DomainPathFormat: "blub-%s",
 					AuthMethod:       "approle",
@@ -128,8 +132,8 @@ func TestAcmeVaultServerConfig_Validate(t *testing.T) {
 			name: "domain has no valid fqdn",
 			fields: fields{
 				VaultConfig: VaultConfig{
-					VaultToken:       "token",
-					VaultAddr:        "https://my-vault",
+					Token:            "token",
+					Addr:             "https://my-vault",
 					PathPrefix:       "bla",
 					DomainPathFormat: "blub-%s",
 					AuthMethod:       "token",
@@ -154,8 +158,8 @@ func TestAcmeVaultServerConfig_Validate(t *testing.T) {
 			name: "sans has no valid fqdn",
 			fields: fields{
 				VaultConfig: VaultConfig{
-					VaultToken:       "token",
-					VaultAddr:        "https://my-vault",
+					Token:            "token",
+					Addr:             "https://my-vault",
 					PathPrefix:       "bla",
 					DomainPathFormat: "blub-%s",
 					AuthMethod:       "token",
@@ -180,8 +184,8 @@ func TestAcmeVaultServerConfig_Validate(t *testing.T) {
 			name: "interval seconds too low",
 			fields: fields{
 				VaultConfig: VaultConfig{
-					VaultToken:       "token",
-					VaultAddr:        "https://my-vault",
+					Token:            "token",
+					Addr:             "https://my-vault",
 					PathPrefix:       "bla",
 					DomainPathFormat: "blub-%s",
 					AuthMethod:       "token",
@@ -206,8 +210,8 @@ func TestAcmeVaultServerConfig_Validate(t *testing.T) {
 			name: "interval seconds too high",
 			fields: fields{
 				VaultConfig: VaultConfig{
-					VaultToken:       "token",
-					VaultAddr:        "https://my-vault",
+					Token:            "token",
+					Addr:             "https://my-vault",
 					PathPrefix:       "bla",
 					DomainPathFormat: "blub-%s",
 					AuthMethod:       "token",
@@ -232,12 +236,14 @@ func TestAcmeVaultServerConfig_Validate(t *testing.T) {
 			name: "invalid acme email",
 			fields: fields{
 				VaultConfig: VaultConfig{
-					VaultToken:       "token",
-					VaultAddr:        "https://my-vault",
+					Token:            "token",
+					Addr:             "https://my-vault",
 					PathPrefix:       "bla",
 					DomainPathFormat: "blub-%s",
 					AuthMethod:       "token",
 					Kv2MountPath:     "secret",
+					AwsMountPath:     "custom-aws-mountpath",
+					AwsRole:          "my-custom-role",
 				},
 				AcmeEmail:            "bla",
 				AcmeUrl:              letsEncryptUrl,
@@ -258,8 +264,8 @@ func TestAcmeVaultServerConfig_Validate(t *testing.T) {
 			name: "invalid acme url",
 			fields: fields{
 				VaultConfig: VaultConfig{
-					VaultToken:       "token",
-					VaultAddr:        "https://my-vault",
+					Token:            "token",
+					Addr:             "https://my-vault",
 					PathPrefix:       "bla",
 					DomainPathFormat: "blub-%s",
 					AuthMethod:       "token",

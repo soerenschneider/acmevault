@@ -13,6 +13,8 @@ func TestVaultConfig_Validate(t *testing.T) {
 		DomainPathFormat string
 		AuthMethod       string
 		Kv2MountPath     string
+		AwsMountPath     string
+		AwsRole          string
 	}
 	tests := []struct {
 		name    string
@@ -27,6 +29,8 @@ func TestVaultConfig_Validate(t *testing.T) {
 				VaultAddr:    "https://my-vault-instance:443",
 				PathPrefix:   "production",
 				Kv2MountPath: "secret",
+				AwsRole:      "acmevault",
+				AwsMountPath: "aws",
 			},
 		},
 		{
@@ -38,6 +42,8 @@ func TestVaultConfig_Validate(t *testing.T) {
 				RoleId:       "my-role",
 				PathPrefix:   "dev-v002",
 				Kv2MountPath: "secret",
+				AwsRole:      "acmevault",
+				AwsMountPath: "aws",
 			},
 		},
 		{
@@ -49,6 +55,8 @@ func TestVaultConfig_Validate(t *testing.T) {
 				RoleId:       "my-role",
 				PathPrefix:   "dev-v002",
 				Kv2MountPath: "secret",
+				AwsRole:      "acmevault",
+				AwsMountPath: "aws",
 			},
 		},
 		{
@@ -59,6 +67,8 @@ func TestVaultConfig_Validate(t *testing.T) {
 				VaultAddr:    "my-vault-instance:443",
 				PathPrefix:   "production",
 				Kv2MountPath: "secret",
+				AwsRole:      "acmevault",
+				AwsMountPath: "aws",
 			},
 			wantErr: true,
 		},
@@ -71,6 +81,8 @@ func TestVaultConfig_Validate(t *testing.T) {
 				VaultAddr:    "http://my-vault-instance:443",
 				PathPrefix:   "/production",
 				Kv2MountPath: "secret",
+				AwsRole:      "acmevault",
+				AwsMountPath: "aws",
 			},
 			wantErr: true,
 		},
@@ -82,6 +94,8 @@ func TestVaultConfig_Validate(t *testing.T) {
 				VaultAddr:    "http://my-vault-instance:443",
 				PathPrefix:   "production",
 				Kv2MountPath: "secret",
+				AwsRole:      "acmevault",
+				AwsMountPath: "aws",
 			},
 			wantErr: true,
 		},
@@ -94,6 +108,8 @@ func TestVaultConfig_Validate(t *testing.T) {
 				VaultToken:   "s.VALIDVALIDVALID",
 				PathPrefix:   "",
 				Kv2MountPath: "secret",
+				AwsRole:      "acmevault",
+				AwsMountPath: "aws",
 			},
 			wantErr: true,
 		},
@@ -109,6 +125,8 @@ func TestVaultConfig_Validate(t *testing.T) {
 				SecretId:     "secret-id",
 				SecretIdFile: "/tmp/secret-id",
 				Kv2MountPath: "secret",
+				AwsRole:      "acmevault",
+				AwsMountPath: "aws",
 			},
 			wantErr: true,
 		},
@@ -117,13 +135,15 @@ func TestVaultConfig_Validate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			conf := &VaultConfig{
 				AuthMethod:   tt.fields.AuthMethod,
-				VaultToken:   tt.fields.VaultToken,
-				VaultAddr:    tt.fields.VaultAddr,
+				Token:        tt.fields.VaultToken,
+				Addr:         tt.fields.VaultAddr,
 				SecretId:     tt.fields.SecretId,
 				RoleId:       tt.fields.RoleId,
 				PathPrefix:   tt.fields.PathPrefix,
 				SecretIdFile: tt.fields.SecretIdFile,
 				Kv2MountPath: tt.fields.Kv2MountPath,
+				AwsRole:      tt.fields.AwsRole,
+				AwsMountPath: tt.fields.AwsMountPath,
 			}
 			if err := conf.Validate(); (err != nil) != tt.wantErr {
 				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)

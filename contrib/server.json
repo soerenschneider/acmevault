@@ -17,5 +17,7 @@
   "vaultSecretId": "secretId",
   "vaultRoleId": "roleId",
   "vaultPathPrefix": "preprod",
-  "vaultKv2MountPath": "secret"
+  "vaultKv2MountPath": "secret",
+  "vaultAwsMountPath": "custom-aws-mountpath",
+  "vaultAwsRole": "my-custom-role"
 }

@@ -39,11 +39,15 @@ func buildLegoClient(account *certstorage.AcmeAccount, acmeUrl string) (*GoLego,
 func getAccount(accountStorage certstorage.AccountStorage, email string) (*certstorage.AcmeAccount, bool, error) {
 	account, err := accountStorage.ReadAccount(email)
 	if err == nil {
+		log.Info().Msgf("retrieved account data for '%s'", email)
 		return account, false, nil
 	}
-	log.Warn().Err(err).Msg("could not read ACME account")
 
-	log.Info().Msg("No (valid) account data found in vault, attempting to register a new account")
+	if !errors.Is(err, certstorage.ErrNotFound) {
+		return nil, false, err
+	}
+
+	log.Warn().Msg("No (valid) account data found in vault, attempting to register a new account")
 	key, err := GeneratePrivateKey()
 	if err != nil {
 		return nil, false, fmt.Errorf("could not generate private key for ACME account: %w", err)
@@ -117,7 +121,12 @@ func (l *GoLego) RenewCert(cert *certstorage.AcmeCertificate) (*certstorage.Acme
 
 	oldLego := toLego(cert)
 	oldLego.PrivateKey = nil
-	newlegoCert, err := l.client.Certificate.Renew(oldLego, false, false, "")
+	opts := &certificate.RenewOptions{
+		Bundle:         false,
+		PreferredChain: "",
+		MustStaple:     false,
+	}
+	newlegoCert, err := l.client.Certificate.RenewWithOptions(oldLego, opts)
 	if err != nil {
 		return nil, err
 	}
