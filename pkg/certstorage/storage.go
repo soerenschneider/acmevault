@@ -79,7 +79,7 @@ func niceTimeLeft(duration time.Duration) string {
 
 	hours := duration / time.Hour
 
-	return fmt.Sprintf("%dd%dh", days, hours)
+	return fmt.Sprintf("%d days %d hours", days, hours)
 }
 
 func (cert *AcmeCertificate) NeedsRenewal() (bool, error) {
