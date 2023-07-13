@@ -17,7 +17,7 @@ clean:
 build: version-info
 	CGO_ENABLED=0 go build -ldflags="-X '$(MODULE)/internal.BuildVersion=${VERSION}' -X '$(MODULE)/internal.CommitHash=${COMMIT_HASH}'" -o $(BINARY_NAME) cmd/main.go
 
-release: clean version-info cross-build-client cross-build-server
+release: clean version-info cross-build
 	sha256sum $(BUILD_DIR)/acmevault-* > $(CHECKSUM_FILE)
 
 signed-release: release
