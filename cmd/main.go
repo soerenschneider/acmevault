@@ -86,41 +86,36 @@ func buildVaultAuth(conf config.AcmeVaultServerConfig) (vault.Auth, error) {
 	}
 }
 
+func dieOnError(err error, msg string) {
+	if err != nil {
+		log.Fatal().Err(err).Msg(msg)
+	}
+}
+
 func NewAcmeVaultServer(conf config.AcmeVaultServerConfig) {
 	vaultAuth, err := buildVaultAuth(conf)
-	if err != nil {
-		log.Fatal().Err(err).Msg("could not build token auth")
-	}
+	dieOnError(err, "could not build token auth")
 
 	storage, err := vault.NewVaultBackend(conf.VaultConfig, vaultAuth)
-	if err != nil {
-		log.Fatal().Msgf("Could not generate desired backend: %v", err)
-	}
+	dieOnError(err, "could not generate desired backend")
 
 	err = storage.Authenticate()
-	if err != nil {
-		log.Fatal().Msgf("Could not authenticate against storage: %v", err)
-	}
+	dieOnError(err, "Could not authenticate against storage")
 
-	dynamicCredentialsProvider, _ := acme.NewDynamicCredentialsProvider(storage)
+	dynamicCredentialsProvider, err := acme.NewDynamicCredentialsProvider(storage)
+	dieOnError(err, "could not build dynamic credentials provider")
+
 	dnsProvider, err := acme.BuildRoute53DnsProvider(*dynamicCredentialsProvider)
-	if err != nil {
-		log.Fatal().Err(err).Msg("could not build dns provider")
-	}
+	dieOnError(err, "could not build dns provider")
+
 	acmeClient, err := acme.NewGoLegoDealer(storage, conf, dnsProvider)
-	if err != nil {
-		log.Fatal().Msgf("Could not initialize acme client: %v", err)
-	}
+	dieOnError(err, "Could not initialize acme client")
 
 	acmeVaultServer, err := server.NewAcmeVaultServer(conf.Domains, acmeClient, storage)
-	if err != nil {
-		log.Fatal().Msgf("Couldn't build server: %v", err)
-	}
+	dieOnError(err, "Couldn't build server")
 
 	err = Run(acmeVaultServer, storage, conf)
-	if err != nil {
-		log.Fatal().Msgf("Couldn't start server: %v", err)
-	}
+	dieOnError(err, "Couldn't start server")
 }
 
 func Run(acmeVault *server.AcmeVaultServer, storage certstorage.CertStorage, conf config.AcmeVaultServerConfig) error {
