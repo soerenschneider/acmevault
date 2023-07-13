@@ -6,7 +6,7 @@ SIGNATURE_KEYFILE = ~/.signify/github.sec
 DOCKER_PREFIX = ghcr.io/soerenschneider
 
 tests:
-	go test ./... -covermode=atomic -coverprofile=coverage.out
+	go test ./... -race -covermode=atomic -coverprofile=coverage.out
 	go tool cover -html=coverage.out -o=coverage.html
 	go tool cover -func=coverage.out -o=coverage.out
 
