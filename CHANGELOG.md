@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.10.0](https://github.com/soerenschneider/acmevault/compare/v1.9.0...v1.10.0) (2023-07-13)
+
+
+### Features
+
+* add support for more dynamic renewal ([995437f](https://github.com/soerenschneider/acmevault/commit/995437f690a438740263709e172939e53ac88303))
+* validate using validator package ([a3cada0](https://github.com/soerenschneider/acmevault/commit/a3cada06fcbbc660403ec6fd3a3a84e31ae71a83))
+
+
+### Bug Fixes
+
+* check for error ([a075efc](https://github.com/soerenschneider/acmevault/commit/a075efc746096c07ef879797dc43642e1e494082))
+* fix logic ([ba0ffc9](https://github.com/soerenschneider/acmevault/commit/ba0ffc999c680e561b1205cb20e0e47db2f2b883))
+
 ## [1.9.0](https://github.com/soerenschneider/acmevault/compare/v1.8.0...v1.9.0) (2022-08-17)
 
 
