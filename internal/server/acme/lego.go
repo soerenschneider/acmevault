@@ -20,33 +20,53 @@ type GoLego struct {
 	client *lego.Client
 }
 
-func NewGoLegoDealer(accountStorage certstorage.AccountStorage, conf config.AcmeVaultServerConfig, dnsProvider challenge.Provider) (*GoLego, error) {
-	log.Info().Msgf("Trying to read account details for %s from vault...", conf.AcmeEmail)
-	account, err := accountStorage.ReadAccount(conf.AcmeEmail)
-	// TODO: Introduce customize error types that signal whether to continue or not
-	if err != nil {
-		log.Info().Msgf("Received error when reading account %s: %v", conf.AcmeEmail, err)
-	}
-	registerNewAccount := account == nil || err != nil
-	if registerNewAccount {
-		log.Info().Msg("No (valid) account data found in vault, attempting to register a new account")
-		key, _ := GeneratePrivateKey()
-		account = &certstorage.AcmeAccount{
-			Email: conf.AcmeEmail,
-			Key:   key,
-		}
-	} else {
-		log.Info().Msgf("Successfully read account from storage for %s", account.GetEmail())
-	}
-
+func buildLegoClient(account *certstorage.AcmeAccount, acmeUrl string) (*GoLego, error) {
 	legoConfig := lego.NewConfig(account)
 	legoConfig.Certificate.KeyType = certPrivateKeyType
-	if len(conf.AcmeUrl) > 0 {
-		legoConfig.CADirURL = conf.AcmeUrl
+	if len(acmeUrl) > 0 {
+		legoConfig.CADirURL = acmeUrl
 	}
 
+	var err error
 	l := &GoLego{}
 	l.client, err = lego.NewClient(legoConfig)
+	if err != nil {
+		return nil, err
+	}
+	return l, nil
+}
+
+func getAccount(accountStorage certstorage.AccountStorage, email string) (*certstorage.AcmeAccount, bool, error) {
+	account, err := accountStorage.ReadAccount(email)
+	if err == nil {
+		log.Info().Msgf("retrieved account data for '%s'", email)
+		return account, false, nil
+	}
+
+	if !errors.Is(err, certstorage.ErrNotFound) {
+		return nil, false, err
+	}
+
+	log.Warn().Msg("No (valid) account data found in vault, attempting to register a new account")
+	key, err := GeneratePrivateKey()
+	if err != nil {
+		return nil, false, fmt.Errorf("could not generate private key for ACME account: %w", err)
+	}
+
+	return &certstorage.AcmeAccount{
+		Email: email,
+		Key:   key,
+	}, true, nil
+}
+
+func NewGoLegoDealer(accountStorage certstorage.AccountStorage, conf config.AcmeVaultServerConfig, dnsProvider challenge.Provider) (*GoLego, error) {
+	log.Info().Msgf("Trying to read account details for %s from vault...", conf.AcmeEmail)
+	account, registerNewAccount, err := getAccount(accountStorage, conf.AcmeEmail)
+	if err != nil {
+		return nil, err
+	}
+
+	l, err := buildLegoClient(account, conf.AcmeUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -57,9 +77,8 @@ func NewGoLegoDealer(accountStorage certstorage.AccountStorage, conf config.Acme
 			return nil, fmt.Errorf("can not register new account: %v", err)
 		}
 		account.Registration = registration
-		err = accountStorage.WriteAccount(*account)
-		if err != nil {
-			log.Info().Msgf("Error while writing account information: %v", err)
+		if err = accountStorage.WriteAccount(*account); err != nil {
+			log.Warn().Err(err).Msg("Error while writing account information")
 		}
 	}
 
@@ -68,8 +87,7 @@ func NewGoLegoDealer(accountStorage certstorage.AccountStorage, conf config.Acme
 		opts = append(opts, dns01.AddRecursiveNameservers(conf.AcmeCustomDnsServers))
 	}
 
-	err = l.client.Challenge.SetDNS01Provider(dnsProvider, opts...)
-	if err != nil {
+	if err := l.client.Challenge.SetDNS01Provider(dnsProvider, opts...); err != nil {
 		return nil, fmt.Errorf("could not set dns challenge: %v", err)
 	}
 
@@ -103,7 +121,12 @@ func (l *GoLego) RenewCert(cert *certstorage.AcmeCertificate) (*certstorage.Acme
 
 	oldLego := toLego(cert)
 	oldLego.PrivateKey = nil
-	newlegoCert, err := l.client.Certificate.Renew(oldLego, false, false, "")
+	opts := &certificate.RenewOptions{
+		Bundle:         false,
+		PreferredChain: "",
+		MustStaple:     false,
+	}
+	newlegoCert, err := l.client.Certificate.RenewWithOptions(oldLego, opts)
 	if err != nil {
 		return nil, err
 	}

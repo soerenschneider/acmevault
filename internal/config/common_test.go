@@ -11,6 +11,10 @@ func TestVaultConfig_Validate(t *testing.T) {
 		PathPrefix       string
 		SecretIdFile     string
 		DomainPathFormat string
+		AuthMethod       string
+		Kv2MountPath     string
+		AwsMountPath     string
+		AwsRole          string
 	}
 	tests := []struct {
 		name    string
@@ -20,73 +24,109 @@ func TestVaultConfig_Validate(t *testing.T) {
 		{
 			name: "valid config - token",
 			fields: fields{
-				VaultToken: "s.asd83hrfhasfjsda",
-				VaultAddr:  "https://my-vault-instance:443",
-				PathPrefix: "production",
+				AuthMethod:   "token",
+				VaultToken:   "s.asd83hrfhasfjsda",
+				VaultAddr:    "https://my-vault-instance:443",
+				PathPrefix:   "production",
+				Kv2MountPath: "secret",
+				AwsRole:      "acmevault",
+				AwsMountPath: "aws",
 			},
 		},
 		{
 			name: "valid config - approle",
 			fields: fields{
-				VaultAddr:  "https://my-vault-instance:443",
-				SecretId:   "super-secret",
-				RoleId:     "my-role",
-				PathPrefix: "dev-v002",
+				AuthMethod:   "approle",
+				VaultAddr:    "https://my-vault-instance:443",
+				SecretId:     "super-secret",
+				RoleId:       "my-role",
+				PathPrefix:   "dev-v002",
+				Kv2MountPath: "secret",
+				AwsRole:      "acmevault",
+				AwsMountPath: "aws",
 			},
 		},
 		{
 			name: "valid config - approle, secret_id file",
 			fields: fields{
+				AuthMethod:   "approle",
 				VaultAddr:    "https://my-vault-instance:443",
 				SecretIdFile: "super-secret",
 				RoleId:       "my-role",
 				PathPrefix:   "dev-v002",
+				Kv2MountPath: "secret",
+				AwsRole:      "acmevault",
+				AwsMountPath: "aws",
 			},
 		},
 		{
 			name: "invalid config - missing protocol",
 			fields: fields{
-				VaultToken: "s.asd83hrfhasfjsda",
-				VaultAddr:  "my-vault-instance:443",
-				PathPrefix: "production",
+				AuthMethod:   "token",
+				VaultToken:   "s.asd83hrfhasfjsda",
+				VaultAddr:    "my-vault-instance:443",
+				PathPrefix:   "production",
+				Kv2MountPath: "secret",
+				AwsRole:      "acmevault",
+				AwsMountPath: "aws",
 			},
 			wantErr: true,
 		},
 		{
 			name: "invalid config - invalid path prefix",
 			fields: fields{
-				VaultToken: "s.asd83hrfhasfjsda",
-				VaultAddr:  "http://my-vault-instance:443",
-				PathPrefix: "/production",
+				AuthMethod: "token",
+
+				VaultToken:   "s.asd83hrfhasfjsda",
+				VaultAddr:    "http://my-vault-instance:443",
+				PathPrefix:   "/production",
+				Kv2MountPath: "secret",
+				AwsRole:      "acmevault",
+				AwsMountPath: "aws",
 			},
 			wantErr: true,
 		},
 		{
 			name: "invalid config - no auth methods",
 			fields: fields{
-				VaultAddr:  "http://my-vault-instance:443",
-				PathPrefix: "production",
+				AuthMethod: "approle",
+
+				VaultAddr:    "http://my-vault-instance:443",
+				PathPrefix:   "production",
+				Kv2MountPath: "secret",
+				AwsRole:      "acmevault",
+				AwsMountPath: "aws",
 			},
 			wantErr: true,
 		},
 		{
 			name: "invalid config - empty path prefix",
 			fields: fields{
-				VaultAddr:  "http://my-vault-instance:443",
-				VaultToken: "s.VALIDVALIDVALID",
-				PathPrefix: "",
+				AuthMethod: "token",
+
+				VaultAddr:    "http://my-vault-instance:443",
+				VaultToken:   "s.VALIDVALIDVALID",
+				PathPrefix:   "",
+				Kv2MountPath: "secret",
+				AwsRole:      "acmevault",
+				AwsMountPath: "aws",
 			},
 			wantErr: true,
 		},
 		{
 			name: "invalid config - specifying secretId and secretIdFile",
 			fields: fields{
+				AuthMethod: "approle",
+
 				VaultAddr:    "http://my-vault-instance:443",
 				VaultToken:   "s.VALIDVALIDVALID",
 				PathPrefix:   "production",
 				RoleId:       "role",
 				SecretId:     "secret-id",
 				SecretIdFile: "/tmp/secret-id",
+				Kv2MountPath: "secret",
+				AwsRole:      "acmevault",
+				AwsMountPath: "aws",
 			},
 			wantErr: true,
 		},
@@ -94,12 +134,16 @@ func TestVaultConfig_Validate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			conf := &VaultConfig{
-				VaultToken:   tt.fields.VaultToken,
-				VaultAddr:    tt.fields.VaultAddr,
+				AuthMethod:   tt.fields.AuthMethod,
+				Token:        tt.fields.VaultToken,
+				Addr:         tt.fields.VaultAddr,
 				SecretId:     tt.fields.SecretId,
 				RoleId:       tt.fields.RoleId,
 				PathPrefix:   tt.fields.PathPrefix,
 				SecretIdFile: tt.fields.SecretIdFile,
+				Kv2MountPath: tt.fields.Kv2MountPath,
+				AwsRole:      tt.fields.AwsRole,
+				AwsMountPath: tt.fields.AwsMountPath,
 			}
 			if err := conf.Validate(); (err != nil) != tt.wantErr {
 				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)

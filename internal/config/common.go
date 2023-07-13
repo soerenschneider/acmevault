@@ -11,13 +11,21 @@ import (
 var validate = validator.New()
 
 type VaultConfig struct {
-	VaultToken       string `json:"vaultToken" validate:"required_if=RoleId ''"`
-	VaultAddr        string `json:"vaultAddr" validate:"required,http_url"`
-	RoleId           string `json:"vaultRoleId" validate:"required_if=VaultToken ''"`
-	SecretId         string `json:"vaultSecretId" validate:"excluded_unless=SecretIdFile '',required_if=SecretIdFile '' VaultToken ''"`
-	SecretIdFile     string `json:"vaultSecretIdFile" validate:"excluded_unless=SecretId '',required_if=SecretId '' VaultToken ''"`
-	PathPrefix       string `json:"vaultPathPrefix" validate:"required,startsnotwith=/,startsnotwith=/secret"`
+	Addr       string `json:"vaultAddr" validate:"required,http_url"`
+	AuthMethod string `json:"vaultAuthMethod" validate:"required,oneof=token approle"`
+	Token      string `json:"vaultToken" validate:"required_if=RoleId ''"`
+
+	RoleId       string `json:"vaultRoleId" validate:"required_if=Token ''"`
+	SecretId     string `json:"vaultSecretId" validate:"excluded_unless=SecretIdFile '',required_if=SecretIdFile '' Token ''"`
+	SecretIdFile string `json:"vaultSecretIdFile" validate:"excluded_unless=SecretId '',required_if=SecretId '' Token ''"`
+
+	PathPrefix       string `json:"vaultPathPrefix" validate:"required,startsnotwith=/,startsnotwith=/secret,endsnotwith=/,ne=acmevault"`
 	DomainPathFormat string `json:"domainPathFormat" validate:"omitempty,containsrune=%"`
+
+	Kv2MountPath string `json:"vaultKv2MountPath" validate:"required,endsnotwith=/,startsnotwith=/"`
+
+	AwsMountPath string `json:"vaultAwsMountPath" validate:"required,endsnotwith=/,startsnotwith=/"`
+	AwsRole      string `json:"vaultAwsRole" validate:"required"`
 }
 
 func (conf *VaultConfig) Print() {
@@ -32,9 +40,12 @@ func DefaultVaultConfig() VaultConfig {
 	}
 
 	return VaultConfig{
-		PathPrefix: pathPrefix,
-		VaultToken: os.Getenv("VAULT_TOKEN"),
-		VaultAddr:  os.Getenv("VAULT_ADDR"),
+		PathPrefix:   pathPrefix,
+		Token:        os.Getenv("VAULT_TOKEN"),
+		Addr:         os.Getenv("VAULT_ADDR"),
+		AwsRole:      "acmevault",
+		AwsMountPath: "aws",
+		Kv2MountPath: "secret",
 	}
 }
 

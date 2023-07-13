@@ -12,8 +12,12 @@
     }
   ],
   "email": "my@email.tld",
+  "vaultAuthMethod": "approle",
   "vaultAddr": "https://vault:8200",
   "vaultSecretId": "secretId",
   "vaultRoleId": "roleId",
-  "vaultPathPrefix": "preprod"
+  "vaultPathPrefix": "preprod",
+  "vaultKv2MountPath": "secret",
+  "vaultAwsMountPath": "custom-aws-mountpath",
+  "vaultAwsRole": "my-custom-role"
 }

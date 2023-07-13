@@ -17,10 +17,12 @@ import (
 const (
 	// MinCertLifetime defines a certs minimum validity. If a certificate's lifetime is less than this threshold, it's
 	// being renewed.
-	MinCertLifetime = time.Duration(24*30) * time.Hour
-	Skew            = time.Duration(24*60) * time.Hour
+	MinCertLifetime = time.Duration(24) * time.Hour * 30
+	Skew            = time.Duration(24) * time.Hour * 45
 )
 
+var ErrNotFound = errors.New("not found")
+var ErrPermissionDenied = errors.New("permission denied")
 var rnd *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano())) // #nosec G404
 
 type CertStorage interface {
@@ -39,8 +41,10 @@ type CertStorage interface {
 	ReadFullCertificateData(domain string) (*AcmeCertificate, error)
 
 	// Logout cleans up and logs out of the storage subsystem.
-	Logout()
+	Logout() error
 }
+
+var ErrAccountNotFound = errors.New("account not found")
 
 type AccountStorage interface {
 	// Authenticate authenticates against the storage subsystem and returns an error about the success of the operation.
@@ -53,7 +57,7 @@ type AccountStorage interface {
 	ReadAccount(email string) (*AcmeAccount, error)
 
 	// Logout cleans up and logs out of the storage subsystem.
-	Logout()
+	Logout() error
 }
 
 type AcmeCertificate struct {
@@ -66,6 +70,18 @@ type AcmeCertificate struct {
 	CSR               []byte `json:"-"`
 }
 
+func niceTimeLeft(duration time.Duration) string {
+	if duration.Hours() < 24 {
+		return duration.String()
+	}
+	days := duration / (24 * time.Hour)
+	duration = duration % (24 * time.Hour)
+
+	hours := duration / time.Hour
+
+	return fmt.Sprintf("%dd%dh", days, hours)
+}
+
 func (cert *AcmeCertificate) NeedsRenewal() (bool, error) {
 	expiry, err := cert.GetExpiryTimestamp()
 	if err != nil {
@@ -74,11 +90,11 @@ func (cert *AcmeCertificate) NeedsRenewal() (bool, error) {
 
 	metrics.CertServerExpiryTimestamp.WithLabelValues(cert.Domain).Set(float64(expiry.Unix()))
 	timeLeft := expiry.Sub(time.Now().UTC())
-	log.Info().Msgf("Not renewing cert for domain %s, still valid for %v", cert.Domain, timeLeft)
+	log.Info().Msgf("Not renewing cert for domain %s, still valid for %v", cert.Domain, niceTimeLeft(timeLeft))
 
 	if timeLeft > MinCertLifetime && timeLeft <= Skew {
 		if rnd.Intn(100) >= 97 {
-			log.Info().Msgf("Earlier renewal of cert for domain %s to distribute cert expires (%v)", cert.Domain, timeLeft)
+			log.Info().Msgf("Earlier renewal of cert for domain %s to distribute cert expires (%v)", cert.Domain, niceTimeLeft(timeLeft))
 			return true, nil
 		}
 	}
@@ -100,6 +116,7 @@ func (cert *AcmeCertificate) GetExpiryTimestamp() (time.Time, error) {
 	if len(parsed) == 0 {
 		return time.Time{}, errors.New("no (valid) certificate data found")
 	}
+
 	return parsed[0].NotAfter, nil
 }
 
