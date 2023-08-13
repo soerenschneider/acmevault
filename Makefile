@@ -31,7 +31,7 @@ cross-build:
 	GOOS=openbsd GOARCH=amd64 CGO_ENABLED=0     go build -ldflags="-X '$(MODULE)/internal.BuildVersion=${VERSION}' -X '$(MODULE)/internal.CommitHash=${COMMIT_HASH}'" -o $(BUILD_DIR)/$(BINARY_NAME)-openbsd-x86_64 cmd/main.go
 
 docker-build:
-	docker build -t "$(DOCKER_PREFIX)/acmevault-server" --build-arg MODE=server .
+	docker build -t "$(DOCKER_PREFIX)/acmevault-server" .
 
 version-info:
 	$(eval VERSION := $(shell git describe --tags --abbrev=0 || echo "dev"))
