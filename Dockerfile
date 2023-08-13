@@ -1,16 +1,16 @@
-ARG MODE=client
-
 FROM golang:1.20.7 as builder
-ARG MODE
-ENV MODE="$MODE"
+
 ENV MODULE=github.com/soerenschneider/acmevault
+ENV CGO_ENABLED=0
+
 WORKDIR /build/
+ADD go.mod go.sum /build
+RUN go mod download
+
 ADD . /build/
 RUN go build -ldflags="-X $MODULE/internal.BuildVersion=$(git describe --tags --abbrev=0 || echo dev) \
-     -X $MODULE/internal.CommitHash=$(git rev-parse HEAD)" -o "acmevault-$MODE" -tags $MODE "cmd/$MODE/$MODE.go"
+     -X $MODULE/internal.CommitHash=$(git rev-parse HEAD)" -o acmevault "cmd/main.go"
 
 FROM gcr.io/distroless/base
-ARG MODE
-ENV MODE="$MODE"
-COPY --from=builder "/build/acmevault-$MODE" /acmevault
+COPY --from=builder /build/acmevault /acmevault
 ENTRYPOINT ["/acmevault"]
