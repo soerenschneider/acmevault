@@ -7,12 +7,14 @@ require (
 	github.com/blushft/go-diagrams v0.0.0-20201006005127-c78c821223d9
 	github.com/go-acme/lego/v4 v4.13.3
 	github.com/go-playground/validator/v10 v10.15.0
-	github.com/hashicorp/vault/api v1.9.2
+	github.com/hashicorp/vault/api v1.10.0
 	github.com/hashicorp/vault/api/auth/approle v0.4.1
+	github.com/hashicorp/vault/api/auth/kubernetes v0.5.0
 	github.com/prometheus/client_golang v1.16.0
 	github.com/rs/zerolog v1.30.0
 	github.com/stretchr/testify v1.8.4
 	go.uber.org/multierr v1.11.0
+	golang.org/x/net v0.11.0
 )
 
 require (
@@ -57,7 +59,6 @@ require (
 	github.com/stretchr/objx v0.5.0 // indirect
 	golang.org/x/crypto v0.10.0 // indirect
 	golang.org/x/mod v0.11.0 // indirect
-	golang.org/x/net v0.11.0 // indirect
 	golang.org/x/sys v0.9.0 // indirect
 	golang.org/x/text v0.10.0 // indirect
 	golang.org/x/time v0.3.0 // indirect

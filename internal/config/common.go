@@ -12,12 +12,15 @@ var validate = validator.New()
 
 type VaultConfig struct {
 	Addr       string `json:"vaultAddr" validate:"required,http_url"`
-	AuthMethod string `json:"vaultAuthMethod" validate:"required,oneof=token approle"`
-	Token      string `json:"vaultToken" validate:"required_if=RoleId ''"`
+	AuthMethod string `json:"vaultAuthMethod" validate:"required,oneof=token approle k8s"`
+	Token      string `json:"vaultToken" validate:"required_if=AuthMethod 'token'"`
 
-	RoleId       string `json:"vaultRoleId" validate:"required_if=Token ''"`
-	SecretId     string `json:"vaultSecretId" validate:"excluded_unless=SecretIdFile '',required_if=SecretIdFile '' Token ''"`
-	SecretIdFile string `json:"vaultSecretIdFile" validate:"excluded_unless=SecretId '',required_if=SecretId '' Token ''"`
+	RoleId       string `json:"vaultRoleId" validate:"required_if=AuthMethod 'approle'"`
+	SecretId     string `json:"vaultSecretId" validate:"excluded_unless=SecretIdFile '',required_if=SecretIdFile '' AuthMethod 'approle'"`
+	SecretIdFile string `json:"vaultSecretIdFile" validate:"excluded_unless=SecretId '',required_if=SecretId '' AuthMethod 'approle'"`
+
+	K8sRoleId    string `json:"vaultK8sRoleId" validate:"required_if=AuthMethod 'k8s'"`
+	K8sMountPath string `json:"vaultK8sMountPath"`
 
 	PathPrefix       string `json:"vaultPathPrefix" validate:"required,startsnotwith=/,startsnotwith=/secret,endsnotwith=/,ne=acmevault"`
 	DomainPathFormat string `json:"domainPathFormat" validate:"omitempty,containsrune=%"`

@@ -81,6 +81,10 @@ func buildVaultAuth(conf config.AcmeVaultServerConfig) (vault.Auth, error) {
 			FromString: conf.SecretId,
 		}
 		return vault.NewApproleAuth(conf.RoleId, secretId)
+	case "k8s":
+		return vault.NewVaultKubernetesAuth(conf.K8sRoleId, conf.K8sMountPath)
+	case "implicit":
+		return vault.NewImplicitAuth()
 	default:
 		return nil, fmt.Errorf("no valid auth method: %s", conf.AuthMethod)
 	}
