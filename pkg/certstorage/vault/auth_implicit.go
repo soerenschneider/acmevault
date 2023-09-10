@@ -2,26 +2,30 @@ package vault
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/hashicorp/vault/api"
 	"github.com/rs/zerolog/log"
+	"go.uber.org/multierr"
 )
 
 const defaultTokenFile = "~/.vault-token" // #nosec G101
 
 type ImplicitAuth struct {
+	tokenLocations []string
 }
 
-func NewImplicitAuth(token string) (*TokenAuth, error) {
-	if len(token) == 0 {
-		return nil, errors.New("empty token provided")
+func NewImplicitAuth(tokenLocations ...string) (*ImplicitAuth, error) {
+	if nil == tokenLocations {
+		tokenLocations = []string{}
 	}
+	tokenLocations = append(tokenLocations, defaultTokenFile)
 
-	return &TokenAuth{token: token}, nil
+	return &ImplicitAuth{
+		tokenLocations: tokenLocations,
+	}, nil
 }
 
 func (t *ImplicitAuth) Logout(_ context.Context, _ *api.Client) error {
@@ -29,7 +33,7 @@ func (t *ImplicitAuth) Logout(_ context.Context, _ *api.Client) error {
 }
 
 func (t *ImplicitAuth) Login(_ context.Context, _ *api.Client) (*api.Secret, error) {
-	token, err := getToken()
+	token, err := t.getToken()
 	if err != nil {
 		return nil, err
 	}
@@ -41,20 +45,25 @@ func (t *ImplicitAuth) Login(_ context.Context, _ *api.Client) (*api.Secret, err
 	}, nil
 }
 
-func getToken() (string, error) {
+func (t *ImplicitAuth) getToken() (string, error) {
 	token := os.Getenv("VAULT_TOKEN")
 	if len(token) > 0 {
 		return token, nil
 	}
 
-	tokenFile := expandPath(defaultTokenFile)
-	read, err := os.ReadFile(tokenFile)
-	if err != nil {
-		return "", fmt.Errorf("error reading file '%s': %v", tokenFile, err)
+	var errs error
+	for _, file := range t.tokenLocations {
+		tokenFile := expandPath(file)
+		log.Info().Msgf("Trying vault token from file '%s'", tokenFile)
+		read, err := os.ReadFile(tokenFile)
+		if err == nil {
+			return string(read), nil
+		}
+		log.Warn().Msgf("Specified token file could not be read: %w", tokenFile)
+		errs = multierr.Append(errs, err)
 	}
 
-	log.Info().Msgf("Using vault token from file '%s'", tokenFile)
-	return string(read), nil
+	return "", fmt.Errorf("could not read token file(s): %w", errs)
 }
 
 func expandPath(file string) string {
