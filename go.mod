@@ -6,7 +6,7 @@ require (
 	github.com/aws/aws-sdk-go v1.44.317
 	github.com/blushft/go-diagrams v0.0.0-20201006005127-c78c821223d9
 	github.com/go-acme/lego/v4 v4.13.3
-	github.com/go-playground/validator/v10 v10.15.0
+	github.com/go-playground/validator/v10 v10.15.3
 	github.com/hashicorp/vault/api v1.10.0
 	github.com/hashicorp/vault/api/auth/approle v0.4.1
 	github.com/hashicorp/vault/api/auth/kubernetes v0.5.0
