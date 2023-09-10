@@ -86,6 +86,8 @@ func TestAcmeVaultServerConfig_Validate(t *testing.T) {
 					Kv2MountPath:     "secret",
 					AwsMountPath:     "custom-aws-mountpath",
 					AwsRole:          "my-custom-role",
+					SecretId:         "secret-id",
+					RoleId:           "role",
 				},
 				AcmeEmail:            "ac@me.com",
 				AcmeUrl:              letsEncryptUrl,

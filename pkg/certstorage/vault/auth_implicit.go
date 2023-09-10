@@ -59,7 +59,7 @@ func (t *ImplicitAuth) getToken() (string, error) {
 		if err == nil {
 			return string(read), nil
 		}
-		log.Warn().Msgf("Specified token file could not be read: %w", tokenFile)
+		log.Warn().Msgf("Specified token file %s could not be read: %w", tokenFile, err)
 		errs = multierr.Append(errs, err)
 	}
 
