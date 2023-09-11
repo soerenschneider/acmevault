@@ -109,7 +109,7 @@ func NewAcmeVaultServer(conf config.AcmeVaultServerConfig) {
 	dynamicCredentialsProvider, err := acme.NewDynamicCredentialsProvider(storage)
 	dieOnError(err, "could not build dynamic credentials provider")
 
-	dnsProvider, err := acme.BuildRoute53DnsProvider(*dynamicCredentialsProvider)
+	dnsProvider, err := acme.BuildRoute53DnsProvider(dynamicCredentialsProvider)
 	dieOnError(err, "could not build dns provider")
 
 	acmeClient, err := acme.NewGoLegoDealer(storage, conf, dnsProvider)

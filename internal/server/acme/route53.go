@@ -1,14 +1,14 @@
 package acme
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	awsRoute53 "github.com/aws/aws-sdk-go/service/route53"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/route53"
 	"github.com/go-acme/lego/v4/challenge"
 	legoRoute53 "github.com/go-acme/lego/v4/providers/dns/route53"
 	"github.com/rs/zerolog/log"
@@ -22,19 +22,20 @@ type DynamicCredentialsProvider struct {
 	expiry time.Time
 }
 
-func NewDynamicCredentialsProvider(vault *vault.VaultBackend) (*DynamicCredentialsProvider, error) {
+func NewDynamicCredentialsProvider(vault *vault.VaultBackend) (aws.CredentialsProvider, error) {
 	if nil == vault {
 		return nil, errors.New("no vault backend provided")
 	}
 
-	return &DynamicCredentialsProvider{vault: vault}, nil
+	bla := &DynamicCredentialsProvider{vault: vault}
+	return aws.NewCredentialsCache(bla), nil
 }
 
-func (m *DynamicCredentialsProvider) Retrieve() (credentials.Value, error) {
+func (m *DynamicCredentialsProvider) Retrieve(ctx context.Context) (aws.Credentials, error) {
 	log.Info().Msg("Trying to read AWS credentials from Vault")
 	dynamicCredentials, err := m.vault.ReadAwsCredentials()
 	if err != nil {
-		return credentials.Value{}, fmt.Errorf("could not login at vault: %v", err)
+		return aws.Credentials{}, fmt.Errorf("could not login at vault: %v", err)
 	}
 
 	m.expiry = dynamicCredentials.Expiry
@@ -48,11 +49,13 @@ func (m *DynamicCredentialsProvider) Retrieve() (credentials.Value, error) {
 	return cred, nil
 }
 
-func ConvertCredentials(dynamicCredentials vault.AwsDynamicCredentials) credentials.Value {
-	return credentials.Value{
+func ConvertCredentials(dynamicCredentials vault.AwsDynamicCredentials) aws.Credentials {
+	return aws.Credentials{
 		AccessKeyID:     dynamicCredentials.AccessKeyId,
 		SecretAccessKey: dynamicCredentials.SecretAccessKey,
-		ProviderName:    "vault",
+		CanExpire:       true,
+		Expires:         dynamicCredentials.Expiry,
+		Source:          "vault",
 	}
 }
 
@@ -60,27 +63,21 @@ func (m *DynamicCredentialsProvider) IsExpired() bool {
 	return time.Now().After(m.expiry)
 }
 
-func BuildRoute53DnsProvider(credProvider ...DynamicCredentialsProvider) (challenge.Provider, error) {
-	var awsSession *session.Session
-	var err error
-	if nil == credProvider || len(credProvider) == 0 {
-		log.Info().Msg("Trying to use static credentials to build route53 session")
-		awsSession, err = session.NewSession()
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		log.Info().Msg("Passing dynamic credentials provider to build route53 session")
-		awsSession, err = session.NewSession(&aws.Config{
-			Credentials: credentials.NewCredentials(&credProvider[0]),
-		})
-		if err != nil {
-			return nil, err
-		}
+func BuildRoute53DnsProvider(credProvider ...aws.CredentialsProvider) (challenge.Provider, error) {
+	awsConf, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		return nil, err
 	}
 
-	svc := awsRoute53.New(awsSession)
-	conf := legoRoute53.NewDefaultConfig()
-	conf.Client = svc
-	return legoRoute53.NewDNSProviderConfig(conf)
+	if nil == credProvider || len(credProvider) == 0 {
+		log.Info().Msg("Trying to use static credentials to build route53 session")
+	} else {
+		log.Info().Msg("Passing dynamic credentials provider to build route53 session")
+		awsConf.Credentials = credProvider[0]
+	}
+
+	client := route53.NewFromConfig(awsConf)
+	legoConf := legoRoute53.NewDefaultConfig()
+	legoConf.Client = client
+	return legoRoute53.NewDNSProviderConfig(legoConf)
 }
