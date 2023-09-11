@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.11.0](https://github.com/soerenschneider/acmevault/compare/v1.10.0...v1.11.0) (2023-09-11)
+
+
+### Features
+
+* add kubernetes vault auth ([0abdc46](https://github.com/soerenschneider/acmevault/commit/0abdc46f717db8c621e3e8675c07ac250c263b6e))
+
+
+### Bug Fixes
+
+* add 'implicit' as oneof option ([d3852bf](https://github.com/soerenschneider/acmevault/commit/d3852bf531a70b347add47874977a673c1bf0fcd))
+* fix implicit vault auth ([917bfdf](https://github.com/soerenschneider/acmevault/commit/917bfdfaa34eda5a680013d9f2f84aa0528f9b26))
+* fix log statement ([43a2b4a](https://github.com/soerenschneider/acmevault/commit/43a2b4a6d30045683f8bf7a0671da3a82cc4b5ac))
+* fix logline for good ([75c3744](https://github.com/soerenschneider/acmevault/commit/75c3744c9f021fd28814972e4314088e6cf79b00))
+
 ## [1.10.0](https://github.com/soerenschneider/acmevault/compare/v1.9.0...v1.10.0) (2023-07-13)
 
 
