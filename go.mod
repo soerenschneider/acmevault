@@ -8,7 +8,7 @@ require (
 	github.com/go-acme/lego/v4 v4.14.0
 	github.com/go-playground/validator/v10 v10.15.3
 	github.com/hashicorp/vault/api v1.10.0
-	github.com/hashicorp/vault/api/auth/approle v0.4.1
+	github.com/hashicorp/vault/api/auth/approle v0.5.0
 	github.com/hashicorp/vault/api/auth/kubernetes v0.5.0
 	github.com/prometheus/client_golang v1.16.0
 	github.com/rs/zerolog v1.30.0
