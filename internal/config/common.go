@@ -12,7 +12,7 @@ var validate = validator.New()
 
 type VaultConfig struct {
 	Addr       string `json:"vaultAddr" validate:"required,http_url"`
-	AuthMethod string `json:"vaultAuthMethod" validate:"required,oneof=token approle k8s"`
+	AuthMethod string `json:"vaultAuthMethod" validate:"required,oneof=token approle k8s implicit"`
 	Token      string `json:"vaultToken" validate:"required_if=AuthMethod 'token'"`
 
 	RoleId       string `json:"vaultRoleId" validate:"required_if=AuthMethod 'approle'"`
