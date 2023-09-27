@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.11.1](https://github.com/soerenschneider/acmevault/compare/v1.11.0...v1.11.1) (2023-09-27)
+
+
+### Bug Fixes
+
+* Bump github.com/go-acme/lego/v4 from 4.14.0 to 4.14.2 ([1393e09](https://github.com/soerenschneider/acmevault/commit/1393e091926fe7bb6b2d0d4a14c1ad57517eec04))
+* **deps:** bump github.com/aws/aws-sdk-go-v2/config ([79e1fd3](https://github.com/soerenschneider/acmevault/commit/79e1fd32c31463434ea509c786374435a8174078))
+* **deps:** bump github.com/aws/aws-sdk-go-v2/service/route53 ([586af28](https://github.com/soerenschneider/acmevault/commit/586af282cc7689ff2f4f4c835d9204b202b97b1b))
+* **deps:** bump github.com/rs/zerolog from 1.30.0 to 1.31.0 ([eb81c37](https://github.com/soerenschneider/acmevault/commit/eb81c37b28ee2ad79f747a73e13cf059cafc0e86))
+
 ## [1.11.0](https://github.com/soerenschneider/acmevault/compare/v1.10.0...v1.11.0) (2023-09-11)
 
 
