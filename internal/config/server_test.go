@@ -13,8 +13,39 @@ func TestAcmeVaultServerConfigFromFile(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "example server config",
+			name: "example json config",
 			path: "../../contrib/config.json",
+			want: AcmeVaultServerConfig{
+				Vault: VaultConfig{
+					Addr:         "https://vault:8200",
+					SecretId:     "secretId",
+					RoleId:       "roleId",
+					PathPrefix:   "preprod",
+					AuthMethod:   "approle",
+					Kv2MountPath: "secret",
+					AwsMountPath: "custom-aws-mountpath",
+					AwsRole:      "my-custom-role",
+				},
+				AcmeEmail:       "my@email.tld",
+				AcmeUrl:         letsEncryptUrl,
+				AcmeDnsProvider: "",
+				IntervalSeconds: 43200,
+				Domains: []AcmeServerDomains{
+					{
+						Domain: "domain1.tld",
+						Sans:   []string{"domain3.tld", "domain4.tld"},
+					},
+					{
+						Domain: "domain2.tld",
+					},
+				},
+				MetricsAddr: "127.0.0.1:9112",
+			},
+			wantErr: false,
+		},
+		{
+			name: "example yaml config",
+			path: "../../contrib/config.yaml",
 			want: AcmeVaultServerConfig{
 				Vault: VaultConfig{
 					Addr:         "https://vault:8200",
