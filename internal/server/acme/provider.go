@@ -2,6 +2,7 @@ package acme
 
 import (
 	"crypto"
+
 	"github.com/go-acme/lego/v4/certcrypto"
 	"github.com/go-acme/lego/v4/registration"
 	"github.com/soerenschneider/acmevault/internal/config"
@@ -15,7 +16,7 @@ const (
 
 type AcmeDealer interface {
 	RegisterAccount() (*registration.Resource, error)
-	ObtainCert(domain config.AcmeServerDomains) (*certstorage.AcmeCertificate, error)
+	ObtainCert(domain config.DomainsConfig) (*certstorage.AcmeCertificate, error)
 	RenewCert(cert *certstorage.AcmeCertificate) (*certstorage.AcmeCertificate, error)
 }
 

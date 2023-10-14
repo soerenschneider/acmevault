@@ -35,7 +35,7 @@ func (conf *VaultConfig) Print() {
 	PrintFields(conf, SensitiveFields...)
 }
 
-func DefaultVaultConfig() VaultConfig {
+func defaultVaultConfig() VaultConfig {
 	var pathPrefix string
 	parsed, err := url.Parse(letsEncryptStagingUrl)
 	if err == nil {

@@ -26,7 +26,7 @@ import (
 func main() {
 	configPath := parseCli()
 	log.Info().Msgf("acmevault-server version %s, commit %s", internal.BuildVersion, internal.CommitHash)
-	conf, err := config.AcmeVaultServerConfigFromFile(configPath)
+	conf, err := config.Read(configPath)
 	if err != nil {
 		log.Fatal().Msgf("Could not load config: %v", err)
 	}
@@ -70,6 +70,12 @@ func getUserHomeDirectory() string {
 	return dir
 }
 
+func dieOnError(err error, msg string) {
+	if err != nil {
+		log.Fatal().Err(err).Msg(msg)
+	}
+}
+
 func buildVaultAuth(conf config.VaultConfig) (vault.Auth, error) {
 	switch conf.AuthMethod {
 	case "token":
@@ -89,13 +95,7 @@ func buildVaultAuth(conf config.VaultConfig) (vault.Auth, error) {
 	}
 }
 
-func dieOnError(err error, msg string) {
-	if err != nil {
-		log.Fatal().Err(err).Msg(msg)
-	}
-}
-
-func NewAcmeVaultServer(conf config.AcmeVaultServerConfig) {
+func NewAcmeVaultServer(conf config.AcmeVaultConfig) {
 	vaultAuth, err := buildVaultAuth(conf.Vault)
 	dieOnError(err, "could not build token auth")
 
@@ -121,7 +121,7 @@ func NewAcmeVaultServer(conf config.AcmeVaultServerConfig) {
 	dieOnError(err, "Couldn't start server")
 }
 
-func Run(acmeVault *server.AcmeVaultServer, storage certstorage.CertStorage, conf config.AcmeVaultServerConfig) error {
+func Run(acmeVault *server.AcmeVaultServer, storage certstorage.CertStorage, conf config.AcmeVaultConfig) error {
 	if acmeVault == nil {
 		return errors.New("empty acmevault provided")
 	}

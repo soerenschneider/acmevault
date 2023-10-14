@@ -15,7 +15,7 @@ func TestServerHappyPathRenewal(t *testing.T) {
 	server := AcmeVaultServer{
 		acmeClient:  dealer,
 		certStorage: certStorage,
-		domains:     []config.AcmeServerDomains{{Domain: "example.com"}},
+		domains:     []config.DomainsConfig{{Domain: "example.com"}},
 	}
 
 	old := &certstorage.AcmeCertificate{}
@@ -41,7 +41,7 @@ func (m *MockAcmeDealer) RegisterAccount() (*registration.Resource, error) {
 	return args.Get(0).(*registration.Resource), args.Error(1)
 }
 
-func (m *MockAcmeDealer) ObtainCert(domains config.AcmeServerDomains) (*certstorage.AcmeCertificate, error) {
+func (m *MockAcmeDealer) ObtainCert(domains config.DomainsConfig) (*certstorage.AcmeCertificate, error) {
 	args := m.Called()
 	if nil == args.Get(0) {
 		return nil, args.Error(1)

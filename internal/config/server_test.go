@@ -9,13 +9,13 @@ func TestAcmeVaultServerConfigFromFile(t *testing.T) {
 	tests := []struct {
 		name    string
 		path    string
-		want    AcmeVaultServerConfig
+		want    AcmeVaultConfig
 		wantErr bool
 	}{
 		{
 			name: "example json config",
 			path: "../../contrib/config.json",
-			want: AcmeVaultServerConfig{
+			want: AcmeVaultConfig{
 				Vault: VaultConfig{
 					Addr:         "https://vault:8200",
 					SecretId:     "secretId",
@@ -30,7 +30,7 @@ func TestAcmeVaultServerConfigFromFile(t *testing.T) {
 				AcmeUrl:         letsEncryptUrl,
 				AcmeDnsProvider: "",
 				IntervalSeconds: 43200,
-				Domains: []AcmeServerDomains{
+				Domains: []DomainsConfig{
 					{
 						Domain: "domain1.tld",
 						Sans:   []string{"domain3.tld", "domain4.tld"},
@@ -46,7 +46,7 @@ func TestAcmeVaultServerConfigFromFile(t *testing.T) {
 		{
 			name: "example yaml config",
 			path: "../../contrib/config.yaml",
-			want: AcmeVaultServerConfig{
+			want: AcmeVaultConfig{
 				Vault: VaultConfig{
 					Addr:         "https://vault:8200",
 					SecretId:     "secretId",
@@ -61,7 +61,7 @@ func TestAcmeVaultServerConfigFromFile(t *testing.T) {
 				AcmeUrl:         letsEncryptUrl,
 				AcmeDnsProvider: "",
 				IntervalSeconds: 43200,
-				Domains: []AcmeServerDomains{
+				Domains: []DomainsConfig{
 					{
 						Domain: "domain1.tld",
 						Sans:   []string{"domain3.tld", "domain4.tld"},
@@ -77,13 +77,13 @@ func TestAcmeVaultServerConfigFromFile(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := AcmeVaultServerConfigFromFile(tt.path)
+			got, err := Read(tt.path)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("AcmeVaultServerConfigFromFile() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Read() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("AcmeVaultServerConfigFromFile() got = %v, want %v", got, tt.want)
+				t.Errorf("Read() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -97,7 +97,7 @@ func TestAcmeVaultServerConfig_Validate(t *testing.T) {
 		AcmeDnsProvider      string
 		AcmeCustomDnsServers []string
 		IntervalSeconds      int
-		Domains              []AcmeServerDomains
+		Domains              []DomainsConfig
 		MetricsAddr          string
 	}
 	tests := []struct {
@@ -125,7 +125,7 @@ func TestAcmeVaultServerConfig_Validate(t *testing.T) {
 				AcmeDnsProvider:      "",
 				AcmeCustomDnsServers: []string{"8.8.8.8", "2001:4860:4860::8888"},
 				IntervalSeconds:      3600,
-				Domains: []AcmeServerDomains{
+				Domains: []DomainsConfig{
 					{
 						Domain: "valid.domain",
 						Sans:   []string{"another.valid.domain"},
@@ -151,7 +151,7 @@ func TestAcmeVaultServerConfig_Validate(t *testing.T) {
 				AcmeDnsProvider:      "",
 				AcmeCustomDnsServers: []string{"not.an.ip"},
 				IntervalSeconds:      3600,
-				Domains: []AcmeServerDomains{
+				Domains: []DomainsConfig{
 					{
 						Domain: "valid.domain",
 						Sans:   []string{"another.valid.domain"},
@@ -177,7 +177,7 @@ func TestAcmeVaultServerConfig_Validate(t *testing.T) {
 				AcmeDnsProvider:      "",
 				AcmeCustomDnsServers: nil,
 				IntervalSeconds:      3600,
-				Domains: []AcmeServerDomains{
+				Domains: []DomainsConfig{
 					{
 						Domain: "nofqdn",
 						Sans:   []string{"another.valid.domain"},
@@ -203,7 +203,7 @@ func TestAcmeVaultServerConfig_Validate(t *testing.T) {
 				AcmeDnsProvider:      "",
 				AcmeCustomDnsServers: nil,
 				IntervalSeconds:      3600,
-				Domains: []AcmeServerDomains{
+				Domains: []DomainsConfig{
 					{
 						Domain: "valid.fqdn",
 						Sans:   []string{"novalidfqdn", "valid.fqdn"},
@@ -229,7 +229,7 @@ func TestAcmeVaultServerConfig_Validate(t *testing.T) {
 				AcmeDnsProvider:      "",
 				AcmeCustomDnsServers: nil,
 				IntervalSeconds:      3599,
-				Domains: []AcmeServerDomains{
+				Domains: []DomainsConfig{
 					{
 						Domain: "valid.fqdn",
 						Sans:   []string{"one.more.valid.fqdn", "another.valid.fqdn"},
@@ -255,7 +255,7 @@ func TestAcmeVaultServerConfig_Validate(t *testing.T) {
 				AcmeDnsProvider:      "",
 				AcmeCustomDnsServers: nil,
 				IntervalSeconds:      86401,
-				Domains: []AcmeServerDomains{
+				Domains: []DomainsConfig{
 					{
 						Domain: "valid.fqdn",
 						Sans:   []string{"one.more.valid.fqdn", "another.valid.fqdn"},
@@ -283,7 +283,7 @@ func TestAcmeVaultServerConfig_Validate(t *testing.T) {
 				AcmeDnsProvider:      "",
 				AcmeCustomDnsServers: nil,
 				IntervalSeconds:      86400,
-				Domains: []AcmeServerDomains{
+				Domains: []DomainsConfig{
 					{
 						Domain: "valid.fqdn",
 						Sans:   []string{"one.more.valid.fqdn", "another.valid.fqdn"},
@@ -309,7 +309,7 @@ func TestAcmeVaultServerConfig_Validate(t *testing.T) {
 				AcmeDnsProvider:      "",
 				AcmeCustomDnsServers: nil,
 				IntervalSeconds:      86400,
-				Domains: []AcmeServerDomains{
+				Domains: []DomainsConfig{
 					{
 						Domain: "valid.fqdn",
 						Sans:   []string{"one.more.valid.fqdn", "another.valid.fqdn"},
@@ -322,7 +322,7 @@ func TestAcmeVaultServerConfig_Validate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			conf := AcmeVaultServerConfig{
+			conf := AcmeVaultConfig{
 				Vault:                tt.fields.VaultConfig,
 				AcmeEmail:            tt.fields.AcmeEmail,
 				AcmeUrl:              tt.fields.AcmeUrl,

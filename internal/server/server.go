@@ -15,10 +15,10 @@ import (
 type AcmeVaultServer struct {
 	acmeClient  acme.AcmeDealer
 	certStorage certstorage.CertStorage
-	domains     []config.AcmeServerDomains
+	domains     []config.DomainsConfig
 }
 
-func NewAcmeVaultServer(domains []config.AcmeServerDomains, acmeClient acme.AcmeDealer, storage certstorage.CertStorage) (*AcmeVaultServer, error) {
+func NewAcmeVaultServer(domains []config.DomainsConfig, acmeClient acme.AcmeDealer, storage certstorage.CertStorage) (*AcmeVaultServer, error) {
 	if len(domains) == 0 {
 		return nil, errors.New("no domains given")
 	}
@@ -55,7 +55,7 @@ func (c *AcmeVaultServer) CheckCerts() error {
 	return err
 }
 
-func (c *AcmeVaultServer) obtainAndHandleCert(domain config.AcmeServerDomains) error {
+func (c *AcmeVaultServer) obtainAndHandleCert(domain config.DomainsConfig) error {
 	read, err := c.certStorage.ReadPublicCertificateData(domain.Domain)
 	if err != nil || read == nil {
 		log.Error().Err(err).Msgf("Error reading cert data from storage for domain '%s'", domain.Domain)

@@ -59,7 +59,7 @@ func getAccount(accountStorage certstorage.AccountStorage, email string) (*certs
 	}, true, nil
 }
 
-func NewGoLegoDealer(accountStorage certstorage.AccountStorage, conf config.AcmeVaultServerConfig, dnsProvider challenge.Provider) (*GoLego, error) {
+func NewGoLegoDealer(accountStorage certstorage.AccountStorage, conf config.AcmeVaultConfig, dnsProvider challenge.Provider) (*GoLego, error) {
 	log.Info().Msgf("Trying to read account details for %s from vault...", conf.AcmeEmail)
 	account, registerNewAccount, err := getAccount(accountStorage, conf.AcmeEmail)
 	if err != nil {
@@ -98,7 +98,7 @@ func (l *GoLego) RegisterAccount() (*registration.Resource, error) {
 	return l.client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
 }
 
-func (l *GoLego) ObtainCert(domain config.AcmeServerDomains) (*certstorage.AcmeCertificate, error) {
+func (l *GoLego) ObtainCert(domain config.DomainsConfig) (*certstorage.AcmeCertificate, error) {
 	domains := []string{domain.Domain}
 	domains = append(domains, domain.Sans...)
 	request := certificate.ObtainRequest{
