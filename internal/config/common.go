@@ -11,24 +11,24 @@ import (
 var validate = validator.New()
 
 type VaultConfig struct {
-	Addr       string `json:"vaultAddr" validate:"required,http_url"`
-	AuthMethod string `json:"vaultAuthMethod" validate:"required,oneof=token approle k8s implicit"`
-	Token      string `json:"vaultToken" validate:"required_if=AuthMethod 'token'"`
+	Addr       string `yaml:"addr" validate:"required,http_url"`
+	AuthMethod string `yaml:"authMethod" validate:"required,oneof=token approle k8s implicit"`
+	Token      string `yaml:"token" validate:"required_if=AuthMethod 'token'"`
 
-	RoleId       string `json:"vaultRoleId" validate:"required_if=AuthMethod 'approle'"`
-	SecretId     string `json:"vaultSecretId" validate:"excluded_unless=SecretIdFile '',required_if=SecretIdFile '' AuthMethod 'approle'"`
-	SecretIdFile string `json:"vaultSecretIdFile" validate:"excluded_unless=SecretId '',required_if=SecretId '' AuthMethod 'approle'"`
+	RoleId       string `yaml:"roleId" validate:"required_if=AuthMethod 'approle'"`
+	SecretId     string `yaml:"secretId" validate:"excluded_unless=SecretIdFile '',required_if=SecretIdFile '' AuthMethod 'approle'"`
+	SecretIdFile string `yaml:"secretIdFile" validate:"excluded_unless=SecretId '',required_if=SecretId '' AuthMethod 'approle'"`
 
-	K8sRoleId    string `json:"vaultK8sRoleId" validate:"required_if=AuthMethod 'k8s'"`
-	K8sMountPath string `json:"vaultK8sMountPath"`
+	K8sRoleId    string `yaml:"k8sRoleId" validate:"required_if=AuthMethod 'k8s'"`
+	K8sMountPath string `yaml:"k8sMountPath"`
 
-	PathPrefix       string `json:"vaultPathPrefix" validate:"required,startsnotwith=/,startsnotwith=/secret,endsnotwith=/,ne=acmevault"`
-	DomainPathFormat string `json:"domainPathFormat" validate:"omitempty,containsrune=%"`
+	PathPrefix       string `yaml:"pathPrefix" validate:"required,startsnotwith=/,startsnotwith=/secret,endsnotwith=/,ne=acmevault"`
+	DomainPathFormat string `yaml:"domainPathFormat" validate:"omitempty,containsrune=%"`
 
-	Kv2MountPath string `json:"vaultKv2MountPath" validate:"required,endsnotwith=/,startsnotwith=/"`
+	Kv2MountPath string `yaml:"kv2MountPath" validate:"required,endsnotwith=/,startsnotwith=/"`
 
-	AwsMountPath string `json:"vaultAwsMountPath" validate:"required,endsnotwith=/,startsnotwith=/"`
-	AwsRole      string `json:"vaultAwsRole" validate:"required"`
+	AwsMountPath string `yaml:"awsMountPath" validate:"required,endsnotwith=/,startsnotwith=/"`
+	AwsRole      string `yaml:"awsRole" validate:"required"`
 }
 
 func (conf *VaultConfig) Print() {

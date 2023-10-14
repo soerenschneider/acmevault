@@ -1,9 +1,10 @@
 package config
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
+
+	"gopkg.in/yaml.v3"
 )
 
 const letsEncryptUrl = "https://acme-v02.api.letsencrypt.org/directory"
@@ -15,19 +16,19 @@ var (
 )
 
 type AcmeVaultServerConfig struct {
-	VaultConfig
-	AcmeEmail            string              `json:"email" validate:"required,email"`
-	AcmeUrl              string              `json:"acmeUrl" validate:"required,oneof=https://acme-v02.api.letsencrypt.org/directory https://acme-staging-v02.api.letsencrypt.org/directory"`
-	AcmeDnsProvider      string              `json:"acmeDnsProvider"`
-	AcmeCustomDnsServers []string            `json:"acmeCustomDnsServers,omitempty" validate:"dive,ip"`
-	IntervalSeconds      int                 `json:"intervalSeconds" validate:"min=3600,max=86400"`
-	Domains              []AcmeServerDomains `json:"domains" validate:"required,dive"`
-	MetricsAddr          string              `json:"metricsAddr" validate:"tcp_addr"`
+	Vault                VaultConfig         `yaml:"vault" validate:"required"`
+	AcmeEmail            string              `yaml:"email" validate:"required,email"`
+	AcmeUrl              string              `yaml:"acmeUrl" validate:"required,oneof=https://acme-v02.api.letsencrypt.org/directory https://acme-staging-v02.api.letsencrypt.org/directory"`
+	AcmeDnsProvider      string              `yaml:"acmeDnsProvider"`
+	AcmeCustomDnsServers []string            `yaml:"acmeCustomDnsServers,omitempty" validate:"dive,ip"`
+	IntervalSeconds      int                 `yaml:"intervalSeconds" validate:"min=3600,max=86400"`
+	Domains              []AcmeServerDomains `yaml:"domains" validate:"required,dive"`
+	MetricsAddr          string              `yaml:"metricsAddr" validate:"tcp_addr"`
 }
 
 type AcmeServerDomains struct {
-	Domain string   `json:"domain" validate:"required,fqdn"`
-	Sans   []string `json:"sans,omitempty" validate:"dive,fqdn"`
+	Domain string   `yaml:"domain" validate:"required,fqdn"`
+	Sans   []string `yaml:"sans,omitempty" validate:"dive,fqdn"`
 }
 
 func (a AcmeServerDomains) String() string {
@@ -47,17 +48,17 @@ func getDefaultServerConfig() AcmeVaultServerConfig {
 		AcmeUrl:         letsEncryptUrl,
 		IntervalSeconds: defaultIntervalSeconds,
 		MetricsAddr:     defaultMetricsAddr,
-		VaultConfig:     DefaultVaultConfig(),
+		Vault:           DefaultVaultConfig(),
 	}
 }
 
 func AcmeVaultServerConfigFromFile(path string) (AcmeVaultServerConfig, error) {
 	conf := getDefaultServerConfig()
-	content, err := ioutil.ReadFile(path)
+	content, err := os.ReadFile(path)
 	if err != nil {
 		return conf, fmt.Errorf("can not read config from file %s: %v", path, err)
 	}
 
-	err = json.Unmarshal(content, &conf)
+	err = yaml.Unmarshal(content, &conf)
 	return conf, err
 }
