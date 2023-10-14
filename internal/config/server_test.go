@@ -14,9 +14,9 @@ func TestAcmeVaultServerConfigFromFile(t *testing.T) {
 	}{
 		{
 			name: "example server config",
-			path: "../../contrib/server.json",
+			path: "../../contrib/config.json",
 			want: AcmeVaultServerConfig{
-				VaultConfig: VaultConfig{
+				Vault: VaultConfig{
 					Addr:         "https://vault:8200",
 					SecretId:     "secretId",
 					RoleId:       "roleId",
@@ -292,7 +292,7 @@ func TestAcmeVaultServerConfig_Validate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			conf := AcmeVaultServerConfig{
-				VaultConfig:          tt.fields.VaultConfig,
+				Vault:                tt.fields.VaultConfig,
 				AcmeEmail:            tt.fields.AcmeEmail,
 				AcmeUrl:              tt.fields.AcmeUrl,
 				AcmeDnsProvider:      tt.fields.AcmeDnsProvider,

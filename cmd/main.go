@@ -30,7 +30,6 @@ func main() {
 	if err != nil {
 		log.Fatal().Msgf("Could not load config: %v", err)
 	}
-	conf.Print()
 	err = conf.Validate()
 	if err != nil {
 		log.Fatal().Msgf("Invalid configuration provided: %v", err)
@@ -71,7 +70,7 @@ func getUserHomeDirectory() string {
 	return dir
 }
 
-func buildVaultAuth(conf config.AcmeVaultServerConfig) (vault.Auth, error) {
+func buildVaultAuth(conf config.VaultConfig) (vault.Auth, error) {
 	switch conf.AuthMethod {
 	case "token":
 		return vault.NewTokenAuth(conf.Token)
@@ -97,10 +96,10 @@ func dieOnError(err error, msg string) {
 }
 
 func NewAcmeVaultServer(conf config.AcmeVaultServerConfig) {
-	vaultAuth, err := buildVaultAuth(conf)
+	vaultAuth, err := buildVaultAuth(conf.Vault)
 	dieOnError(err, "could not build token auth")
 
-	storage, err := vault.NewVaultBackend(conf.VaultConfig, vaultAuth)
+	storage, err := vault.NewVaultBackend(conf.Vault, vaultAuth)
 	dieOnError(err, "could not generate desired backend")
 
 	err = storage.Authenticate()

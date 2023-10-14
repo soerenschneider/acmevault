@@ -1,0 +1,25 @@
+{
+  "domains": [
+    {
+      "domain": "domain1.tld",
+      "sans": [
+        "domain3.tld",
+        "domain4.tld"
+      ]
+    },
+    {
+      "domain": "domain2.tld"
+    }
+  ],
+  "email": "my@email.tld",
+  "vault": {
+    "authMethod": "approle",
+    "addr": "https://vault:8200",
+    "secretId": "secretId",
+    "roleId": "roleId",
+    "pathPrefix": "preprod",
+    "kv2MountPath": "secret",
+    "awsMountPath": "custom-aws-mountpath",
+    "awsRole": "my-custom-role"
+  }
+}
