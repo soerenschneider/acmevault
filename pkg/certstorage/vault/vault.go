@@ -181,8 +181,11 @@ func (vault *VaultBackend) ReadAccount(hash string) (*certstorage.AcmeAccount, e
 }
 
 func (vault *VaultBackend) Authenticate() error {
-	secret, err := vault.client.Auth().Login(context.Background(), vault.auth)
-	if err == nil {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	secret, err := vault.client.Auth().Login(ctx, vault.auth)
+	if err == nil && secret.Auth.LeaseDuration != 0 {
 		log.Info().Msgf("Login token valid for %d seconds (until %v)", secret.Auth.LeaseDuration, time.Now().Add(time.Second*time.Duration(secret.Auth.LeaseDuration)))
 	}
 	return err

@@ -106,6 +106,7 @@ func run(conf config.AcmeVaultConfig, deps *deps) {
 			if err := deps.storage.Logout(); err != nil {
 				log.Warn().Err(err).Msg("Logging out failed")
 			}
+			deps.done <- true
 			cancel()
 			ticker.Stop()
 			stop = true

@@ -20,6 +20,8 @@ type deps struct {
 	dnsProvider         challenge.Provider
 	acmeClient          acme.AcmeDealer
 
+	done chan bool
+
 	acmeVault *server.AcmeVault
 }
 
@@ -35,6 +37,13 @@ func buildDeps(conf config.AcmeVaultConfig) *deps {
 
 	deps.vaultAuth, err = buildVaultAuth(conf.Vault)
 	dieOnError(err, "could not build token auth")
+
+	if conf.Vault.UseAutoRenewAuth() {
+		log.Info().Msg("Building Vault auth auto renew wrapper...")
+		deps.done = make(chan bool)
+		deps.vaultAuth, err = vault.NewAutoRenew(deps.vaultAuth, deps.done)
+		dieOnError(err, "could not build token auth")
+	}
 
 	deps.storage, err = vault.NewVaultBackend(conf.Vault, deps.vaultAuth)
 	dieOnError(err, "could not generate desired backend")

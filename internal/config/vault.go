@@ -59,3 +59,7 @@ func (conf *VaultConfig) Validate() error {
 func (conf *VaultConfig) LoadSecretIdFromFile() bool {
 	return len(conf.SecretIdFile) > 0
 }
+
+func (conf *VaultConfig) UseAutoRenewAuth() bool {
+	return conf.AuthMethod != "token" && conf.AuthMethod != "implicit"
+}

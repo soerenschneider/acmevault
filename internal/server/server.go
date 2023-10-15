@@ -60,11 +60,6 @@ func New(domains []config.DomainsConfig, acmeClient acme.AcmeDealer, storage Cer
 }
 
 func (c *AcmeVault) CheckCerts(ctx context.Context, wg *sync.WaitGroup) error {
-	err := c.certStorage.Authenticate()
-	if err != nil {
-		return err
-	}
-
 	metrics.ServerLatestIterationTimestamp.SetToCurrentTime()
 	ch := make(chan config.DomainsConfig, len(c.domains))
 	for _, data := range c.domains {
@@ -84,7 +79,8 @@ func (c *AcmeVault) CheckCerts(ctx context.Context, wg *sync.WaitGroup) error {
 	}()
 
 	var errs error
-	for i := 0; i < 3; i++ {
+
+	for i := 0; i < 5; i++ {
 		wg.Add(1)
 		go func() {
 			for domain := range ch {
@@ -103,10 +99,6 @@ func (c *AcmeVault) CheckCerts(ctx context.Context, wg *sync.WaitGroup) error {
 			}
 		}()
 		wg.Done()
-	}
-
-	if err := c.certStorage.Logout(); err != nil {
-		log.Error().Err(err).Msg("logging out of storage failed")
 	}
 
 	return errs
