@@ -66,8 +66,43 @@ func (c *AcmeVault) CheckCerts(ctx context.Context, wg *sync.WaitGroup) error {
 	}
 
 	metrics.ServerLatestIterationTimestamp.SetToCurrentTime()
-	for _, domain := range c.domains {
-		err = multierr.Append(err, c.obtainAndHandleCert(domain))
+	ch := make(chan config.DomainsConfig, len(c.domains))
+	for _, data := range c.domains {
+		ch <- data
+	}
+
+	mutex := sync.RWMutex{}
+	stop := false
+	wg.Add(1)
+
+	go func() {
+		<-ctx.Done()
+		mutex.Lock()
+		stop = true
+		mutex.Unlock()
+		wg.Done()
+	}()
+
+	var errs error
+	for i := 0; i < 3; i++ {
+		wg.Add(1)
+		go func() {
+			for domain := range ch {
+				mutex.RLock()
+				if stop {
+					mutex.RUnlock()
+					return
+				}
+				mutex.RUnlock()
+
+				if err := c.obtainAndHandleCert(domain); err != nil {
+					mutex.Lock()
+					errs = multierr.Append(errs, err)
+					mutex.Unlock()
+				}
+			}
+		}()
+		wg.Done()
 	}
 
 	if err := c.certStorage.Logout(); err != nil {

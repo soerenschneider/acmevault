@@ -12,7 +12,7 @@ import (
 func TestServerHappyPathRenewal(t *testing.T) {
 	dealer := &MockAcmeDealer{}
 	certStorage := &MockStorage{}
-	server := AcmeVaultServer{
+	server := AcmeVault{
 		acmeClient:  dealer,
 		certStorage: certStorage,
 		domains:     []config.DomainsConfig{{Domain: "example.com"}},
