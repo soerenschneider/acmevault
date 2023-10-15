@@ -23,7 +23,7 @@ type AcmeVaultConfig struct {
 	AcmeCustomDnsServers []string        `yaml:"acmeCustomDnsServers,omitempty" validate:"dive,ip"`
 	IntervalSeconds      int             `yaml:"intervalSeconds" validate:"min=3600,max=86400"`
 	Domains              []DomainsConfig `yaml:"domains" validate:"required,dive"`
-	MetricsAddr          string          `yaml:"metricsAddr" validate:"tcp_addr"`
+	MetricsAddr          string          `yaml:"metricsAddr" validate:"omitempty,tcp_addr"`
 }
 
 type DomainsConfig struct {

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"errors"
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -9,18 +9,14 @@ import (
 	"os/user"
 	"path"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
-	"github.com/hashicorp/vault/api/auth/approle"
 	"github.com/rs/zerolog/log"
 	"github.com/soerenschneider/acmevault/internal"
 	"github.com/soerenschneider/acmevault/internal/config"
 	"github.com/soerenschneider/acmevault/internal/metrics"
-	"github.com/soerenschneider/acmevault/internal/server"
-	"github.com/soerenschneider/acmevault/internal/server/acme"
-	"github.com/soerenschneider/acmevault/pkg/certstorage"
-	"github.com/soerenschneider/acmevault/pkg/certstorage/vault"
 )
 
 func main() {
@@ -28,18 +24,20 @@ func main() {
 	log.Info().Msgf("acmevault-server version %s, commit %s", internal.BuildVersion, internal.CommitHash)
 	conf, err := config.Read(configPath)
 	if err != nil {
-		log.Fatal().Msgf("Could not load config: %v", err)
+		log.Fatal().Err(err).Msgf("Could not load config")
 	}
-	err = conf.Validate()
-	if err != nil {
-		log.Fatal().Msgf("Invalid configuration provided: %v", err)
+
+	if err := conf.Validate(); err != nil {
+		log.Fatal().Err(err).Msgf("Invalid configuration provided")
 	}
-	NewAcmeVaultServer(conf)
+
+	deps := buildDeps(conf)
+	run(conf, deps)
 }
 
 const (
 	envConfFile = "ACME_VAULT_CONFIG_FILE"
-	cliConfFile = "conf"
+	cliConfFile = "config"
 	cliVersion  = "version"
 )
 
@@ -70,72 +68,18 @@ func getUserHomeDirectory() string {
 	return dir
 }
 
-func dieOnError(err error, msg string) {
-	if err != nil {
-		log.Fatal().Err(err).Msg(msg)
-	}
-}
-
-func buildVaultAuth(conf config.VaultConfig) (vault.Auth, error) {
-	switch conf.AuthMethod {
-	case "token":
-		return vault.NewTokenAuth(conf.Token)
-	case "approle":
-		secretId := &approle.SecretID{
-			FromFile:   conf.SecretIdFile,
-			FromString: conf.SecretId,
-		}
-		return vault.NewApproleAuth(conf.RoleId, secretId)
-	case "k8s":
-		return vault.NewVaultKubernetesAuth(conf.K8sRoleId, conf.K8sMountPath)
-	case "implicit":
-		return vault.NewImplicitAuth()
-	default:
-		return nil, fmt.Errorf("no valid auth method: %s", conf.AuthMethod)
-	}
-}
-
-func NewAcmeVaultServer(conf config.AcmeVaultConfig) {
-	vaultAuth, err := buildVaultAuth(conf.Vault)
-	dieOnError(err, "could not build token auth")
-
-	storage, err := vault.NewVaultBackend(conf.Vault, vaultAuth)
-	dieOnError(err, "could not generate desired backend")
-
-	err = storage.Authenticate()
-	dieOnError(err, "Could not authenticate against storage")
-
-	dynamicCredentialsProvider, err := acme.NewDynamicCredentialsProvider(storage)
-	dieOnError(err, "could not build dynamic credentials provider")
-
-	dnsProvider, err := acme.BuildRoute53DnsProvider(dynamicCredentialsProvider)
-	dieOnError(err, "could not build dns provider")
-
-	acmeClient, err := acme.NewGoLegoDealer(storage, conf, dnsProvider)
-	dieOnError(err, "Could not initialize acme client")
-
-	acmeVaultServer, err := server.NewAcmeVaultServer(conf.Domains, acmeClient, storage)
-	dieOnError(err, "Couldn't build server")
-
-	err = Run(acmeVaultServer, storage, conf)
-	dieOnError(err, "Couldn't start server")
-}
-
-func Run(acmeVault *server.AcmeVaultServer, storage certstorage.CertStorage, conf config.AcmeVaultConfig) error {
-	if acmeVault == nil {
-		return errors.New("empty acmevault provided")
-	}
-	if storage == nil {
-		return errors.New("storage provider not provided")
-	}
-	err := conf.Validate()
-	if err != nil {
-		return fmt.Errorf("config invalid: %v", err)
+func run(conf config.AcmeVaultConfig, deps *deps) {
+	if len(conf.MetricsAddr) > 0 {
+		go metrics.StartMetricsServer(conf.MetricsAddr)
 	}
 
-	go metrics.StartMetricsServer(conf.MetricsAddr)
-
+	ctx, cancel := context.WithCancel(context.Background())
 	ticker := time.NewTicker(time.Duration(conf.IntervalSeconds) * time.Second)
+	defer func() {
+		ticker.Stop()
+		cancel()
+	}()
+
 	done := make(chan os.Signal, 1)
 	signal.Notify(done,
 		syscall.SIGHUP,
@@ -143,24 +87,32 @@ func Run(acmeVault *server.AcmeVaultServer, storage certstorage.CertStorage, con
 		syscall.SIGTERM,
 		syscall.SIGQUIT)
 
-	err = acmeVault.CheckCerts()
-	if err != nil {
+	wg := &sync.WaitGroup{}
+
+	if err := deps.acmeVault.CheckCerts(ctx, wg); err != nil {
 		log.Error().Err(err).Msg("error checking certs")
 	}
-	for {
+
+	stop := false
+	for !stop {
 		select {
 		case <-ticker.C:
-			err = acmeVault.CheckCerts()
+			err := deps.acmeVault.CheckCerts(ctx, wg)
 			if err != nil {
 				log.Error().Err(err).Msg("error checking certs")
 			}
 		case <-done:
 			log.Info().Msg("Received signal, quitting")
-			if err := storage.Logout(); err != nil {
+			if err := deps.storage.Logout(); err != nil {
 				log.Warn().Err(err).Msg("Logging out failed")
 			}
+			cancel()
 			ticker.Stop()
-			os.Exit(0)
+			stop = true
 		}
 	}
+
+	log.Info().Msg("Waiting on other components")
+	wg.Wait()
+	log.Info().Msg("Done, bye!")
 }

@@ -1,4 +1,5 @@
-builds
+/builds
+/acmevault
 .idea/*
 go-diagrams/*
 acmevault-server

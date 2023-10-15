@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/go-acme/lego/v4/acme"
 	"github.com/go-acme/lego/v4/registration"
 	"github.com/hashicorp/vault/api"
@@ -191,13 +192,13 @@ func (vault *VaultBackend) Logout() error {
 	return vault.auth.Logout(context.Background(), vault.client)
 }
 
-func (vault *VaultBackend) ReadAwsCredentials() (*AwsDynamicCredentials, error) {
+func (vault *VaultBackend) ReadAwsCredentials() (aws.Credentials, error) {
 	metrics.AwsDynCredentialsRequested.Inc()
 	path := vault.getAwsCredentialsPath()
 	secret, err := vault.client.Logical().Read(path)
 	if err != nil {
 		metrics.AwsDynCredentialsRequestErrors.Inc()
-		return nil, fmt.Errorf("could not gather dynamic credentials: %v", err)
+		return aws.Credentials{}, fmt.Errorf("could not gather dynamic credentials: %v", err)
 	}
 
 	return mapVaultAwsCredentialResponse(secret)

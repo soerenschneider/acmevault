@@ -25,40 +25,7 @@ var ErrNotFound = errors.New("not found")
 var ErrPermissionDenied = errors.New("permission denied")
 var rnd *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano())) // #nosec G404
 
-type CertStorage interface {
-	// Authenticate authenticates against the storage subsystem and returns an error about the success of the operation.
-	Authenticate() error
-
-	// WriteCertificate writes the full certificate to the underlying storage.
-	WriteCertificate(resource *AcmeCertificate) error
-
-	// ReadPublicCertificateData reads the public portion of the certificate data (without the private key) from the
-	// storage subsystem. This is intended to be used by the server component that does not need to have permission
-	// to read the full certificate data.
-	ReadPublicCertificateData(domain string) (*AcmeCertificate, error)
-
-	// ReadFullCertificateData reads all data for a given certificate and is intended to be used by the client component.
-	ReadFullCertificateData(domain string) (*AcmeCertificate, error)
-
-	// Logout cleans up and logs out of the storage subsystem.
-	Logout() error
-}
-
 var ErrAccountNotFound = errors.New("account not found")
-
-type AccountStorage interface {
-	// Authenticate authenticates against the storage subsystem and returns an error about the success of the operation.
-	Authenticate() error
-
-	// WriteAccount writes an ACME account to the storage.
-	WriteAccount(AcmeAccount) error
-
-	// ReadAccount reads the ACME account data for a given email address from the storage.
-	ReadAccount(email string) (*AcmeAccount, error)
-
-	// Logout cleans up and logs out of the storage subsystem.
-	Logout() error
-}
 
 type AcmeCertificate struct {
 	Domain            string `json:"domain"`
@@ -90,7 +57,7 @@ func (cert *AcmeCertificate) NeedsRenewal() (bool, error) {
 
 	metrics.CertServerExpiryTimestamp.WithLabelValues(cert.Domain).Set(float64(expiry.Unix()))
 	timeLeft := expiry.Sub(time.Now().UTC())
-	log.Info().Msgf("Not renewing cert for domain %s, still valid for %v", cert.Domain, niceTimeLeft(timeLeft))
+	log.Debug().Msgf("Not renewing cert for domain %s, still valid for %v", cert.Domain, niceTimeLeft(timeLeft))
 
 	if timeLeft > MinCertLifetime && timeLeft <= Skew {
 		if rnd.Intn(100) >= 97 {

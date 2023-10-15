@@ -12,51 +12,42 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	legoRoute53 "github.com/go-acme/lego/v4/providers/dns/route53"
 	"github.com/rs/zerolog/log"
-	"github.com/soerenschneider/acmevault/pkg/certstorage/vault"
 )
 
 const AwsIamPropagationImpediment = 20 * time.Second
 
 type DynamicCredentialsProvider struct {
-	vault  *vault.VaultBackend
+	vault  AwsDynamicCredentialsBackend
 	expiry time.Time
 }
 
-func NewDynamicCredentialsProvider(vault *vault.VaultBackend) (aws.CredentialsProvider, error) {
-	if nil == vault {
+type AwsDynamicCredentialsBackend interface {
+	ReadAwsCredentials() (aws.Credentials, error)
+}
+
+func NewAwsDynamicCredentialsProvider(backend AwsDynamicCredentialsBackend) (aws.CredentialsProvider, error) {
+	if nil == backend {
 		return nil, errors.New("no vault backend provided")
 	}
 
-	bla := &DynamicCredentialsProvider{vault: vault}
-	return aws.NewCredentialsCache(bla), nil
+	p := &DynamicCredentialsProvider{vault: backend}
+	return aws.NewCredentialsCache(p), nil
 }
 
 func (m *DynamicCredentialsProvider) Retrieve(ctx context.Context) (aws.Credentials, error) {
 	log.Info().Msg("Trying to read AWS credentials from Vault")
-	dynamicCredentials, err := m.vault.ReadAwsCredentials()
+	cred, err := m.vault.ReadAwsCredentials()
 	if err != nil {
 		return aws.Credentials{}, fmt.Errorf("could not login at vault: %v", err)
 	}
 
-	m.expiry = dynamicCredentials.Expiry
-	cred := ConvertCredentials(*dynamicCredentials)
-
+	m.expiry = cred.Expires
 	log.Info().Msgf("Received AWS credentials with access id %s, waiting for %v for eventual consistency", cred.AccessKeyID, AwsIamPropagationImpediment)
 
 	// The credentials we receive are usually not effective at AWS, yet, so we need to wait for a bit until
 	// the changes on AWS are propagated
 	time.Sleep(AwsIamPropagationImpediment)
 	return cred, nil
-}
-
-func ConvertCredentials(dynamicCredentials vault.AwsDynamicCredentials) aws.Credentials {
-	return aws.Credentials{
-		AccessKeyID:     dynamicCredentials.AccessKeyId,
-		SecretAccessKey: dynamicCredentials.SecretAccessKey,
-		CanExpire:       true,
-		Expires:         dynamicCredentials.Expiry,
-		Source:          "vault",
-	}
 }
 
 func (m *DynamicCredentialsProvider) IsExpired() bool {

@@ -36,7 +36,7 @@ func buildLegoClient(account *certstorage.AcmeAccount, acmeUrl string) (*GoLego,
 	return l, nil
 }
 
-func getAccount(accountStorage certstorage.AccountStorage, email string) (*certstorage.AcmeAccount, bool, error) {
+func getAccount(accountStorage AccountStorage, email string) (*certstorage.AcmeAccount, bool, error) {
 	account, err := accountStorage.ReadAccount(email)
 	if err == nil {
 		log.Info().Msgf("retrieved account data for '%s'", email)
@@ -59,7 +59,7 @@ func getAccount(accountStorage certstorage.AccountStorage, email string) (*certs
 	}, true, nil
 }
 
-func NewGoLegoDealer(accountStorage certstorage.AccountStorage, conf config.AcmeVaultConfig, dnsProvider challenge.Provider) (*GoLego, error) {
+func NewGoLegoDealer(accountStorage AccountStorage, conf config.AcmeVaultConfig, dnsProvider challenge.Provider) (*GoLego, error) {
 	log.Info().Msgf("Trying to read account details for %s from vault...", conf.AcmeEmail)
 	account, registerNewAccount, err := getAccount(accountStorage, conf.AcmeEmail)
 	if err != nil {

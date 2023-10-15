@@ -1,8 +1,10 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"sync"
 
 	"github.com/rs/zerolog/log"
 	"github.com/soerenschneider/acmevault/internal/config"
@@ -12,13 +14,32 @@ import (
 	"go.uber.org/multierr"
 )
 
-type AcmeVaultServer struct {
+type AcmeVault struct {
 	acmeClient  acme.AcmeDealer
-	certStorage certstorage.CertStorage
+	certStorage CertStorage
 	domains     []config.DomainsConfig
 }
 
-func NewAcmeVaultServer(domains []config.DomainsConfig, acmeClient acme.AcmeDealer, storage certstorage.CertStorage) (*AcmeVaultServer, error) {
+type CertStorage interface {
+	// Authenticate authenticates against the storage subsystem and returns an error about the success of the operation.
+	Authenticate() error
+
+	// WriteCertificate writes the full certificate to the underlying storage.
+	WriteCertificate(resource *certstorage.AcmeCertificate) error
+
+	// ReadPublicCertificateData reads the public portion of the certificate data (without the private key) from the
+	// storage subsystem. This is intended to be used by the server component that does not need to have permission
+	// to read the full certificate data.
+	ReadPublicCertificateData(domain string) (*certstorage.AcmeCertificate, error)
+
+	// ReadFullCertificateData reads all data for a given certificate and is intended to be used by the client component.
+	ReadFullCertificateData(domain string) (*certstorage.AcmeCertificate, error)
+
+	// Logout cleans up and logs out of the storage subsystem.
+	Logout() error
+}
+
+func New(domains []config.DomainsConfig, acmeClient acme.AcmeDealer, storage CertStorage) (*AcmeVault, error) {
 	if len(domains) == 0 {
 		return nil, errors.New("no domains given")
 	}
@@ -31,14 +52,14 @@ func NewAcmeVaultServer(domains []config.DomainsConfig, acmeClient acme.AcmeDeal
 		return nil, errors.New("no storage provider given")
 	}
 
-	return &AcmeVaultServer{
+	return &AcmeVault{
 		acmeClient:  acmeClient,
 		certStorage: storage,
 		domains:     domains,
 	}, nil
 }
 
-func (c *AcmeVaultServer) CheckCerts() error {
+func (c *AcmeVault) CheckCerts(ctx context.Context, wg *sync.WaitGroup) error {
 	err := c.certStorage.Authenticate()
 	if err != nil {
 		return err
@@ -48,14 +69,15 @@ func (c *AcmeVaultServer) CheckCerts() error {
 	for _, domain := range c.domains {
 		err = multierr.Append(err, c.obtainAndHandleCert(domain))
 	}
+
 	if err := c.certStorage.Logout(); err != nil {
-		log.Error().Err(err).Msg("logging out failed")
+		log.Error().Err(err).Msg("logging out of storage failed")
 	}
 
-	return err
+	return errs
 }
 
-func (c *AcmeVaultServer) obtainAndHandleCert(domain config.DomainsConfig) error {
+func (c *AcmeVault) obtainAndHandleCert(domain config.DomainsConfig) error {
 	read, err := c.certStorage.ReadPublicCertificateData(domain.Domain)
 	if err != nil || read == nil {
 		log.Error().Err(err).Msgf("Error reading cert data from storage for domain '%s'", domain.Domain)
@@ -69,7 +91,7 @@ func (c *AcmeVaultServer) obtainAndHandleCert(domain config.DomainsConfig) error
 		return handleReceivedCert(obtained, c.certStorage)
 	}
 
-	log.Info().Msgf("Successfully read cert data from storage for domain '%s'", domain)
+	log.Info().Msgf("Read cert data for domain %q", domain)
 	renewCert, err := read.NeedsRenewal()
 	if err != nil {
 		log.Info().Msgf("Could not determine cert lifetime for %s, probably the cert is broken", domain)
@@ -87,7 +109,7 @@ func (c *AcmeVaultServer) obtainAndHandleCert(domain config.DomainsConfig) error
 	return nil
 }
 
-func handleReceivedCert(cert *certstorage.AcmeCertificate, storage certstorage.CertStorage) error {
+func handleReceivedCert(cert *certstorage.AcmeCertificate, storage CertStorage) error {
 	if cert == nil {
 		return fmt.Errorf("received empty cert for domain %s, this is weird and should not happen", cert.Domain)
 	}
