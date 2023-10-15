@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/vault/api/auth/approle"
 )
 
+const ApproleAuthName = "approle"
+
 func NewApproleAuth(roleId string, secretId *approle.SecretID) (*ApproleAuth, error) {
 	va, err := approle.NewAppRoleAuth(roleId, secretId)
 	if err != nil {

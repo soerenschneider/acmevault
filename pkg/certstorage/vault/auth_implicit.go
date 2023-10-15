@@ -11,7 +11,10 @@ import (
 	"go.uber.org/multierr"
 )
 
-const defaultTokenFile = "~/.vault-token" // #nosec G101
+const (
+	ImplicitAuthName = "implicit"
+	defaultTokenFile = "~/.vault-token" // #nosec G101
+)
 
 type ImplicitAuth struct {
 	tokenLocations []string

@@ -65,17 +65,17 @@ func dieOnError(err error, msg string) {
 
 func buildVaultAuth(conf config.VaultConfig) (vault.Auth, error) {
 	switch conf.AuthMethod {
-	case "token":
+	case vault.TokenAuthName:
 		return vault.NewTokenAuth(conf.Token)
-	case "approle":
+	case vault.ApproleAuthName:
 		secretId := &approle.SecretID{
 			FromFile:   conf.SecretIdFile,
 			FromString: conf.SecretId,
 		}
 		return vault.NewApproleAuth(conf.RoleId, secretId)
-	case "k8s":
+	case vault.KubernetesAuthName:
 		return vault.NewVaultKubernetesAuth(conf.K8sRoleId, conf.K8sMountPath)
-	case "implicit":
+	case vault.ImplicitAuthName:
 		return vault.NewImplicitAuth()
 	default:
 		return nil, fmt.Errorf("no valid auth method: %s", conf.AuthMethod)

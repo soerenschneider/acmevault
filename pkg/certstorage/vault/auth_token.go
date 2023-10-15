@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/vault/api"
 )
 
+const TokenAuthName = "token"
+
 type TokenAuth struct {
 	token string
 }
