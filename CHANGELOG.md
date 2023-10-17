@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.12.0](https://github.com/soerenschneider/acmevault/compare/v1.11.0...v1.12.0) (2023-10-17)
+
+
+### Features
+
+* automatically renew vault token before expiry ([e317ba1](https://github.com/soerenschneider/acmevault/commit/e317ba1148403464d2a651421c371fca73953ad1))
+* yaml config file support ([#340](https://github.com/soerenschneider/acmevault/issues/340)) ([ab7577b](https://github.com/soerenschneider/acmevault/commit/ab7577bc3eb646fbc23595094b33240d5837c006))
+
+
+### Bug Fixes
+
+* Bump github.com/go-acme/lego/v4 from 4.14.0 to 4.14.2 ([1393e09](https://github.com/soerenschneider/acmevault/commit/1393e091926fe7bb6b2d0d4a14c1ad57517eec04))
+* **deps:** bump github.com/aws/aws-sdk-go-v2/config ([79e1fd3](https://github.com/soerenschneider/acmevault/commit/79e1fd32c31463434ea509c786374435a8174078))
+* **deps:** bump github.com/aws/aws-sdk-go-v2/config ([#339](https://github.com/soerenschneider/acmevault/issues/339)) ([3a561ab](https://github.com/soerenschneider/acmevault/commit/3a561abe455c6559ae22ceae1c9537643ad3ddcc))
+* **deps:** bump github.com/aws/aws-sdk-go-v2/config ([#344](https://github.com/soerenschneider/acmevault/issues/344)) ([dab082f](https://github.com/soerenschneider/acmevault/commit/dab082feeb7586e3c384fb1c1b68e18d8abdf712))
+* **deps:** bump github.com/aws/aws-sdk-go-v2/service/route53 ([586af28](https://github.com/soerenschneider/acmevault/commit/586af282cc7689ff2f4f4c835d9204b202b97b1b))
+* **deps:** bump github.com/aws/aws-sdk-go-v2/service/route53 ([#343](https://github.com/soerenschneider/acmevault/issues/343)) ([2151f48](https://github.com/soerenschneider/acmevault/commit/2151f489bbefe9895e0e72d5d309aee0707e1d0d))
+* **deps:** bump github.com/go-playground/validator/v10 ([#338](https://github.com/soerenschneider/acmevault/issues/338)) ([699d9bb](https://github.com/soerenschneider/acmevault/commit/699d9bb3269c8700e920aecbb31262b35909a787))
+* **deps:** bump github.com/prometheus/client_golang ([4d2c991](https://github.com/soerenschneider/acmevault/commit/4d2c991cf650ee9a895f1d8b2fd8c7cf19d14dbe))
+* **deps:** bump github.com/rs/zerolog from 1.30.0 to 1.31.0 ([eb81c37](https://github.com/soerenschneider/acmevault/commit/eb81c37b28ee2ad79f747a73e13cf059cafc0e86))
+* **deps:** bump golang from 1.21.1 to 1.21.2 ([#334](https://github.com/soerenschneider/acmevault/issues/334)) ([1022bef](https://github.com/soerenschneider/acmevault/commit/1022bef84c254e5e4f6e8b9e8d24b2a44be61b02))
+* **deps:** bump golang to 1.21.3 ([68c02fc](https://github.com/soerenschneider/acmevault/commit/68c02fcd202bdc95059e2205c1a0c769b268fd90))
+* **deps:** bump golang.org/x/net from 0.15.0 to 0.17.0 ([#341](https://github.com/soerenschneider/acmevault/issues/341)) ([d8ec969](https://github.com/soerenschneider/acmevault/commit/d8ec969b1c1f6df60129e70dffa6142e8c768baa))
+
 ## [1.11.0](https://github.com/soerenschneider/acmevault/compare/v1.10.0...v1.11.0) (2023-09-11)
 
 
