@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/aws/aws-sdk-go-v2 v1.21.2
 	github.com/aws/aws-sdk-go-v2/config v1.18.45
-	github.com/aws/aws-sdk-go-v2/service/route53 v1.30.2
+	github.com/aws/aws-sdk-go-v2/service/route53 v1.31.0
 	github.com/go-acme/lego/v4 v4.14.2
 	github.com/go-playground/validator/v10 v10.15.5
 	github.com/hashicorp/vault/api v1.10.0
