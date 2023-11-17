@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.12.1](https://github.com/soerenschneider/acmevault/compare/v1.12.0...v1.12.1) (2023-11-17)
+
+
+### Bug Fixes
+
+* **deps:** bump github.com/aws/aws-sdk-go-v2 from 1.21.2 to 1.22.2 ([#356](https://github.com/soerenschneider/acmevault/issues/356)) ([2f37ba7](https://github.com/soerenschneider/acmevault/commit/2f37ba7eac267a04d27366cf2db4c925449353c4))
+* **deps:** bump github.com/aws/aws-sdk-go-v2/config ([#359](https://github.com/soerenschneider/acmevault/issues/359)) ([60aa08c](https://github.com/soerenschneider/acmevault/commit/60aa08c3b7036f995f838277b7d797aa41d8c6b9))
+* **deps:** bump github.com/aws/aws-sdk-go-v2/service/route53 ([#354](https://github.com/soerenschneider/acmevault/issues/354)) ([85d1eb3](https://github.com/soerenschneider/acmevault/commit/85d1eb3c8e50b356a2a9d60cb3ed5f0a1217f124))
+* **deps:** bump github.com/aws/aws-sdk-go-v2/service/route53 ([#360](https://github.com/soerenschneider/acmevault/issues/360)) ([303662c](https://github.com/soerenschneider/acmevault/commit/303662cf60f8350f465b31cc30af4b3450e1d5ff))
+* **deps:** bump github.com/go-playground/validator/v10 ([#351](https://github.com/soerenschneider/acmevault/issues/351)) ([bc45157](https://github.com/soerenschneider/acmevault/commit/bc45157de43756ab6bd8cef2d007837e4cdbcff5))
+* **deps:** bump golang from 1.21.3 to 1.21.4 ([#352](https://github.com/soerenschneider/acmevault/issues/352)) ([d982a36](https://github.com/soerenschneider/acmevault/commit/d982a36d9183e241a4b91e2805c8b53b50a0765c))
+* **deps:** bump golang.org/x/net from 0.17.0 to 0.18.0 ([#355](https://github.com/soerenschneider/acmevault/issues/355)) ([2af7be6](https://github.com/soerenschneider/acmevault/commit/2af7be6f494a2eb8c8180ac8209f5e49a2de37da))
+* fix format of received certs ([aa0fe38](https://github.com/soerenschneider/acmevault/commit/aa0fe38bc78a637a8517f865d99b15c632fae0dd))
+* fix map key ([5ea2352](https://github.com/soerenschneider/acmevault/commit/5ea2352d89897b74c00e8aa322e3b54e9142f0ba))
+
 ## [1.12.0](https://github.com/soerenschneider/acmevault/compare/v1.11.0...v1.12.0) (2023-10-17)
 
 
