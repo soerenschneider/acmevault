@@ -89,10 +89,6 @@ func MapToCert(data map[string]interface{}) (*AcmeCertificate, error) {
 	return res, nil
 }
 
-func (cert *CertMetadata) GetDurationUntilExpiry() time.Duration {
-	return cert.Expiry.Sub(time.Now().UTC())
-}
-
 func ConvertToPem(privateKey crypto.PrivateKey) (string, error) {
 	pemKey := certcrypto.PEMBlock(privateKey)
 	s := &bytes.Buffer{}
