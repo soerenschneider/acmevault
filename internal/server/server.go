@@ -14,6 +14,8 @@ import (
 	"go.uber.org/multierr"
 )
 
+const maxConcurrentGoRoutines = 5
+
 type AcmeVault struct {
 	acmeClient  acme.AcmeDealer
 	certStorage CertStorage
@@ -59,6 +61,10 @@ func New(domains []config.DomainsConfig, acmeClient acme.AcmeDealer, storage Cer
 	}, nil
 }
 
+func (c *AcmeVault) getGoroutineCount() int {
+	return min(maxConcurrentGoRoutines, len(c.domains))
+}
+
 func (c *AcmeVault) CheckCerts(ctx context.Context, wg *sync.WaitGroup) error {
 	metrics.ServerLatestIterationTimestamp.SetToCurrentTime()
 	ch := make(chan config.DomainsConfig, len(c.domains))
@@ -80,7 +86,7 @@ func (c *AcmeVault) CheckCerts(ctx context.Context, wg *sync.WaitGroup) error {
 
 	var errs error
 
-	for i := 0; i < 5; i++ {
+	for i := 0; i < c.getGoroutineCount(); i++ {
 		wg.Add(1)
 		go func() {
 			for domain := range ch {
