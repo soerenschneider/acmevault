@@ -3,6 +3,7 @@ package acme
 import (
 	"errors"
 	"fmt"
+	"regexp"
 
 	"github.com/go-acme/lego/v4/certificate"
 	"github.com/go-acme/lego/v4/challenge"
@@ -15,6 +16,9 @@ import (
 )
 
 const DnsProviderRoute53 = "route53"
+
+// removes double line breaks
+var lineBreaksRegex = regexp.MustCompile(`(\r\n?|\n){2,}`)
 
 type GoLego struct {
 	client *lego.Client
@@ -159,9 +163,14 @@ func fromLego(other *certificate.Resource) certstorage.AcmeCertificate {
 		Domain:            other.Domain,
 		CertURL:           other.CertURL,
 		CertStableURL:     other.CertStableURL,
-		PrivateKey:        other.PrivateKey,
-		Certificate:       other.Certificate,
-		IssuerCertificate: other.IssuerCertificate,
-		CSR:               other.CSR,
+		PrivateKey:        fixLineBreaks(other.PrivateKey),
+		Certificate:       fixLineBreaks(other.Certificate),
+		IssuerCertificate: fixLineBreaks(other.IssuerCertificate),
+		CSR:               fixLineBreaks(other.CSR),
 	}
+}
+
+func fixLineBreaks(input []byte) (ret []byte) {
+	ret = []byte(lineBreaksRegex.ReplaceAll(input, []byte("$1")))
+	return
 }
