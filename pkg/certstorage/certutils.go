@@ -8,8 +8,9 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"github.com/go-acme/lego/v4/certcrypto"
 	"time"
+
+	"github.com/go-acme/lego/v4/certcrypto"
 )
 
 const (
