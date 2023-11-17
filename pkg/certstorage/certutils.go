@@ -16,7 +16,7 @@ const (
 	vaultCertKeyPrivateKey = "private_key"
 	vaultCertKeyCert       = "cert"
 	vaultCertKeyDomain     = "domain"
-	vaultCertKeyIssuer     = "dummyIssuer"
+	vaultCertKeyIssuer     = "issuer"
 	vaultCertKeyUrl        = "url"
 	vaultCertKeyStableUrl  = "stable_url"
 
