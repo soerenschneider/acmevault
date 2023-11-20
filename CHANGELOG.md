@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.0](https://github.com/soerenschneider/acmevault/compare/v1.12.1...v1.13.0) (2023-11-20)
+
+
+### Features
+
+* write version field to vault ([ba7f4ad](https://github.com/soerenschneider/acmevault/commit/ba7f4adba1b4a5c6895140ffc70ea542eafa84c8))
+
 ## [1.12.1](https://github.com/soerenschneider/acmevault/compare/v1.12.0...v1.12.1) (2023-11-17)
 
 
