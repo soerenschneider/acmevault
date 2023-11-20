@@ -20,6 +20,7 @@ const (
 	vaultCertKeyIssuer     = "issuer"
 	vaultCertKeyUrl        = "url"
 	vaultCertKeyStableUrl  = "stable_url"
+	vaultVersion           = "version"
 
 	VaultAccountKeyUri     = "uri"
 	VaultAccountKeyEmail   = "email"
@@ -43,6 +44,7 @@ func CertToMap(res *AcmeCertificate) map[string]interface{} {
 		vaultCertKeyIssuer:    res.IssuerCertificate,
 		vaultCertKeyUrl:       res.CertURL,
 		vaultCertKeyStableUrl: res.CertStableURL,
+		vaultVersion:          "v1",
 	}
 
 	if res.PrivateKey != nil {
