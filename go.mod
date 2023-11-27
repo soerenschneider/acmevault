@@ -3,7 +3,7 @@ module github.com/soerenschneider/acmevault
 go 1.21
 
 require (
-	github.com/aws/aws-sdk-go-v2 v1.23.0
+	github.com/aws/aws-sdk-go-v2 v1.23.1
 	github.com/aws/aws-sdk-go-v2/config v1.25.3
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.34.2
 	github.com/go-acme/lego/v4 v4.14.2
