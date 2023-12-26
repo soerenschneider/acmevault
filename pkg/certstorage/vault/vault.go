@@ -148,7 +148,7 @@ func (vault *VaultBackend) ReadAccount(hash string) (*certstorage.AcmeAccount, e
 	accountPath := vault.getAccountPath(hash)
 	data, err := vault.readKv2Secret(accountPath)
 	if err != nil {
-		return nil, fmt.Errorf("could not readKv2Secret account from vault: %v", translateError(err))
+		return nil, fmt.Errorf("could not readKv2Secret account from vault: %w", translateError(err))
 	}
 
 	var account acme.Account
