@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.13.1](https://github.com/soerenschneider/acmevault/compare/v1.13.0...v1.13.1) (2023-12-26)
+
+
+### Bug Fixes
+
+* actually wrap translated error ([06811c1](https://github.com/soerenschneider/acmevault/commit/06811c1a091a61bd1fe039fd2594928b7a791d92))
+* **deps:** bump github.com/aws/aws-sdk-go-v2 from 1.23.0 to 1.24.0 ([#378](https://github.com/soerenschneider/acmevault/issues/378)) ([ee65fab](https://github.com/soerenschneider/acmevault/commit/ee65fab02f257654debdfde72ba78d6f42d95f9c))
+* **deps:** bump github.com/aws/aws-sdk-go-v2/service/route53 ([#382](https://github.com/soerenschneider/acmevault/issues/382)) ([691cf44](https://github.com/soerenschneider/acmevault/commit/691cf4438258f537192ccf33f2540fadca5d53a4))
+* **deps:** bump golang from 1.21.4 to 1.21.5 ([#372](https://github.com/soerenschneider/acmevault/issues/372)) ([e834683](https://github.com/soerenschneider/acmevault/commit/e83468355d419d5e2cc4b38db1e32facd8ed65f0))
+* **deps:** bump golang.org/x/net from 0.18.0 to 0.19.0 ([#367](https://github.com/soerenschneider/acmevault/issues/367)) ([1012169](https://github.com/soerenschneider/acmevault/commit/10121694d1bb6102478999999462e14a5ef255e7))
+
 ## [1.13.0](https://github.com/soerenschneider/acmevault/compare/v1.12.1...v1.13.0) (2023-11-20)
 
 
