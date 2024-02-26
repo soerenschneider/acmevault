@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/aws/aws-sdk-go-v2 v1.25.2
 	github.com/aws/aws-sdk-go-v2/config v1.27.4
-	github.com/aws/aws-sdk-go-v2/service/route53 v1.36.0
+	github.com/aws/aws-sdk-go-v2/service/route53 v1.40.1
 	github.com/go-acme/lego/v4 v4.14.2
 	github.com/go-playground/validator/v10 v10.18.0
 	github.com/hashicorp/vault/api v1.10.0
