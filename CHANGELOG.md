@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.13.2](https://github.com/soerenschneider/acmevault/compare/v1.13.1...v1.13.2) (2024-02-26)
+
+
+### Bug Fixes
+
+* **deps:** bump github.com/aws/aws-sdk-go-v2/config ([#405](https://github.com/soerenschneider/acmevault/issues/405)) ([62a688a](https://github.com/soerenschneider/acmevault/commit/62a688a2efdebba7ebdde158201f9e7c519b3f36))
+* **deps:** bump github.com/go-playground/validator/v10 ([#399](https://github.com/soerenschneider/acmevault/issues/399)) ([8610ceb](https://github.com/soerenschneider/acmevault/commit/8610cebd46941ac454fddf46679558a8fd34c380))
+* **deps:** bump github.com/prometheus/client_golang ([#385](https://github.com/soerenschneider/acmevault/issues/385)) ([05b4a0a](https://github.com/soerenschneider/acmevault/commit/05b4a0a414a497eb57e0f6c350466e674b982aca))
+* **deps:** bump golang from 1.21.5 to 1.22.0 ([#398](https://github.com/soerenschneider/acmevault/issues/398)) ([b2d2618](https://github.com/soerenschneider/acmevault/commit/b2d2618dff7f8e8de412e13c838f03d6b2467592))
+
 ## [1.13.1](https://github.com/soerenschneider/acmevault/compare/v1.13.0...v1.13.1) (2023-12-26)
 
 
