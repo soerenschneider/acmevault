@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.0](https://github.com/soerenschneider/acmevault/compare/v1.13.2...v1.14.0) (2024-03-01)
+
+
+### Features
+
+* add feature to read config from env variables ([e3680dd](https://github.com/soerenschneider/acmevault/commit/e3680dd7dc8a2f851e40c57480a17734057849c3))
+
 ## [1.13.2](https://github.com/soerenschneider/acmevault/compare/v1.13.1...v1.13.2) (2024-02-26)
 
 
