@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/caarlos0/env/v10"
 	"gopkg.in/yaml.v3"
 )
 
@@ -16,14 +17,14 @@ var (
 )
 
 type AcmeVaultConfig struct {
-	Vault                VaultConfig     `yaml:"vault" validate:"required"`
-	AcmeEmail            string          `yaml:"email" validate:"required,email"`
-	AcmeUrl              string          `yaml:"acmeUrl" validate:"required,oneof=https://acme-v02.api.letsencrypt.org/directory https://acme-staging-v02.api.letsencrypt.org/directory"`
-	AcmeDnsProvider      string          `yaml:"acmeDnsProvider"`
-	AcmeCustomDnsServers []string        `yaml:"acmeCustomDnsServers,omitempty" validate:"dive,ip"`
-	IntervalSeconds      int             `yaml:"intervalSeconds" validate:"min=3600,max=86400"`
+	Vault                VaultConfig     `yaml:"vault" envPrefix:"VAULT_" validate:"required"`
+	AcmeEmail            string          `yaml:"email" env:"ACME_EMAIL" validate:"required,email"`
+	AcmeUrl              string          `yaml:"acmeUrl" env:"ACME_URL" validate:"required,oneof=https://acme-v02.api.letsencrypt.org/directory https://acme-staging-v02.api.letsencrypt.org/directory"`
+	AcmeDnsProvider      string          `yaml:"acmeDnsProvider" env:"ACME_DNS_PROVIDER"`
+	AcmeCustomDnsServers []string        `yaml:"acmeCustomDnsServers,omitempty" env:"ACME_CUSTOM_DNS_SERVERS" validate:"dive,ip"`
+	IntervalSeconds      int             `yaml:"intervalSeconds" env:"INTERVAL_SECONDS" validate:"min=3600,max=86400"`
 	Domains              []DomainsConfig `yaml:"domains" validate:"required,dive"`
-	MetricsAddr          string          `yaml:"metricsAddr" validate:"omitempty,tcp_addr"`
+	MetricsAddr          string          `yaml:"metricsAddr" env:"METRICS_ADDR" validate:"omitempty,tcp_addr"`
 }
 
 type DomainsConfig struct {
@@ -52,7 +53,7 @@ func getDefaultConfig() AcmeVaultConfig {
 	}
 }
 
-func Read(path string) (AcmeVaultConfig, error) {
+func read(path string) (AcmeVaultConfig, error) {
 	conf := getDefaultConfig()
 	content, err := os.ReadFile(path)
 	if err != nil {
@@ -61,4 +62,21 @@ func Read(path string) (AcmeVaultConfig, error) {
 
 	err = yaml.Unmarshal(content, &conf)
 	return conf, err
+}
+
+func GetConfig(path string) (AcmeVaultConfig, error) {
+	conf, err := read(path)
+	if err != nil {
+		return AcmeVaultConfig{}, err
+	}
+
+	opts := env.Options{
+		Prefix: "ACMEVAULT_",
+	}
+
+	if err := env.ParseWithOptions(&conf, opts); err != nil {
+		return AcmeVaultConfig{}, err
+	}
+
+	return conf, nil
 }

@@ -22,7 +22,7 @@ import (
 func main() {
 	configPath := parseCli()
 	log.Info().Msgf("acmevault-server version %s, commit %s", internal.BuildVersion, internal.CommitHash)
-	conf, err := config.Read(configPath)
+	conf, err := config.GetConfig(configPath)
 	if err != nil {
 		log.Fatal().Err(err).Msgf("Could not load config")
 	}
@@ -36,7 +36,7 @@ func main() {
 }
 
 const (
-	envConfFile = "ACME_VAULT_CONFIG_FILE"
+	envConfFile = "ACMEVAULT_CONFIG_FILE"
 	cliConfFile = "config"
 	cliVersion  = "version"
 )

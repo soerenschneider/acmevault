@@ -5,6 +5,7 @@ domains:
       - domain4.tld
   - domain: domain2.tld
 email: my@email.tld
+acmeUrl: https://acme-staging-v02.api.letsencrypt.org/directory
 vault:
   authMethod: approle
   addr: https://vault:8200
