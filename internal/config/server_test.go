@@ -58,7 +58,7 @@ func TestAcmeVaultServerConfigFromFile(t *testing.T) {
 					AwsRole:      "my-custom-role",
 				},
 				AcmeEmail:       "my@email.tld",
-				AcmeUrl:         letsEncryptUrl,
+				AcmeUrl:         letsEncryptStagingUrl,
 				AcmeDnsProvider: "",
 				IntervalSeconds: 43200,
 				Domains: []DomainsConfig{
