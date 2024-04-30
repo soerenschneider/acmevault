@@ -8,9 +8,10 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.40.4
 	github.com/caarlos0/env/v10 v10.0.0
 	github.com/go-acme/lego/v4 v4.14.2
+	github.com/go-playground/validator/v10 v10.18.0
+	github.com/hashicorp/vault/api/auth/approle v0.6.0
 	github.com/go-playground/validator/v10 v10.20.0
 	github.com/hashicorp/vault/api v1.13.0
-	github.com/hashicorp/vault/api/auth/approle v0.5.0
 	github.com/hashicorp/vault/api/auth/kubernetes v0.5.0
 	github.com/prometheus/client_golang v1.19.0
 	github.com/rs/zerolog v1.31.0
@@ -38,6 +39,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
+	github.com/go-jose/go-jose/v3 v3.0.1 // indirect
 	github.com/go-jose/go-jose/v3 v3.0.0 // indirect
 	github.com/go-jose/go-jose/v4 v4.0.1 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
