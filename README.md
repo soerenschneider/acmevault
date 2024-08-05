@@ -25,7 +25,7 @@ Its client mode reads the respective written certificates from Vault and install
 
 
 ## Overview
-![Overview](overview.png)
+![Overview](docs/diagrams/sequence.svg)
 
 ## Installation
 

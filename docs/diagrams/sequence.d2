@@ -1,0 +1,56 @@
+shape: sequence_diagram
+
+acmevault: acmevault
+vault: Vault
+letsencrypt: "Let's Encrypt"
+route53: "AWS Route53"
+client: Client {
+  style.multiple: true
+}
+
+steps: {
+  1: {
+    acmevault -> vault: "Read x509 bundle"
+  }
+
+  2: {
+    vault -> acmevault: "Not found / expiring soon"
+  }
+
+  3: {
+    acmevault -> letsencrypt: "Request new certificate" {
+      style.animated: true
+    }
+  }
+
+  3a: {
+    letsencrypt -> acmevault: "DNS Challenge"
+    letsencrypt -> route53: "Watch records" {
+      style.animated: true
+    }
+  }
+
+  3b: {
+    acmevault -> route53: "Create records"
+  }
+
+  3c: {
+    letsencrypt <- route53: "Challenge Validated"
+    (letsencrypt -> route53)[0].style.animated: false
+  }
+
+  4: {
+    (letsencrypt -> route53)[0].style.animated: false
+    (acmevault -> letsencrypt)[0].style.animated: false
+    letsencrypt -> acmevault: "Receive x509 data"
+  }
+
+  5: {
+    acmevault -> vault: "Write x509 data"
+    (letsencrypt -> acmevault)[1].style.animated: false
+  }
+
+  6: {
+    client -> vault: "Read x509 data"
+  }
+}
