@@ -71,7 +71,6 @@ func getUserHomeDirectory() string {
 	return dir
 }
 
-// //nolint:cyclop
 func run(conf config.AcmeVaultConfig, deps *deps) {
 	if len(conf.MetricsAddr) > 0 {
 		go metrics.StartMetricsServer(conf.MetricsAddr)
@@ -105,8 +104,6 @@ func run(conf config.AcmeVaultConfig, deps *deps) {
 		close(vaultLoginWait)
 	}()
 
-	log.Info().Msg("momentemol")
-
 	select {
 	case <-vaultLoginWait:
 		log.Info().Msg("Login to vault succeeded")
@@ -114,8 +111,6 @@ func run(conf config.AcmeVaultConfig, deps *deps) {
 		log.Error().Msg("Components could not be shutdown within timeout, killing process forcefully")
 		log.Fatal().Err(errors.New("vault login exceeded timeout"))
 	}
-
-	log.Info().Msg("un weiter gehts")
 
 	acmeClient, err := acme.NewGoLegoDealer(deps.storage, conf, deps.dnsProvider)
 	dieOnError(err, "Could not initialize acme client")
