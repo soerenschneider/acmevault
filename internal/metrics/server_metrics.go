@@ -11,7 +11,51 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+const subsystemVaultRenewal = "vault_renewal"
+
 var (
+	TokenTtl = promauto.NewGauge(prometheus.GaugeOpts{
+		Namespace: namespace,
+		Subsystem: subsystemVaultRenewal,
+		Name:      "token_ttl_seconds",
+		Help:      "Expiration date of the token",
+	})
+
+	TokenPercent = promauto.NewGauge(prometheus.GaugeOpts{
+		Namespace: namespace,
+		Subsystem: subsystemVaultRenewal,
+		Name:      "token_percent",
+		Help:      "Expiration date of the token",
+	})
+
+	VaultLoginErrors = promauto.NewCounter(prometheus.CounterOpts{
+		Namespace: namespace,
+		Subsystem: subsystemVaultRenewal,
+		Name:      "login_errors_total",
+		Help:      "Expiration date of the token",
+	})
+
+	VaultLogins = promauto.NewCounter(prometheus.CounterOpts{
+		Namespace: namespace,
+		Subsystem: subsystemVaultRenewal,
+		Name:      "logins_total",
+		Help:      "Expiration date of the token",
+	})
+
+	VaultTokenRenewErrors = promauto.NewCounter(prometheus.CounterOpts{
+		Namespace: namespace,
+		Subsystem: subsystemVaultRenewal,
+		Name:      "renew_errors_total",
+		Help:      "Expiration date of the token",
+	})
+
+	VaultTokenRenewals = promauto.NewCounter(prometheus.CounterOpts{
+		Namespace: namespace,
+		Subsystem: subsystemVaultRenewal,
+		Name:      "renewals_total",
+		Help:      "Expiration date of the token",
+	})
+
 	ServerLatestIterationTimestamp = promauto.NewGauge(prometheus.GaugeOpts{
 		Namespace: namespace,
 		Subsystem: "server",

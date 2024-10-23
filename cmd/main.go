@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -68,6 +69,7 @@ func getUserHomeDirectory() string {
 	return dir
 }
 
+// //nolint:cyclop
 func run(conf config.AcmeVaultConfig, deps *deps) {
 	if len(conf.MetricsAddr) > 0 {
 		go metrics.StartMetricsServer(conf.MetricsAddr)
@@ -89,6 +91,26 @@ func run(conf config.AcmeVaultConfig, deps *deps) {
 
 	wg := &sync.WaitGroup{}
 
+	appFatalErrors := make(chan error, 1)
+	vaultAuthReady := &sync.WaitGroup{}
+	vaultAuthReady.Add(1)
+	go deps.vaultTokenRenewer.StartTokenRenewal(ctx, vaultAuthReady, appFatalErrors)
+
+	vaultLoginWait := make(chan struct{})
+	go func() {
+		log.Info().Msg("Waiting for vault login to succeed...")
+		vaultAuthReady.Wait()
+		close(vaultLoginWait)
+	}()
+
+	select {
+	case <-vaultLoginWait:
+		log.Info().Msg("Login to vault succeeded")
+	case <-time.After(60 * time.Second):
+		log.Error().Msg("Components could not be shutdown within timeout, killing process forcefully")
+		appFatalErrors <- errors.New("vault login timeout exceeded")
+	}
+
 	if err := deps.acmeVault.CheckCerts(ctx, wg); err != nil {
 		log.Error().Err(err).Msg("error checking certs")
 	}
@@ -96,6 +118,16 @@ func run(conf config.AcmeVaultConfig, deps *deps) {
 	stop := false
 	for !stop {
 		select {
+		case <-appFatalErrors:
+			log.Info().Msg("Received signal, quitting")
+			if err := deps.storage.Logout(); err != nil {
+				log.Warn().Err(err).Msg("Logging out failed")
+			}
+			deps.done <- true
+			cancel()
+			ticker.Stop()
+			stop = true
+			os.Exit(1)
 		case <-ticker.C:
 			err := deps.acmeVault.CheckCerts(ctx, wg)
 			if err != nil {
