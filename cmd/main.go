@@ -108,7 +108,6 @@ func run(conf config.AcmeVaultConfig, deps *deps) {
 	case <-vaultLoginWait:
 		log.Info().Msg("Login to vault succeeded")
 	case <-time.After(60 * time.Second):
-		log.Error().Msg("Components could not be shutdown within timeout, killing process forcefully")
 		log.Fatal().Err(errors.New("vault login exceeded timeout"))
 	}
 
