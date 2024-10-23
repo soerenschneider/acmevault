@@ -29,11 +29,6 @@ type deps struct {
 	storage             Storage
 	credentialsProvider aws.CredentialsProvider
 	dnsProvider         challenge.Provider
-	acmeClient          acme.AcmeDealer
-
-	done chan bool
-
-	acmeVault *server.AcmeVault
 }
 
 type Storage interface {
@@ -54,7 +49,6 @@ func buildDeps(conf config.AcmeVaultConfig) *deps {
 
 	if conf.Vault.UseAutoRenewAuth() {
 		log.Info().Msg("Building Vault auth auto renew wrapper...")
-		deps.done = make(chan bool)
 		deps.vaultTokenRenewer, err = vault.NewTokenRenewer(vaultClient, deps.vaultAuth)
 		dieOnError(err, "could not build token auth")
 	}
@@ -62,21 +56,11 @@ func buildDeps(conf config.AcmeVaultConfig) *deps {
 	deps.storage, err = vault.NewVaultBackend(vaultClient, conf.Vault)
 	dieOnError(err, "could not generate desired backend")
 
-	// TODO
-	//err = deps.storage.Authenticate()
-	//dieOnError(err, "Could not authenticate against storage")
-
 	deps.credentialsProvider, err = acme.NewAwsDynamicCredentialsProvider(deps.storage)
 	dieOnError(err, "could not build dynamic credentials provider")
 
 	deps.dnsProvider, err = acme.BuildRoute53DnsProvider(deps.credentialsProvider)
 	dieOnError(err, "could not build dns provider")
-
-	deps.acmeClient, err = acme.NewGoLegoDealer(deps.storage, conf, deps.dnsProvider)
-	dieOnError(err, "Could not initialize acme client")
-
-	deps.acmeVault, err = server.New(conf.Domains, deps.acmeClient, deps.storage)
-	dieOnError(err, "Couldn't build server")
 
 	return deps
 }

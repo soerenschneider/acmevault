@@ -18,6 +18,8 @@ import (
 	"github.com/soerenschneider/acmevault/internal"
 	"github.com/soerenschneider/acmevault/internal/config"
 	"github.com/soerenschneider/acmevault/internal/metrics"
+	"github.com/soerenschneider/acmevault/internal/server"
+	"github.com/soerenschneider/acmevault/internal/server/acme"
 )
 
 func main() {
@@ -103,6 +105,8 @@ func run(conf config.AcmeVaultConfig, deps *deps) {
 		close(vaultLoginWait)
 	}()
 
+	log.Info().Msg("momentemol")
+
 	select {
 	case <-vaultLoginWait:
 		log.Info().Msg("Login to vault succeeded")
@@ -111,7 +115,15 @@ func run(conf config.AcmeVaultConfig, deps *deps) {
 		appFatalErrors <- errors.New("vault login timeout exceeded")
 	}
 
-	if err := deps.acmeVault.CheckCerts(ctx, wg); err != nil {
+	log.Info().Msg("un weiter gehts")
+
+	acmeClient, err := acme.NewGoLegoDealer(deps.storage, conf, deps.dnsProvider)
+	dieOnError(err, "Could not initialize acme client")
+
+	acmeVault, err := server.New(conf.Domains, acmeClient, deps.storage)
+	dieOnError(err, "Couldn't build server")
+
+	if err := acmeVault.CheckCerts(ctx, wg); err != nil {
 		log.Error().Err(err).Msg("error checking certs")
 	}
 
@@ -123,13 +135,12 @@ func run(conf config.AcmeVaultConfig, deps *deps) {
 			if err := deps.storage.Logout(); err != nil {
 				log.Warn().Err(err).Msg("Logging out failed")
 			}
-			deps.done <- true
 			cancel()
 			ticker.Stop()
 			stop = true
 			os.Exit(1)
 		case <-ticker.C:
-			err := deps.acmeVault.CheckCerts(ctx, wg)
+			err := acmeVault.CheckCerts(ctx, wg)
 			if err != nil {
 				log.Error().Err(err).Msg("error checking certs")
 			}
@@ -138,7 +149,6 @@ func run(conf config.AcmeVaultConfig, deps *deps) {
 			if err := deps.storage.Logout(); err != nil {
 				log.Warn().Err(err).Msg("Logging out failed")
 			}
-			deps.done <- true
 			cancel()
 			ticker.Stop()
 			stop = true
