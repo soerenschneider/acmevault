@@ -64,7 +64,7 @@ func getAccount(accountStorage AccountStorage, email string) (*certstorage.AcmeA
 }
 
 func NewGoLegoDealer(accountStorage AccountStorage, conf config.AcmeVaultConfig, dnsProvider challenge.Provider) (*GoLego, error) {
-	log.Info().Msgf("Trying to read account details for %s from vault...", conf.AcmeEmail)
+	log.Info().Str("email", conf.AcmeEmail).Msg("Trying to read account details from vault")
 	account, registerNewAccount, err := getAccount(accountStorage, conf.AcmeEmail)
 	if err != nil {
 		return nil, err
