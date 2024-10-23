@@ -1,5 +1,34 @@
 # Changelog
 
+## [1.15.0](https://github.com/soerenschneider/acmevault/compare/v1.14.0...v1.15.0) (2024-10-23)
+
+
+### Features
+
+* option to set loglevel ([0f6c5c9](https://github.com/soerenschneider/acmevault/commit/0f6c5c94d9a9b941f80273125ccf9e4c19380c8c))
+
+
+### Bug Fixes
+
+* **deps:** bump github.com/aws/aws-sdk-go-v2 from 1.25.2 to 1.26.1 ([#428](https://github.com/soerenschneider/acmevault/issues/428)) ([f96b514](https://github.com/soerenschneider/acmevault/commit/f96b514cffb69f18fd737d7c3995f0682ee692bb))
+* **deps:** bump github.com/aws/aws-sdk-go-v2/config ([#431](https://github.com/soerenschneider/acmevault/issues/431)) ([79b2492](https://github.com/soerenschneider/acmevault/commit/79b249266648efebd8509986d698ecedbaa5c1df))
+* **deps:** bump github.com/aws/aws-sdk-go-v2/config ([#487](https://github.com/soerenschneider/acmevault/issues/487)) ([05d171e](https://github.com/soerenschneider/acmevault/commit/05d171e96d4294bf6bad90eb2e71abf29948b621))
+* **deps:** bump github.com/aws/aws-sdk-go-v2/service/route53 ([#429](https://github.com/soerenschneider/acmevault/issues/429)) ([509d6dd](https://github.com/soerenschneider/acmevault/commit/509d6ddd776c150376446b933ebff61d01efd3f4))
+* **deps:** bump github.com/aws/aws-sdk-go-v2/service/route53 ([#485](https://github.com/soerenschneider/acmevault/issues/485)) ([41e0ac0](https://github.com/soerenschneider/acmevault/commit/41e0ac066dd8455eb5612a745c8deac0ab7c563d))
+* **deps:** bump github.com/go-acme/lego/v4 from 4.14.2 to 4.16.1 ([#415](https://github.com/soerenschneider/acmevault/issues/415)) ([fe27216](https://github.com/soerenschneider/acmevault/commit/fe27216930b1122a450a366019404c342768768a))
+* **deps:** bump github.com/go-playground/validator/v10 ([#426](https://github.com/soerenschneider/acmevault/issues/426)) ([a18aa9c](https://github.com/soerenschneider/acmevault/commit/a18aa9ccc059b699b7e7fa68cf823765dc85d96f))
+* **deps:** bump github.com/hashicorp/vault/api from 1.10.0 to 1.13.0 ([#423](https://github.com/soerenschneider/acmevault/issues/423)) ([e82f8bd](https://github.com/soerenschneider/acmevault/commit/e82f8bdd9dc613912611d659cb79b60be30b1511))
+* **deps:** bump github.com/hashicorp/vault/api/auth/approle ([#411](https://github.com/soerenschneider/acmevault/issues/411)) ([7b00800](https://github.com/soerenschneider/acmevault/commit/7b0080018f5a3547c7640d90c6afb2ac27eab95a))
+* **deps:** bump github.com/hashicorp/vault/api/auth/kubernetes ([#430](https://github.com/soerenschneider/acmevault/issues/430)) ([f721e69](https://github.com/soerenschneider/acmevault/commit/f721e69a718cc82758ddb25c84d15853febbe9e3))
+* **deps:** bump github.com/prometheus/client_golang ([#410](https://github.com/soerenschneider/acmevault/issues/410)) ([5aa9420](https://github.com/soerenschneider/acmevault/commit/5aa942087f150ec58df09c5e8de1b6b5231d965e))
+* **deps:** bump github.com/rs/zerolog from 1.31.0 to 1.33.0 ([#446](https://github.com/soerenschneider/acmevault/issues/446)) ([b2a510c](https://github.com/soerenschneider/acmevault/commit/b2a510c638f12f9ec18f4db133c2072b2c15d47b))
+* **deps:** bump github.com/stretchr/testify from 1.8.4 to 1.9.0 ([#435](https://github.com/soerenschneider/acmevault/issues/435)) ([c8d267b](https://github.com/soerenschneider/acmevault/commit/c8d267b0598bc20e3faec4d2357a646a8d18faa4))
+* **deps:** bump golang from 1.22.0 to 1.22.2 ([#422](https://github.com/soerenschneider/acmevault/issues/422)) ([cf4bb9e](https://github.com/soerenschneider/acmevault/commit/cf4bb9e52b0a00fdb7b88bb3dfd38796318cf81a))
+* **deps:** bump golang from 1.22.2 to 1.23.1 ([#483](https://github.com/soerenschneider/acmevault/issues/483)) ([b075635](https://github.com/soerenschneider/acmevault/commit/b0756354bd6c881ae4af6b8f0336dd787f360992))
+* **deps:** bump golang.org/x/net from 0.21.0 to 0.24.0 ([#432](https://github.com/soerenschneider/acmevault/issues/432)) ([9ac7941](https://github.com/soerenschneider/acmevault/commit/9ac7941e16ca6b67d00d8154202889d64f8794f3))
+* **deps:** bump golang.org/x/net from 0.24.0 to 0.29.0 ([#486](https://github.com/soerenschneider/acmevault/issues/486)) ([3fd7205](https://github.com/soerenschneider/acmevault/commit/3fd72053613ca1768aead718301ed1c4766f7b07))
+* wait for vault to be ready ([965a4cb](https://github.com/soerenschneider/acmevault/commit/965a4cbecd44f07f0d0ca5849ae97daa312beca5))
+
 ## [1.14.0](https://github.com/soerenschneider/acmevault/compare/v1.13.2...v1.14.0) (2024-03-01)
 
 
