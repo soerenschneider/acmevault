@@ -112,7 +112,7 @@ func run(conf config.AcmeVaultConfig, deps *deps) {
 		log.Info().Msg("Login to vault succeeded")
 	case <-time.After(60 * time.Second):
 		log.Error().Msg("Components could not be shutdown within timeout, killing process forcefully")
-		appFatalErrors <- errors.New("vault login timeout exceeded")
+		log.Fatal().Err(errors.New("vault login exceeded timeout"))
 	}
 
 	log.Info().Msg("un weiter gehts")
@@ -130,15 +130,6 @@ func run(conf config.AcmeVaultConfig, deps *deps) {
 	stop := false
 	for !stop {
 		select {
-		case <-appFatalErrors:
-			log.Info().Msg("Received signal, quitting")
-			if err := deps.storage.Logout(); err != nil {
-				log.Warn().Err(err).Msg("Logging out failed")
-			}
-			cancel()
-			ticker.Stop()
-			stop = true
-			os.Exit(1)
 		case <-ticker.C:
 			err := acmeVault.CheckCerts(ctx, wg)
 			if err != nil {
