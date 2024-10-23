@@ -57,11 +57,11 @@ func (cert *AcmeCertificate) NeedsRenewal() (bool, error) {
 
 	metrics.CertServerExpiryTimestamp.WithLabelValues(cert.Domain).Set(float64(expiry.Unix()))
 	timeLeft := expiry.Sub(time.Now().UTC())
-	log.Debug().Msgf("Not renewing cert for domain %s, still valid for %v", cert.Domain, niceTimeLeft(timeLeft))
+	log.Debug().Str("domain", cert.Domain).Msgf("Not renewing cert still valid for %s", niceTimeLeft(timeLeft))
 
 	if timeLeft > MinCertLifetime && timeLeft <= Skew {
 		if rnd.Intn(100) >= 97 {
-			log.Info().Msgf("Earlier renewal of cert for domain %s to distribute cert expires (%v)", cert.Domain, niceTimeLeft(timeLeft))
+			log.Info().Str("domain", cert.Domain).Msgf("Earlier renewal of cert, time left (%s)", niceTimeLeft(timeLeft))
 			return true, nil
 		}
 	}

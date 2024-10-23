@@ -31,10 +31,6 @@ type VaultConfig struct {
 	AwsRole      string `yaml:"awsRole" env:"AWS_ROLE" validate:"required"`
 }
 
-func (conf *VaultConfig) Print() {
-	PrintFields(conf, SensitiveFields...)
-}
-
 func defaultVaultConfig() VaultConfig {
 	var pathPrefix string
 	parsed, err := url.Parse(letsEncryptStagingUrl)

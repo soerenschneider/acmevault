@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -13,10 +14,14 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/soerenschneider/acmevault/internal"
 	"github.com/soerenschneider/acmevault/internal/config"
 	"github.com/soerenschneider/acmevault/internal/metrics"
+	"github.com/soerenschneider/acmevault/internal/server"
+	"github.com/soerenschneider/acmevault/internal/server/acme"
+	"golang.org/x/term"
 )
 
 func main() {
@@ -30,6 +35,7 @@ func main() {
 	if err := conf.Validate(); err != nil {
 		log.Fatal().Err(err).Msgf("Invalid configuration provided")
 	}
+	setupLogLevel(conf.Verbose)
 
 	deps := buildDeps(conf)
 	run(conf, deps)
@@ -89,7 +95,32 @@ func run(conf config.AcmeVaultConfig, deps *deps) {
 
 	wg := &sync.WaitGroup{}
 
-	if err := deps.acmeVault.CheckCerts(ctx, wg); err != nil {
+	appFatalErrors := make(chan error, 1)
+	vaultAuthReady := &sync.WaitGroup{}
+	vaultAuthReady.Add(1)
+	go deps.vaultTokenRenewer.StartTokenRenewal(ctx, vaultAuthReady, appFatalErrors)
+
+	vaultLoginWait := make(chan struct{})
+	go func() {
+		log.Info().Msg("Waiting for vault login to succeed...")
+		vaultAuthReady.Wait()
+		close(vaultLoginWait)
+	}()
+
+	select {
+	case <-vaultLoginWait:
+		log.Info().Msg("Login to vault succeeded")
+	case <-time.After(60 * time.Second):
+		log.Fatal().Err(errors.New("vault login exceeded timeout"))
+	}
+
+	acmeClient, err := acme.NewGoLegoDealer(deps.storage, conf, deps.dnsProvider)
+	dieOnError(err, "Could not initialize acme client")
+
+	acmeVault, err := server.New(conf.Domains, acmeClient, deps.storage)
+	dieOnError(err, "Couldn't build server")
+
+	if err := acmeVault.CheckCerts(ctx, wg); err != nil {
 		log.Error().Err(err).Msg("error checking certs")
 	}
 
@@ -97,7 +128,7 @@ func run(conf config.AcmeVaultConfig, deps *deps) {
 	for !stop {
 		select {
 		case <-ticker.C:
-			err := deps.acmeVault.CheckCerts(ctx, wg)
+			err := acmeVault.CheckCerts(ctx, wg)
 			if err != nil {
 				log.Error().Err(err).Msg("error checking certs")
 			}
@@ -106,7 +137,6 @@ func run(conf config.AcmeVaultConfig, deps *deps) {
 			if err := deps.storage.Logout(); err != nil {
 				log.Warn().Err(err).Msg("Logging out failed")
 			}
-			deps.done <- true
 			cancel()
 			ticker.Stop()
 			stop = true
@@ -116,4 +146,19 @@ func run(conf config.AcmeVaultConfig, deps *deps) {
 	log.Info().Msg("Waiting on other components")
 	wg.Wait()
 	log.Info().Msg("Done, bye!")
+}
+
+func setupLogLevel(debug bool) {
+	level := zerolog.InfoLevel
+	if debug {
+		level = zerolog.DebugLevel
+	}
+	zerolog.SetGlobalLevel(level)
+	//#nosec:G115
+	if term.IsTerminal(int(os.Stdout.Fd())) {
+		log.Logger = log.Output(zerolog.ConsoleWriter{
+			Out:        os.Stderr,
+			TimeFormat: "15:04:05",
+		})
+	}
 }

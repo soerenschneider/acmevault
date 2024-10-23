@@ -17,6 +17,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	go.uber.org/multierr v1.11.0
 	golang.org/x/net v0.29.0
+	golang.org/x/term v0.19.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

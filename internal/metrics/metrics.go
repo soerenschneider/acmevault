@@ -11,7 +11,54 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+const (
+	subsystemVaultRenewal = "vault_renewal"
+	namespace             = "acmevault"
+)
+
 var (
+	TokenTtl = promauto.NewGauge(prometheus.GaugeOpts{
+		Namespace: namespace,
+		Subsystem: subsystemVaultRenewal,
+		Name:      "token_ttl_seconds",
+		Help:      "Expiration date of the token",
+	})
+
+	TokenPercent = promauto.NewGauge(prometheus.GaugeOpts{
+		Namespace: namespace,
+		Subsystem: subsystemVaultRenewal,
+		Name:      "token_percent",
+		Help:      "Expiration date of the token",
+	})
+
+	VaultLoginErrors = promauto.NewCounter(prometheus.CounterOpts{
+		Namespace: namespace,
+		Subsystem: subsystemVaultRenewal,
+		Name:      "login_errors_total",
+		Help:      "Expiration date of the token",
+	})
+
+	VaultLogins = promauto.NewCounter(prometheus.CounterOpts{
+		Namespace: namespace,
+		Subsystem: subsystemVaultRenewal,
+		Name:      "logins_total",
+		Help:      "Expiration date of the token",
+	})
+
+	VaultTokenRenewErrors = promauto.NewCounter(prometheus.CounterOpts{
+		Namespace: namespace,
+		Subsystem: subsystemVaultRenewal,
+		Name:      "renew_errors_total",
+		Help:      "Expiration date of the token",
+	})
+
+	VaultTokenRenewals = promauto.NewCounter(prometheus.CounterOpts{
+		Namespace: namespace,
+		Subsystem: subsystemVaultRenewal,
+		Name:      "renewals_total",
+		Help:      "Expiration date of the token",
+	})
+
 	ServerLatestIterationTimestamp = promauto.NewGauge(prometheus.GaugeOpts{
 		Namespace: namespace,
 		Subsystem: "server",
@@ -67,6 +114,27 @@ var (
 		Name:      "certificate_expiry_time",
 		Help:      "Timestamp of certificate expiry",
 	}, []string{"domain"})
+
+	AwsDynCredentialsRequested = promauto.NewCounter(prometheus.CounterOpts{
+		Namespace: namespace,
+		Subsystem: "server",
+		Name:      "vault_aws_credentials_requested_total",
+		Help:      "Total amount of dynamic AWS credentials requested",
+	})
+
+	AwsDynCredentialsRequestErrors = promauto.NewCounter(prometheus.CounterOpts{
+		Namespace: namespace,
+		Subsystem: "server",
+		Name:      "vault_aws_credentials_request_errors_total",
+		Help:      "Total amount of errors while trying to acquire dynamic AWS credentials",
+	})
+
+	CertErrors = promauto.NewCounterVec(prometheus.CounterOpts{
+		Namespace: namespace,
+		Subsystem: "server",
+		Name:      "certificate_errors_total",
+		Help:      "Total number of errors while handling certificates",
+	}, []string{"domain", "desc"})
 )
 
 func StartMetricsServer(addr string) {

@@ -25,6 +25,7 @@ type AcmeVaultConfig struct {
 	IntervalSeconds      int             `yaml:"intervalSeconds" env:"INTERVAL_SECONDS" validate:"min=3600,max=86400"`
 	Domains              []DomainsConfig `yaml:"domains" validate:"required,dive"`
 	MetricsAddr          string          `yaml:"metricsAddr" env:"METRICS_ADDR" validate:"omitempty,tcp_addr"`
+	Verbose              bool            `yaml:"verbose" env:"VERBOSE"`
 }
 
 type DomainsConfig struct {

@@ -13,7 +13,6 @@ import (
 	"github.com/go-acme/lego/v4/registration"
 	"github.com/hashicorp/vault/api"
 	vault "github.com/hashicorp/vault/api"
-	"github.com/rs/zerolog/log"
 	"github.com/soerenschneider/acmevault/internal/config"
 	"github.com/soerenschneider/acmevault/internal/metrics"
 	"github.com/soerenschneider/acmevault/pkg/certstorage"
@@ -24,37 +23,15 @@ const (
 	backoffRetries = 5
 )
 
-type Auth interface {
-	Login(ctx context.Context, client *api.Client) (*api.Secret, error)
-	Logout(ctx context.Context, client *api.Client) error
-}
-
 type VaultBackend struct {
 	client   *api.Client
 	conf     config.VaultConfig
 	basePath string
-	auth     Auth
 }
 
-func NewVaultBackend(vaultConfig config.VaultConfig, auth Auth) (*VaultBackend, error) {
-	if auth == nil {
-		return nil, errors.New("empty auth provided")
-	}
-
-	config := &api.Config{
-		Timeout:    timeout,
-		MaxRetries: backoffRetries,
-		Address:    vaultConfig.Addr,
-	}
-
-	client, err := api.NewClient(config)
-	if err != nil {
-		return nil, fmt.Errorf("couldn't build client: %v", err)
-	}
-
+func NewVaultBackend(vaultClient *api.Client, vaultConfig config.VaultConfig) (*VaultBackend, error) {
 	vault := &VaultBackend{
-		auth:     auth,
-		client:   client,
+		client:   vaultClient,
 		conf:     vaultConfig,
 		basePath: fmt.Sprintf("acmevault/%s", vaultConfig.PathPrefix),
 		//basePath: fmt.Sprintf("%s/data/%s", vaultConfig.Kv2MountPath, vaultConfig.PathPrefix),
@@ -181,18 +158,11 @@ func (vault *VaultBackend) ReadAccount(hash string) (*certstorage.AcmeAccount, e
 }
 
 func (vault *VaultBackend) Authenticate() error {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	secret, err := vault.client.Auth().Login(ctx, vault.auth)
-	if err == nil && secret.Auth.LeaseDuration != 0 {
-		log.Info().Msgf("Login token valid for %d seconds (until %v)", secret.Auth.LeaseDuration, time.Now().Add(time.Second*time.Duration(secret.Auth.LeaseDuration)))
-	}
-	return err
+	return nil
 }
 
 func (vault *VaultBackend) Logout() error {
-	return vault.auth.Logout(context.Background(), vault.client)
+	return vault.client.Auth().Token().RevokeSelf("xxx")
 }
 
 func (vault *VaultBackend) ReadAwsCredentials() (aws.Credentials, error) {
