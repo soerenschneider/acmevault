@@ -14,12 +14,14 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/soerenschneider/acmevault/internal"
 	"github.com/soerenschneider/acmevault/internal/config"
 	"github.com/soerenschneider/acmevault/internal/metrics"
 	"github.com/soerenschneider/acmevault/internal/server"
 	"github.com/soerenschneider/acmevault/internal/server/acme"
+	"golang.org/x/term"
 )
 
 func main() {
@@ -33,6 +35,7 @@ func main() {
 	if err := conf.Validate(); err != nil {
 		log.Fatal().Err(err).Msgf("Invalid configuration provided")
 	}
+	setupLogLevel(conf.Verbose)
 
 	deps := buildDeps(conf)
 	run(conf, deps)
@@ -143,4 +146,19 @@ func run(conf config.AcmeVaultConfig, deps *deps) {
 	log.Info().Msg("Waiting on other components")
 	wg.Wait()
 	log.Info().Msg("Done, bye!")
+}
+
+func setupLogLevel(debug bool) {
+	level := zerolog.InfoLevel
+	if debug {
+		level = zerolog.DebugLevel
+	}
+	zerolog.SetGlobalLevel(level)
+	//#nosec:G115
+	if term.IsTerminal(int(os.Stdout.Fd())) {
+		log.Logger = log.Output(zerolog.ConsoleWriter{
+			Out:        os.Stderr,
+			TimeFormat: "15:04:05",
+		})
+	}
 }
