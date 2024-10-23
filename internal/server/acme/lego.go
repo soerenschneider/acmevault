@@ -43,7 +43,7 @@ func buildLegoClient(account *certstorage.AcmeAccount, acmeUrl string) (*GoLego,
 func getAccount(accountStorage AccountStorage, email string) (*certstorage.AcmeAccount, bool, error) {
 	account, err := accountStorage.ReadAccount(email)
 	if err == nil {
-		log.Info().Msgf("retrieved account data for '%s'", email)
+		log.Info().Str("email", email).Msg("retrieved account data")
 		return account, false, nil
 	}
 
