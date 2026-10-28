@@ -135,9 +135,9 @@ func handleReceivedCert(cert *certstorage.AcmeCertificate, storage CertStorage) 
 
 	expiry, err := cert.GetExpiryTimestamp()
 	if err != nil {
-		metrics.CertServerExpiryTimestamp.WithLabelValues(cert.Domain).Set(float64(expiry.Unix()))
+		metrics.CertErrors.WithLabelValues(cert.Domain, "unknown-expiry").Inc()
 	} else {
-		metrics.CertErrors.WithLabelValues(cert.Domain, "unknown-expiry")
+		metrics.CertServerExpiryTimestamp.WithLabelValues(cert.Domain).Set(float64(expiry.Unix()))
 	}
 
 	err = storage.WriteCertificate(cert)
