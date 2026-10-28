@@ -79,5 +79,9 @@ func GetConfig(path string) (AcmeVaultConfig, error) {
 		return AcmeVaultConfig{}, err
 	}
 
+	if len(conf.Vault.PathPrefix) == 0 {
+		conf.Vault.PathPrefix = defaultPathPrefix(conf.AcmeUrl)
+	}
+
 	return conf, nil
 }

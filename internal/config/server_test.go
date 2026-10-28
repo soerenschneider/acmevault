@@ -1,6 +1,8 @@
 package config
 
 import (
+	"os"
+	"path/filepath"
 	"reflect"
 	"testing"
 )
@@ -334,6 +336,46 @@ func TestAcmeVaultServerConfig_Validate(t *testing.T) {
 			}
 			if err := conf.Validate(); (err != nil) != tt.wantErr {
 				t.Errorf("Validate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestGetConfig_DefaultPathPrefix(t *testing.T) {
+	tests := []struct {
+		name       string
+		config     string
+		wantPrefix string
+	}{
+		{
+			name:       "derived from default acme url",
+			config:     "email: my@email.tld\n",
+			wantPrefix: "acme-v02.api.letsencrypt.org",
+		},
+		{
+			name:       "derived from configured acme url",
+			config:     "acmeUrl: " + letsEncryptStagingUrl + "\n",
+			wantPrefix: "acme-staging-v02.api.letsencrypt.org",
+		},
+		{
+			name:       "explicitly configured",
+			config:     "vault:\n  pathPrefix: preprod\n",
+			wantPrefix: "preprod",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "config.yaml")
+			if err := os.WriteFile(path, []byte(tt.config), 0600); err != nil {
+				t.Fatal(err)
+			}
+
+			got, err := GetConfig(path)
+			if err != nil {
+				t.Fatalf("GetConfig() error = %v", err)
+			}
+			if got.Vault.PathPrefix != tt.wantPrefix {
+				t.Errorf("GetConfig() PathPrefix = %v, want %v", got.Vault.PathPrefix, tt.wantPrefix)
 			}
 		})
 	}

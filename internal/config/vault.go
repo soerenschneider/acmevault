@@ -32,20 +32,23 @@ type VaultConfig struct {
 }
 
 func defaultVaultConfig() VaultConfig {
-	var pathPrefix string
-	parsed, err := url.Parse(letsEncryptStagingUrl)
-	if err == nil {
-		pathPrefix = strings.ToLower(parsed.Host)
-	}
-
 	return VaultConfig{
-		PathPrefix:   pathPrefix,
 		Token:        os.Getenv("VAULT_TOKEN"),
 		Addr:         os.Getenv("VAULT_ADDR"),
 		AwsRole:      "acmevault",
 		AwsMountPath: "aws",
 		Kv2MountPath: "secret",
 	}
+}
+
+// defaultPathPrefix derives the path prefix from the host of the ACME directory url, so that accounts and
+// certificates of different ACME providers don't overwrite each other.
+func defaultPathPrefix(acmeUrl string) string {
+	parsed, err := url.Parse(acmeUrl)
+	if err != nil {
+		return ""
+	}
+	return strings.ToLower(parsed.Host)
 }
 
 func (conf *VaultConfig) Validate() error {

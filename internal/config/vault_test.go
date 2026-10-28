@@ -151,3 +151,34 @@ func TestVaultConfig_Validate(t *testing.T) {
 		})
 	}
 }
+
+func Test_defaultPathPrefix(t *testing.T) {
+	tests := []struct {
+		name    string
+		acmeUrl string
+		want    string
+	}{
+		{
+			name:    "letsencrypt",
+			acmeUrl: letsEncryptUrl,
+			want:    "acme-v02.api.letsencrypt.org",
+		},
+		{
+			name:    "letsencrypt staging",
+			acmeUrl: letsEncryptStagingUrl,
+			want:    "acme-staging-v02.api.letsencrypt.org",
+		},
+		{
+			name:    "invalid url",
+			acmeUrl: "://invalid",
+			want:    "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := defaultPathPrefix(tt.acmeUrl); got != tt.want {
+				t.Errorf("defaultPathPrefix() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
