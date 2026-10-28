@@ -8,7 +8,7 @@ COPY go.mod go.sum /build/
 RUN go mod download
 
 COPY . /build/
-RUN go build -ldflags="-w -X $MODULE/internal.BuildVersion=$(git describe --tags --abbrev=0 || echo dev) \
+RUN go build -trimpath -buildvcs=false -ldflags="-w -X $MODULE/internal.BuildVersion=$(git describe --tags --abbrev=0 || echo dev) \
      -X $MODULE/internal.CommitHash=$(git rev-parse HEAD)" -o acmevault ./cmd
 
 FROM gcr.io/distroless/static
