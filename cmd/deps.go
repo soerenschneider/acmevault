@@ -89,8 +89,9 @@ func buildVaultAuth(conf config.VaultConfig) (api.AuthMethod, error) {
 		}
 		return approle.NewAppRoleAuth(conf.RoleId, secretId)
 	case vaultAuthKubernetes:
-		opts := []kubernetes.LoginOption{
-			kubernetes.WithMountPath(conf.K8sMountPath),
+		var opts []kubernetes.LoginOption
+		if len(conf.K8sMountPath) > 0 {
+			opts = append(opts, kubernetes.WithMountPath(conf.K8sMountPath))
 		}
 		return kubernetes.NewKubernetesAuth(conf.K8sRoleId, opts...)
 	case vaultAuthImplicit:
