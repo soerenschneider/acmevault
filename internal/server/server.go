@@ -92,7 +92,7 @@ func (c *AcmeVault) CheckCerts(ctx context.Context, wg *sync.WaitGroup) error {
 		})
 	}
 
-	g.Wait()
+	_ = g.Wait() // workers always return nil, errors are collected in errs
 	return errs
 }
 

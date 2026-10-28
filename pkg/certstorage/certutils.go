@@ -56,7 +56,7 @@ func CertToMap(res *AcmeCertificate) map[string]interface{} {
 
 func MapToCert(data map[string]interface{}) (*AcmeCertificate, error) {
 	res := &AcmeCertificate{}
-	if data == nil || len(data) < 5 {
+	if len(data) < 5 {
 		return nil, errors.New("empty/incomplete map provided")
 	}
 
