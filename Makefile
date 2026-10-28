@@ -24,7 +24,7 @@ build: version-info
 	$(GO_BUILD) -o $(BINARY_NAME) ./cmd
 
 release: clean version-info cross-build
-	sha256sum $(BUILD_DIR)/acmevault-* > $(CHECKSUM_FILE)
+	cd $(BUILD_DIR) && shasum -a 256 $(BINARY_NAME)-* > $(notdir $(CHECKSUM_FILE))
 
 signed-release: release
 	pass keys/signify/github | signify -S -s $(SIGNATURE_KEYFILE) -m $(CHECKSUM_FILE)
