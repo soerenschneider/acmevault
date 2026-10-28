@@ -109,7 +109,7 @@ func run(conf config.AcmeVaultConfig, deps *deps) {
 	case <-vaultLoginWait:
 		log.Info().Msg("Login to vault succeeded")
 	case <-time.After(60 * time.Second):
-		log.Fatal().Err(errors.New("vault login exceeded timeout"))
+		log.Fatal().Err(errors.New("vault login timeout exceeded")).Msg("can not login to vault")
 	}
 
 	acmeClient, err := acme.NewGoLegoDealer(deps.storage, conf, deps.dnsProvider)
