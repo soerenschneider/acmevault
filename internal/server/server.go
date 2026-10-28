@@ -105,7 +105,7 @@ func (c *AcmeVault) obtainAndHandleCert(domain config.DomainsConfig) error {
 		metrics.CertificatesRetrieved.Inc()
 		if err != nil {
 			metrics.CertificatesRetrievalErrors.Inc()
-			return fmt.Errorf("obtaining cert for domain %s failed: %v", domain.Domain, err)
+			return fmt.Errorf("obtaining cert for domain %s failed: %w", domain.Domain, err)
 		}
 		return handleReceivedCert(obtained, c.certStorage)
 	}
@@ -121,7 +121,7 @@ func (c *AcmeVault) obtainAndHandleCert(domain config.DomainsConfig) error {
 		metrics.CertificatesRenewals.Inc()
 		if err != nil {
 			metrics.CertificatesRenewErrors.Inc()
-			return fmt.Errorf("renewing cert failed for domain %s: %v", domain.Domain, err)
+			return fmt.Errorf("renewing cert failed for domain %s: %w", domain.Domain, err)
 		}
 		return handleReceivedCert(renewed, c.certStorage)
 	}
@@ -143,7 +143,7 @@ func handleReceivedCert(cert *certstorage.AcmeCertificate, storage CertStorage) 
 	err = storage.WriteCertificate(cert)
 	if err != nil {
 		metrics.CertWriteError.WithLabelValues("server").Inc()
-		return fmt.Errorf("received valid certificate for domain %s but storing it failed: %v", cert.Domain, err)
+		return fmt.Errorf("received valid certificate for domain %s but storing it failed: %w", cert.Domain, err)
 	}
 
 	metrics.CertWrites.WithLabelValues("server").Inc()
