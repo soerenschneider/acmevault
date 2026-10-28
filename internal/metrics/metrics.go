@@ -21,42 +21,35 @@ var (
 		Namespace: namespace,
 		Subsystem: subsystemVaultRenewal,
 		Name:      "token_ttl_seconds",
-		Help:      "Expiration date of the token",
-	})
-
-	TokenPercent = promauto.NewGauge(prometheus.GaugeOpts{
-		Namespace: namespace,
-		Subsystem: subsystemVaultRenewal,
-		Name:      "token_percent",
-		Help:      "Expiration date of the token",
+		Help:      "Lease duration of the token after renewal",
 	})
 
 	VaultLoginErrors = promauto.NewCounter(prometheus.CounterOpts{
 		Namespace: namespace,
 		Subsystem: subsystemVaultRenewal,
 		Name:      "login_errors_total",
-		Help:      "Expiration date of the token",
+		Help:      "Total errors while logging in to Vault",
 	})
 
 	VaultLogins = promauto.NewCounter(prometheus.CounterOpts{
 		Namespace: namespace,
 		Subsystem: subsystemVaultRenewal,
 		Name:      "logins_total",
-		Help:      "Expiration date of the token",
+		Help:      "Total number of logins to Vault",
 	})
 
 	VaultTokenRenewErrors = promauto.NewCounter(prometheus.CounterOpts{
 		Namespace: namespace,
 		Subsystem: subsystemVaultRenewal,
 		Name:      "renew_errors_total",
-		Help:      "Expiration date of the token",
+		Help:      "Total errors while renewing the token",
 	})
 
 	VaultTokenRenewals = promauto.NewCounter(prometheus.CounterOpts{
 		Namespace: namespace,
 		Subsystem: subsystemVaultRenewal,
 		Name:      "renewals_total",
-		Help:      "Expiration date of the token",
+		Help:      "Total number of token renewals",
 	})
 
 	ServerLatestIterationTimestamp = promauto.NewGauge(prometheus.GaugeOpts{
