@@ -93,8 +93,6 @@ func run(conf config.AcmeVaultConfig, deps *deps) {
 		syscall.SIGTERM,
 		syscall.SIGQUIT)
 
-	wg := &sync.WaitGroup{}
-
 	appFatalErrors := make(chan error, 1)
 	vaultAuthReady := &sync.WaitGroup{}
 	vaultAuthReady.Add(1)
@@ -120,7 +118,7 @@ func run(conf config.AcmeVaultConfig, deps *deps) {
 	acmeVault, err := server.New(conf.Domains, acmeClient, deps.storage)
 	dieOnError(err, "Couldn't build server")
 
-	if err := acmeVault.CheckCerts(ctx, wg); err != nil {
+	if err := acmeVault.CheckCerts(ctx); err != nil {
 		log.Error().Err(err).Msg("error checking certs")
 	}
 
@@ -128,7 +126,7 @@ func run(conf config.AcmeVaultConfig, deps *deps) {
 	for !stop {
 		select {
 		case <-ticker.C:
-			err := acmeVault.CheckCerts(ctx, wg)
+			err := acmeVault.CheckCerts(ctx)
 			if err != nil {
 				log.Error().Err(err).Msg("error checking certs")
 			}
@@ -143,8 +141,6 @@ func run(conf config.AcmeVaultConfig, deps *deps) {
 		}
 	}
 
-	log.Info().Msg("Waiting on other components")
-	wg.Wait()
 	log.Info().Msg("Done, bye!")
 }
 

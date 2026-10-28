@@ -66,10 +66,7 @@ func (c *AcmeVault) getGoroutineCount() int {
 	return min(maxConcurrentGoRoutines, len(c.domains))
 }
 
-func (c *AcmeVault) CheckCerts(ctx context.Context, wg *sync.WaitGroup) error {
-	wg.Add(1)
-	defer wg.Done()
-
+func (c *AcmeVault) CheckCerts(ctx context.Context) error {
 	metrics.ServerLatestIterationTimestamp.SetToCurrentTime()
 
 	var g errgroup.Group
