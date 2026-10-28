@@ -130,7 +130,7 @@ func (c *AcmeVault) obtainAndHandleCert(domain config.DomainsConfig) error {
 
 func handleReceivedCert(cert *certstorage.AcmeCertificate, storage CertStorage) error {
 	if cert == nil {
-		return fmt.Errorf("received empty cert for domain %s, this is weird and should not happen", cert.Domain)
+		return errors.New("received empty cert, this is weird and should not happen")
 	}
 
 	expiry, err := cert.GetExpiryTimestamp()
