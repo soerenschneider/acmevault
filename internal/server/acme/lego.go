@@ -126,7 +126,7 @@ func (l *GoLego) RenewCert(cert *certstorage.AcmeCertificate) (*certstorage.Acme
 	oldLego := toLego(cert)
 	oldLego.PrivateKey = nil
 	opts := &certificate.RenewOptions{
-		Bundle:         false,
+		Bundle:         true,
 		PreferredChain: "",
 		MustStaple:     false,
 	}
