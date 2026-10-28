@@ -12,7 +12,6 @@ import (
 	"github.com/go-acme/lego/v4/acme"
 	"github.com/go-acme/lego/v4/registration"
 	"github.com/hashicorp/vault/api"
-	vault "github.com/hashicorp/vault/api"
 	"github.com/soerenschneider/acmevault/internal/config"
 	"github.com/soerenschneider/acmevault/internal/metrics"
 	"github.com/soerenschneider/acmevault/pkg/certstorage"
@@ -204,11 +203,11 @@ func translateError(err error) error {
 		return nil
 	}
 
-	if errors.Is(err, vault.ErrSecretNotFound) {
+	if errors.Is(err, api.ErrSecretNotFound) {
 		return certstorage.ErrNotFound
 	}
 
-	vaultErr, ok := err.(*vault.ResponseError)
+	vaultErr, ok := err.(*api.ResponseError)
 	if !ok {
 		return err
 	}

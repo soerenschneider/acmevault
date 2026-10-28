@@ -12,6 +12,7 @@ import (
 	"github.com/soerenschneider/acmevault/internal/server/acme"
 	"github.com/soerenschneider/acmevault/pkg/certstorage"
 	"go.uber.org/multierr"
+	"golang.org/x/sync/errgroup"
 )
 
 const maxConcurrentGoRoutines = 5
@@ -66,47 +67,32 @@ func (c *AcmeVault) getGoroutineCount() int {
 }
 
 func (c *AcmeVault) CheckCerts(ctx context.Context, wg *sync.WaitGroup) error {
-	metrics.ServerLatestIterationTimestamp.SetToCurrentTime()
-	ch := make(chan config.DomainsConfig, len(c.domains))
-	for _, data := range c.domains {
-		ch <- data
-	}
-
-	mutex := sync.RWMutex{}
-	stop := false
 	wg.Add(1)
+	defer wg.Done()
 
-	go func() {
-		<-ctx.Done()
-		mutex.Lock()
-		stop = true
-		mutex.Unlock()
-		wg.Done()
-	}()
+	metrics.ServerLatestIterationTimestamp.SetToCurrentTime()
 
+	var g errgroup.Group
+	g.SetLimit(c.getGoroutineCount())
+
+	var mu sync.Mutex
 	var errs error
 
-	for i := 0; i < c.getGoroutineCount(); i++ {
-		wg.Add(1)
-		go func() {
-			for domain := range ch {
-				mutex.RLock()
-				if stop {
-					mutex.RUnlock()
-					return
-				}
-				mutex.RUnlock()
-
-				if err := c.obtainAndHandleCert(domain); err != nil {
-					mutex.Lock()
-					errs = multierr.Append(errs, err)
-					mutex.Unlock()
-				}
+	for _, data := range c.domains {
+		g.Go(func() error {
+			if ctx.Err() != nil {
+				return nil // context cancelled, skip remaining work
 			}
-		}()
-		wg.Done()
+			if err := c.obtainAndHandleCert(data); err != nil {
+				mu.Lock()
+				errs = multierr.Append(errs, err)
+				mu.Unlock()
+			}
+			return nil
+		})
 	}
 
+	_ = g.Wait() // workers always return nil, errors are collected in errs
 	return errs
 }
 

@@ -56,7 +56,7 @@ func getDefaultConfig() AcmeVaultConfig {
 
 func read(path string) (AcmeVaultConfig, error) {
 	conf := getDefaultConfig()
-	content, err := os.ReadFile(path)
+	content, err := os.ReadFile(path) // #nosec G304 -- path to config file is user-supplied by design
 	if err != nil {
 		return conf, fmt.Errorf("can not read config from file %s: %v", path, err)
 	}

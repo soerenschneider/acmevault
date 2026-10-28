@@ -58,7 +58,7 @@ func (t *ImplicitAuth) getToken() (string, error) {
 	for _, file := range t.tokenLocations {
 		tokenFile := expandPath(file)
 		log.Info().Msgf("Trying vault token from file '%s'", tokenFile)
-		read, err := os.ReadFile(tokenFile)
+		read, err := os.ReadFile(tokenFile) // #nosec G304 -- token locations are user-configured
 		if err == nil {
 			return string(read), nil
 		}
