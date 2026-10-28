@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.15.1](https://github.com/soerenschneider/acmevault/compare/v1.15.0...v1.15.1) (2026-10-28)
+
+
+### Bug Fixes
+
+* correct vault renewal metric descriptions and remove unused token_percent metric ([328135c](https://github.com/soerenschneider/acmevault/commit/328135cb8f6bba508bbc2c772f2652204376d794))
+* **deps:** update dependencies ([d44b50e](https://github.com/soerenschneider/acmevault/commit/d44b50e33f519e4d383ce5778ed4472ecafc5f4d))
+* derive default vault path prefix from acme url ([e29a54b](https://github.com/soerenschneider/acmevault/commit/e29a54ba61f4258eea00f0aa30fa43d9870ff3a0))
+* fix goroutine leak ([#517](https://github.com/soerenschneider/acmevault/issues/517)) ([410131f](https://github.com/soerenschneider/acmevault/commit/410131fc58f06bf9d96fe501cf23dc8c63dd7295))
+* fix missing .Msg() ([55fb990](https://github.com/soerenschneider/acmevault/commit/55fb9901e34a58d839cd7dff8053d1ecd54e1654))
+* include issuer chain in renewed certificates ([99354ec](https://github.com/soerenschneider/acmevault/commit/99354ecab3d9eec0d1ce95afe5fe69f3938a5e00))
+* prevent nil pointer dereference on empty certificate ([39825fa](https://github.com/soerenschneider/acmevault/commit/39825fa36d507e051684e619c1fad80a383a0b76))
+* set cert expiry metrics in the correct branch ([ddebf4b](https://github.com/soerenschneider/acmevault/commit/ddebf4b9b53dd04cc3d3bd9b729412ba3b957f51))
+* use default kubernetes auth mount path if none is configured ([3a5ffc3](https://github.com/soerenschneider/acmevault/commit/3a5ffc39f4f72ab5b4155ca2a33cdcc9c81a89c9))
+* use domain name in renewal error message ([6e62ae1](https://github.com/soerenschneider/acmevault/commit/6e62ae1532f6c50cfa41206f655083c7e5b69fa5))
+* wrap errors with %w ([678d063](https://github.com/soerenschneider/acmevault/commit/678d063e8ad423335150e842f1c7938d42b0000b))
+
 ## [1.15.0](https://github.com/soerenschneider/acmevault/compare/v1.14.0...v1.15.0) (2024-10-23)
 
 
