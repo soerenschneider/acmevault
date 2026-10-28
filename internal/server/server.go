@@ -121,7 +121,7 @@ func (c *AcmeVault) obtainAndHandleCert(domain config.DomainsConfig) error {
 		metrics.CertificatesRenewals.Inc()
 		if err != nil {
 			metrics.CertificatesRenewErrors.Inc()
-			return fmt.Errorf("renewing cert failed for domain %s: %v", domain, err)
+			return fmt.Errorf("renewing cert failed for domain %s: %v", domain.Domain, err)
 		}
 		return handleReceivedCert(renewed, c.certStorage)
 	}
