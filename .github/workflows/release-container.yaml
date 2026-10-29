@@ -32,7 +32,7 @@ jobs:
           package-name: ${{ github.repository }}
 
       - name: Checkout
-        uses: actions/checkout@v4.1.0
+        uses: actions/checkout@v7.0.1
         if: ${{ steps.release.outputs.release_created }}
 
       - name: Log in to the container registry
@@ -84,7 +84,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.1.0
+        uses: actions/checkout@v7.0.1
         with:
           ref: ${{ needs.release-please.outputs.tag_name }}
 
