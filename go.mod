@@ -7,6 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.33.12
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.70.6
 	github.com/caarlos0/env/v10 v10.0.0
+	github.com/caarlos0/env/v11 v11.4.1
 	github.com/go-acme/lego/v4 v4.35.2
 	github.com/go-playground/validator/v10 v10.30.5
 	github.com/hashicorp/vault/api v1.23.0
